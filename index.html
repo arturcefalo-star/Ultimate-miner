@@ -179,6 +179,20 @@ let volumeGeral=1;
 let codigosUsados=[];
 let codigoModalAberto=false;
 
+// AVISOS
+
+let avisoTexto="";
+let avisoTempo=0;
+
+function mostrarAviso(mensagem){
+avisoTexto=mensagem;
+avisoTempo=Date.now();
+}
+
+window.alert=function(mensagem){
+mostrarAviso(String(mensagem));
+};
+
 // SISTEMA DE MELHORIAS
 
 let multiplicadorCompras=0;
@@ -198,7 +212,7 @@ return 1+(multiplicadorCompras*0.5);
 
 function comprarMultiplicador(){
 if(moedas<precoMultiplicador){
-alert("Dinheiro insuficiente!");
+mostrarAviso("SALDO INSUFICIENTE");
 return;
 }
 
@@ -211,12 +225,10 @@ salvar();
 }
 
 function comprarAutoClicker(){
-if(autoClickerComprado){
-return;
-}
+if(autoClickerComprado)return;
 
 if(moedas<100000){
-alert("Você precisa de $100K para comprar o Auto Clicker!");
+mostrarAviso("SALDO INSUFICIENTE");
 return;
 }
 
@@ -226,17 +238,14 @@ autoClickerAtivo=false;
 
 somRaro();
 salvar();
-
-alert("Auto Clicker desbloqueado! Vá às configurações para ativá-lo.");
+mostrarAviso("AUTO CLICKER DESBLOQUEADO!");
 }
 
 function comprarAutoClickerPro(){
-if(autoClickerProComprado){
-return;
-}
+if(autoClickerProComprado)return;
 
 if(moedas<10000000){
-alert("Você precisa de $10M para comprar o Auto Clicker PRO!");
+mostrarAviso("SALDO INSUFICIENTE");
 return;
 }
 
@@ -246,8 +255,7 @@ autoClickerProAtivo=false;
 
 somRaro();
 salvar();
-
-alert("Auto Clicker PRO desbloqueado! Vá às configurações para ativá-lo.");
+mostrarAviso("AUTO CLICKER PRO DESBLOQUEADO!");
 }
 
 function alternarAutoClicker(){
@@ -632,6 +640,8 @@ picaretasCompradas.push(real);
 picaretaAtual=real;
 somCompra();
 if(real>=6)somRaro();
+}else{
+mostrarAviso("SALDO INSUFICIENTE");
 }
 }else{
 const real=indice+1;
@@ -650,6 +660,8 @@ mineriosComprados.push(real);
 minerioAtual=real;
 somCompra();
 if(real>=6)somRaro();
+}else{
+mostrarAviso("SALDO INSUFICIENTE");
 }
 }
 
@@ -1037,7 +1049,7 @@ retangulo(40,200,420,55,"#34394e",8);
 texto("AUTO CLICKER PRO",52,220,14,"#d5a1ff");
 
 texto(
-autoClickerProComprado?"DESBLOQUEADO":"5 CLIQUES/SEG",
+autoClickerProComprado?"DESBLOQUEADO":"25 CLIQUES/SEG",
 52,241,12,"#bbb"
 );
 
@@ -1047,7 +1059,6 @@ texto(
 autoClickerProComprado?"COMPRADO":"$ 10M",
 395,233,12,"#fff","center"
 );
-
 }
 
 // BOTÕES ADMIN
@@ -1224,16 +1235,23 @@ desenharEngrenagem(471,20);
 
 // BOTÃO UPGRADES
 
-retangulo(16,125,128,35,"#30144e",8);
-retangulo(18,127,124,31,"#7134bd",6);
-texto("⬆ UPGRADES",80,148,15,"#fff","center");
+retangulo(16,170,128,35,"#30144e",8);
+retangulo(18,172,124,31,"#7134bd",6);
+
+ctx.strokeStyle="#fff";
+ctx.lineWidth=2;
+ctx.beginPath();
+ctx.roundRect(18,172,124,31,6);
+ctx.stroke();
+
+texto("⬆ UPGRADES",80,193,15,"#fff","center");
 
 // BOTÃO ADMIN
 
 if(adminDesbloqueado){
-retangulo(16,174,128,35,"#30144e",8);
-retangulo(18,176,124,31,"#793ac2",6);
-texto("⚙ ADMIN",80,197,15,"#fff","center");
+retangulo(16,125,128,35,"#30144e",8);
+retangulo(18,127,124,31,"#793ac2",6);
+texto("⚙ ADMIN",80,148,15,"#fff","center");
 }
 
 // BOTÃO SHOP
@@ -1275,12 +1293,12 @@ if(!codigoModalAberto){
 const agora=Date.now();
 
 if(autoClickerProAtivo&&autoClickerProComprado){
-if(agora-ultimoAutoClick>=200){
+if(agora-ultimoAutoClick>=40){
 ultimoAutoClick=agora;
 minerar();
 }
 }else if(autoClickerAtivo&&autoClickerComprado){
-if(agora-ultimoAutoClick>=1000){
+if(agora-ultimoAutoClick>=200){
 ultimoAutoClick=agora;
 minerar();
 }
@@ -1293,6 +1311,13 @@ if(lojaAberta)desenharLoja();
 if(melhoriasAbertas)desenharMelhorias();
 if(configuracoesAbertas)desenharConfiguracoes();
 if(adminAberto)desenharAdmin();
+
+// AVISOS DENTRO DO JOGO
+
+if(avisoTexto&&Date.now()-avisoTempo<1800){
+retangulo(145,267,210,25,"#5c1717",6);
+texto(avisoTexto,250,284,12,"#ff7777","center");
+}
 
 requestAnimationFrame(desenhar);
 }
@@ -1489,11 +1514,11 @@ if(p.x>=450&&p.x<=492&&p.y>=5&&p.y<=35){
 configuracoesAbertas=true;
 somAbrirLoja();
 
-}else if(adminDesbloqueado&&p.x>=15&&p.x<=145&&p.y>=174&&p.y<=209){
+}else if(adminDesbloqueado&&p.x>=15&&p.x<=145&&p.y>=125&&p.y<=160){
 adminAberto=true;
 somAbrirLoja();
 
-}else if(p.x>=16&&p.x<=144&&p.y>=125&&p.y<=160){
+}else if(p.x>=16&&p.x<=144&&p.y>=170&&p.y<=205){
 melhoriasAbertas=true;
 somAbrirLoja();
 
