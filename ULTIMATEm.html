@@ -1,0 +1,988 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ultimate Miner</title>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;background:#111;display:flex;justify-content:center;
+align-items:center;min-height:100vh;overflow:hidden;font-family:Arial,sans-serif
+}
+canvas{
+width:min(100vw,166.667vh);height:auto;max-height:100vh;
+aspect-ratio:5/3;background:black;touch-action:none
+}
+</style>
+</head>
+<body>
+<canvas id="game" width="500" height="300"></canvas>
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+if(!ctx){document.body.innerHTML="Erro ao iniciar o Canvas.";throw new Error("Canvas não disponível")}
+
+if(!ctx.roundRect){
+ctx.roundRect=function(x,y,w,h,r=0){
+const a=Math.max(0,Math.min(r,w/2,h/2));
+this.moveTo(x+a,y);
+this.lineTo(x+w-a,y);
+this.quadraticCurveTo(x+w,y,x+w,y+a);
+this.lineTo(x+w,y+h-a);
+this.quadraticCurveTo(x+w,y+h,x+w-a,y+h);
+this.lineTo(x+a,y+h);
+this.quadraticCurveTo(x,y+h,x,y+h-a);
+this.lineTo(x,y+a);
+this.quadraticCurveTo(x,y,x+a,y);
+this.closePath();
+};
+}
+
+const picaretas=[
+["Wood Pickaxe",0,1,[130,75,30]],
+["Stone Pickaxe",180,3,[140,140,140]],
+["Copper Pickaxe",650,6,[190,110,60]],
+["Gold Pickaxe",1800,10,[255,215,55]],
+["Iron Pickaxe",4200,15,[190,190,210]],
+["Diamond Pickaxe",9000,22,[0,220,255]],
+["Obsidian Pickaxe",18000,31,[55,35,80]],
+["Ruby Pickaxe",35000,42,[220,20,60]],
+["Emerald Pickaxe",65000,56,[0,200,90]],
+["Amethyst Pickaxe",110000,73,[150,70,220]],
+["Sapphire Pickaxe",180000,94,[30,100,255]],
+["Titanium Pickaxe",290000,120,[160,180,190]],
+["Cobalt Pickaxe",460000,151,[20,70,180]],
+["Uranium Pickaxe",720000,189,[120,255,20]],
+["Plasma Pickaxe",1100000,235,[0,255,220]],
+["Void Pickaxe",1650000,290,[65,0,110]],
+["Meteor Pickaxe",2400000,355,[110,75,65]],
+["Magma Pickaxe",3400000,430,[255,75,0]],
+["Crystal Pickaxe",4800000,520,[130,220,255]],
+["Ancient Pickaxe",6700000,630,[180,150,90]],
+["Dragon Pickaxe",9200000,760,[180,20,20]],
+["Celestial Pickaxe",12500000,910,[255,240,160]],
+["Quantum Pickaxe",17000000,1080,[0,255,180]],
+["Galactic Pickaxe",23000000,1280,[100,50,220]],
+["Eternity Pickaxe",31000000,1510,[255,100,200]],
+["Infinity Pickaxe",42000000,1780,[255,255,255]],
+["Starsteel Pickaxe",58000000,2100,[120,190,255]],
+["Solar Pickaxe",80000000,2500,[255,150,30]],
+["Lunar Pickaxe",110000000,3000,[190,200,255]],
+["Godslayer Pickaxe",150000000,3600,[255,50,80]],
+["Abyssal Pickaxe",205000000,4300,[75,0,130]],
+["Phoenix Pickaxe",280000000,5200,[255,90,20]],
+["Titan Pickaxe",380000000,6300,[100,220,180]],
+["Divine Pickaxe",520000000,7600,[255,245,170]],
+["Omniverse Pickaxe",710000000,9200,[180,100,255]],
+["Genesis Pickaxe",1000000000,11200,[255,255,255]]
+];
+
+const minerios=[
+["Stone",0,1,[110,110,110]],
+["Coal",100,1.5,[30,30,30]],
+["Copper",400,2,[190,110,60]],
+["Gold",1200,2.5,[255,215,55]],
+["Iron",3000,3,[190,190,210]],
+["Diamond",7000,3.5,[0,220,255]],
+["Obsidian",15000,4,[55,35,80]],
+["Ruby",30000,4.5,[220,20,60]],
+["Emerald",55000,5,[0,200,90]],
+["Amethyst",95000,5.5,[150,70,220]],
+["Sapphire",160000,6,[30,100,255]],
+["Titanium",260000,6.5,[160,180,190]],
+["Cobalt",420000,7,[20,70,180]],
+["Uranium",680000,7.5,[120,255,20]],
+["Plasma",1050000,8,[0,255,220]],
+["Void",1600000,8.5,[65,0,110]],
+["Meteorite",2200000,9,[110,75,65]],
+["Magma",3100000,9.5,[255,75,0]],
+["Crystal",4400000,10,[130,220,255]],
+["Ancient Ore",6200000,10.5,[180,150,90]],
+["Dragonite",8700000,11,[180,20,20]],
+["Celestite",12000000,11.5,[255,240,160]],
+["Quantum Ore",16500000,12,[0,255,180]],
+["Galactium",22500000,12.5,[100,50,220]],
+["Eternium",30000000,13,[255,100,200]],
+["Infinity Ore",40000000,13.5,[255,255,255]],
+["Starsteel Ore",55000000,14,[120,190,255]],
+["Solar Ore",75000000,14.5,[255,150,30]],
+["Lunar Ore",105000000,15,[190,200,255]],
+["Godslayer Ore",145000000,15.5,[255,50,80]],
+["Abyssal Ore",195000000,16,[75,0,130]],
+["Phoenix Ore",270000000,16.5,[255,90,20]],
+["Titan Ore",370000000,17,[100,220,180]],
+["Divine Ore",500000000,17.5,[255,245,170]],
+["Omniverse Ore",690000000,18,[180,100,255]],
+["Genesis Ore",950000000,18.5,[255,255,255]]
+];
+
+let moedas=0;
+let picaretasCompradas=[0];
+let mineriosComprados=[0];
+let picaretaAtual=0;
+let minerioAtual=0;
+
+let lojaAberta=false;
+let adminAberto=false;
+let configuracoesAbertas=false;
+let categoria="picaretas";
+let scroll=0;
+
+let diagonal=false;
+let tempoGolpe=0;
+let recompensaTexto="";
+let mostrarRecompensa=false;
+let tempoRecompensa=0;
+
+let arrastando=false;
+let inicioY=0;
+let scrollInicial=0;
+let moveuLista=false;
+let volumeArrastando=false;
+
+let audio=null;
+let audioAtivo=false;
+let masterGain=null;
+let volumeGeral=1;
+
+function iniciarAudio(){
+if(audioAtivo){
+if(audio&&audio.state==="suspended")audio.resume();
+return;
+}
+try{
+const A=window.AudioContext||window.webkitAudioContext;
+if(!A)return;
+audio=new A();
+masterGain=audio.createGain();
+masterGain.gain.value=volumeGeral;
+masterGain.connect(audio.destination);
+audioAtivo=true;
+if(audio.state==="suspended")audio.resume();
+}catch(e){}
+}
+
+function tom(freq,duracao,volume,tipo="sine",freqFinal=null,atraso=0){
+if(!audioAtivo||!audio)return;
+try{
+const agora=audio.currentTime+atraso;
+const osc=audio.createOscillator();
+const ganho=audio.createGain();
+osc.type=tipo;
+osc.frequency.setValueAtTime(freq,agora);
+if(freqFinal!==null)osc.frequency.exponentialRampToValueAtTime(Math.max(1,freqFinal),agora+duracao);
+ganho.gain.setValueAtTime(0.0001,agora);
+ganho.gain.exponentialRampToValueAtTime(volume,agora+0.01);
+ganho.gain.exponentialRampToValueAtTime(0.0001,agora+duracao);
+osc.connect(ganho);
+ganho.connect(masterGain);
+osc.start(agora);
+osc.stop(agora+duracao+0.02);
+}catch(e){}
+}
+
+function ruido(duracao,volume,frequencia=1200,atraso=0){
+if(!audioAtivo||!audio)return;
+try{
+const tamanho=Math.ceil(audio.sampleRate*duracao);
+const buffer=audio.createBuffer(1,tamanho,audio.sampleRate);
+const dados=buffer.getChannelData(0);
+for(let i=0;i<tamanho;i++)dados[i]=Math.random()*2-1;
+const fonte=audio.createBufferSource();
+const filtro=audio.createBiquadFilter();
+const ganho=audio.createGain();
+const agora=audio.currentTime+atraso;
+fonte.buffer=buffer;
+filtro.type="lowpass";
+filtro.frequency.value=frequencia;
+ganho.gain.setValueAtTime(volume,agora);
+ganho.gain.exponentialRampToValueAtTime(0.0001,agora+duracao);
+fonte.connect(filtro);
+filtro.connect(ganho);
+ganho.connect(masterGain);
+fonte.start(agora);
+fonte.stop(agora+duracao);
+}catch(e){}
+}
+
+function somMinerar(){
+ruido(0.065,0.48,650);
+ruido(0.045,0.25,1100,0.006);
+}
+
+function somCompra(){
+tom(520,0.13,0.16,"sine",700);
+tom(780,0.18,0.16,"sine",1050,0.10);
+tom(1040,0.22,0.13,"sine",1300,0.19);
+}
+
+function somEquipar(){
+tom(650,0.10,0.14,"sine",850);
+tom(950,0.15,0.14,"sine",1150,0.08);
+}
+
+function somRaro(){
+tom(660,0.35,0.18,"sine",1000);
+tom(990,0.40,0.18,"sine",1500,0.10);
+tom(1320,0.55,0.15,"sine",1800,0.22);
+}
+
+function somClique(){tom(480,0.045,0.10,"sine",350)}
+function somAbrirLoja(){
+tom(380,0.10,0.13,"sine",550);
+tom(620,0.13,0.12,"sine",850,0.07);
+}
+function somFecharLoja(){tom(650,0.10,0.12,"sine",400)}
+
+function salvar(){
+const dados={
+moedas,picaretasCompradas,mineriosComprados,
+picaretaAtual,minerioAtual,volumeGeral
+};
+try{localStorage.setItem("mining_game_save",JSON.stringify(dados))}catch(e){}
+}
+
+function carregar(){
+try{
+const dados=JSON.parse(localStorage.getItem("mining_game_save"));
+if(!dados)return;
+
+moedas=Math.max(0,Number(dados.moedas)||0);
+
+picaretasCompradas=Array.isArray(dados.picaretasCompradas)
+?dados.picaretasCompradas.filter(i=>Number.isInteger(i)&&i>=0&&i<picaretas.length):[0];
+
+mineriosComprados=Array.isArray(dados.mineriosComprados)
+?dados.mineriosComprados.filter(i=>Number.isInteger(i)&&i>=0&&i<minerios.length):[0];
+
+if(!picaretasCompradas.includes(0))picaretasCompradas.push(0);
+if(!mineriosComprados.includes(0))mineriosComprados.push(0);
+
+if(picaretasCompradas.includes(dados.picaretaAtual))picaretaAtual=dados.picaretaAtual;
+if(mineriosComprados.includes(dados.minerioAtual))minerioAtual=dados.minerioAtual;
+
+if(Number.isFinite(dados.volumeGeral)){
+volumeGeral=Math.max(0,Math.min(1,dados.volumeGeral));
+}
+}catch(e){}
+}
+carregar();
+
+function formatarDinheiro(valor){
+const unidades=[
+[1e33,"Dc"],[1e30,"No"],[1e27,"Oc"],[1e24,"Sp"],
+[1e21,"Sx"],[1e18,"Qi"],[1e15,"Qa"],[1e12,"T"],
+[1e9,"B"],[1e6,"M"],[1e3,"K"]
+];
+for(const [limite,sufixo] of unidades){
+if(valor>=limite)return(valor/limite).toFixed(1).replace(/\.0$/,"")+sufixo;
+}
+return Math.floor(valor).toString();
+}
+
+function minerar(){
+const recompensa=picaretas[picaretaAtual][2]*minerios[minerioAtual][2];
+moedas+=recompensa;
+somMinerar();
+recompensaTexto="+"+formatarDinheiro(recompensa);
+mostrarRecompensa=true;
+tempoRecompensa=Date.now();
+diagonal=true;
+tempoGolpe=Date.now();
+salvar();
+}
+
+function adicionarDinheiro(){
+const resposta=prompt("Quanto dinheiro você quer adicionar?");
+if(resposta===null)return;
+const valor=Number(resposta.replace(/,/g,"").trim());
+if(!Number.isFinite(valor)||valor<=0){
+alert("Digite uma quantidade válida maior que zero.");
+return;
+}
+moedas+=valor;
+salvar();
+somCompra();
+alert("Dinheiro adicionado: $ "+formatarDinheiro(valor));
+}
+
+function removerDinheiro(){
+const resposta=prompt("Quanto dinheiro deseja remover?");
+if(resposta===null)return;
+const valor=Number(resposta.replace(/,/g,"").trim());
+if(!Number.isFinite(valor)||valor<=0){
+alert("Digite uma quantidade válida maior que zero.");
+return;
+}
+if(valor>moedas){
+alert("Você não tem essa quantidade de dinheiro.");
+return;
+}
+moedas-=valor;
+salvar();
+somClique();
+alert("Dinheiro removido!");
+}
+
+function desbloquearPicaretas(){
+picaretasCompradas=picaretas.map((item,index)=>index);
+salvar();
+somRaro();
+}
+
+function desbloquearMinerios(){
+mineriosComprados=minerios.map((item,index)=>index);
+salvar();
+somRaro();
+}
+
+function desbloquearTudo(){
+desbloquearPicaretas();
+desbloquearMinerios();
+somRaro();
+}
+
+function removerPicaretas(){
+picaretasCompradas=[0];
+picaretaAtual=0;
+salvar();
+somClique();
+alert("Todas as picaretas foram bloqueadas novamente!");
+}
+
+function removerMinerios(){
+mineriosComprados=[0];
+minerioAtual=0;
+salvar();
+somClique();
+alert("Todos os minérios foram bloqueados novamente!");
+}
+
+function abrirAdminPorCodigo(){
+const resposta=prompt("Digite o código administrativo:");
+if(resposta==="Xx6767xX"){
+configuracoesAbertas=false;
+adminAberto=true;
+somRaro();
+}else if(resposta!==null){
+alert("Código incorreto!");
+}
+}
+
+function limitarScroll(){
+const total=categoria==="picaretas"?picaretas.length-1:minerios.length-1;
+scroll=Math.max(0,Math.min(scroll,total-3));
+}
+
+function selecionarItem(linha){
+const indice=scroll+linha;
+if(linha<0||linha>=3)return;
+
+if(categoria==="picaretas"){
+const real=indice+1;
+if(real>=picaretas.length)return;
+const item=picaretas[real];
+
+if(picaretasCompradas.includes(real)){
+if(picaretaAtual!==real){picaretaAtual=real;somEquipar()}
+}else if(moedas>=item[1]){
+moedas-=item[1];
+picaretasCompradas.push(real);
+picaretaAtual=real;
+somCompra();
+if(real>=6)somRaro();
+}
+}else{
+const real=indice+1;
+if(real>=minerios.length)return;
+const item=minerios[real];
+
+if(mineriosComprados.includes(real)){
+if(minerioAtual!==real){minerioAtual=real;somEquipar()}
+}else if(moedas>=item[1]){
+moedas-=item[1];
+mineriosComprados.push(real);
+minerioAtual=real;
+somCompra();
+if(real>=6)somRaro();
+}
+}
+salvar();
+}
+
+function retangulo(x,y,w,h,cor,raio=0){
+ctx.fillStyle=cor;
+ctx.beginPath();
+ctx.roundRect(x,y,w,h,raio);
+ctx.fill();
+}
+
+function texto(txt,x,y,tamanho,cor="#fff",alinhamento="left"){
+ctx.fillStyle=cor;
+ctx.font="bold "+tamanho+"px Arial";
+ctx.textAlign=alinhamento;
+ctx.fillText(txt,x,y);
+ctx.textAlign="left";
+}
+
+function linha(x1,y1,x2,y2,cor,largura){
+ctx.strokeStyle=cor;
+ctx.lineWidth=largura;
+ctx.lineCap="round";
+ctx.beginPath();
+ctx.moveTo(x1,y1);
+ctx.lineTo(x2,y2);
+ctx.stroke();
+}
+
+function brilho(x,y,raio,cor){
+ctx.save();
+ctx.shadowColor=cor;
+ctx.shadowBlur=raio;
+ctx.fillStyle=cor;
+ctx.beginPath();
+ctx.arc(x,y,raio/4,0,Math.PI*2);
+ctx.fill();
+ctx.restore();
+}
+
+function desenharPicaretaPequena(x,y,tamanho,cor,indice){
+const c=`rgb(${cor.join(",")})`;
+ctx.save();
+ctx.translate(x,y);
+ctx.scale(tamanho/100,tamanho/100);
+ctx.shadowColor=c;
+ctx.shadowBlur=indice>=5?12:3;
+linha(0,48,0,-25,"#75421f",10);
+linha(0,48,0,-25,"#d29a63",3);
+linha(-38,-25,38,-25,c,indice>=5?13:10);
+linha(-38,-25,-48,-10,c,indice>=5?12:8);
+linha(38,-25,48,-10,c,indice>=5?12:8);
+linha(-38,-29,38,-29,"rgba(255,255,255,0.7)",2);
+if(indice>=6){
+linha(-25,-35,-15,-44,c,3);
+linha(25,-35,15,-44,c,3);
+brilho(0,-25,10,"#ffffff");
+}
+if(indice>=15){
+linha(-45,-25,-35,-42,"#ffffff",2);
+linha(45,-25,35,-42,"#ffffff",2);
+}
+if(indice>=26){
+linha(-30,-40,-20,-52,c,4);
+linha(30,-40,20,-52,c,4);
+brilho(0,-25,18,c);
+}
+ctx.restore();
+}
+
+function desenharPicareta(){
+const item=picaretas[picaretaAtual];
+const cor=item[3];
+const corCSS=`rgb(${cor.join(",")})`;
+const nivel=picaretaAtual;
+
+ctx.save();
+ctx.translate(250,250);
+if(diagonal)ctx.rotate(0.78);
+ctx.translate(-250,-250);
+
+ctx.shadowColor=corCSS;
+ctx.shadowBlur=nivel>=5?18:5;
+
+linha(250,250,250,100,"#533018",19);
+linha(246,248,246,104,"#c28b59",5);
+linha(254,248,254,104,"#8a522d",3);
+
+retangulo(239,145,22,9,"#d6b477",3);
+retangulo(239,190,22,9,"#d6b477",3);
+retangulo(241,220,18,7,"#d6b477",3);
+
+linha(190,100,310,100,corCSS,nivel>=5?21:16);
+linha(190,100,175,120,corCSS,nivel>=5?18:13);
+linha(310,100,325,120,corCSS,nivel>=5?18:13);
+
+linha(190,94,310,94,"rgba(255,255,255,0.75)",3);
+linha(175,120,184,106,"rgba(255,255,255,0.65)",3);
+linha(325,120,316,106,"rgba(255,255,255,0.65)",3);
+
+if(nivel>=3){
+linha(205,100,205,113,"rgba(0,0,0,0.35)",3);
+linha(295,100,295,113,"rgba(0,0,0,0.35)",3);
+}
+if(nivel>=5){
+ctx.shadowBlur=0;
+linha(250,82,250,60,corCSS,5);
+linha(230,88,216,75,corCSS,4);
+linha(270,88,284,75,corCSS,4);
+retangulo(242,88,16,17,"#ffffff",4);
+retangulo(246,92,8,9,corCSS,2);
+}
+if(nivel>=10){
+for(let i=0;i<5;i++)linha(195+i*27,110,195+i*27,121,corCSS,3);
+retangulo(244,155,12,12,"#ffffff",3);
+retangulo(247,158,6,6,corCSS,2);
+}
+if(nivel>=15){
+ctx.shadowColor=corCSS;
+ctx.shadowBlur=18;
+linha(180,100,190,77,corCSS,5);
+linha(320,100,310,77,corCSS,5);
+linha(250,82,250,48,"#ffffff",3);
+}
+if(nivel>=20){
+linha(210,85,220,65,"#ffffff",3);
+linha(290,85,280,65,"#ffffff",3);
+brilho(250,75,20,corCSS);
+}
+if(nivel>=26){
+ctx.shadowColor=corCSS;
+ctx.shadowBlur=25;
+linha(180,100,165,78,corCSS,6);
+linha(320,100,335,78,corCSS,6);
+linha(165,78,185,82,"#ffffff",3);
+linha(335,78,315,82,"#ffffff",3);
+retangulo(239,68,22,22,corCSS,5);
+retangulo(245,74,10,10,"#ffffff",3);
+linha(220,100,220,125,"rgba(255,255,255,0.65)",3);
+linha(280,100,280,125,"rgba(255,255,255,0.65)",3);
+}
+if(nivel>=30){
+linha(190,65,210,45,corCSS,4);
+linha(310,65,290,45,corCSS,4);
+linha(250,60,250,35,"#ffffff",4);
+brilho(250,58,28,corCSS);
+}
+if(nivel>=33){
+linha(175,95,155,95,"#ffffff",3);
+linha(325,95,345,95,"#ffffff",3);
+linha(250,35,235,20,corCSS,4);
+linha(250,35,265,20,corCSS,4);
+}
+ctx.restore();
+}
+
+function desenharMinerio(){
+const cor=minerios[minerioAtual][3];
+const corCSS=`rgb(${cor.join(",")})`;
+texto(minerios[minerioAtual][0],417,143,20,corCSS,"center");
+retangulo(370,155,95,95,"#292929",7);
+retangulo(374,159,87,87,corCSS,5);
+
+ctx.fillStyle="rgba(255,255,255,0.17)";
+ctx.beginPath();
+ctx.moveTo(380,166);
+ctx.lineTo(405,163);
+ctx.lineTo(418,190);
+ctx.lineTo(395,205);
+ctx.closePath();
+ctx.fill();
+
+ctx.fillStyle="rgba(0,0,0,0.17)";
+ctx.beginPath();
+ctx.moveTo(418,190);
+ctx.lineTo(457,168);
+ctx.lineTo(454,235);
+ctx.lineTo(421,240);
+ctx.closePath();
+ctx.fill();
+
+ctx.fillStyle="rgba(255,255,255,0.24)";
+ctx.beginPath();
+ctx.moveTo(390,213);
+ctx.lineTo(416,195);
+ctx.lineTo(440,224);
+ctx.lineTo(410,238);
+ctx.closePath();
+ctx.fill();
+
+linha(380,164,455,164,"rgba(255,255,255,0.35)",2);
+linha(380,240,455,240,"rgba(0,0,0,0.25)",2);
+}
+
+function desenharLoja(){
+retangulo(25,30,450,250,"#171722",12);
+const fundo=ctx.createLinearGradient(25,30,475,280);
+fundo.addColorStop(0,"#292b40");
+fundo.addColorStop(1,"#171722");
+retangulo(27,32,446,246,fundo,10);
+
+ctx.strokeStyle="#747da8";
+ctx.lineWidth=2;
+ctx.beginPath();
+ctx.roundRect(25,30,450,250,12);
+ctx.stroke();
+
+texto("MINING SHOP",45,61,25,"#ffdc00");
+retangulo(435,40,28,28,"#b42828",6);
+texto("X",449,61,19,"#fff","center");
+
+const c1=categoria==="picaretas"?"#2864c8":"#414150";
+const c2=categoria==="minerios"?"#2864c8":"#414150";
+retangulo(45,72,175,28,c1,6);
+retangulo(230,72,175,28,c2,6);
+texto("Pickaxes",132,92,17,"#fff","center");
+texto("Ores",317,92,17,"#fff","center");
+
+const lista=categoria==="picaretas"?picaretas.slice(1):minerios.slice(1);
+ctx.save();
+ctx.beginPath();
+ctx.rect(40,102,425,168);
+ctx.clip();
+
+for(let linhaIndex=0;linhaIndex<3;linhaIndex++){
+const i=scroll+linhaIndex;
+if(i>=lista.length)break;
+const item=lista[i];
+const y=105+linhaIndex*55;
+
+const gradiente=ctx.createLinearGradient(40,y,465,y+45);
+gradiente.addColorStop(0,"#41445b");
+gradiente.addColorStop(1,"#292b3c");
+retangulo(40,y,425,45,gradiente,7);
+
+ctx.strokeStyle="rgba(255,255,255,0.12)";
+ctx.lineWidth=1;
+ctx.beginPath();
+ctx.roundRect(40,y,425,45,7);
+ctx.stroke();
+
+const indiceReal=i+1;
+const comprados=categoria==="picaretas"?picaretasCompradas:mineriosComprados;
+const atual=categoria==="picaretas"?picaretaAtual:minerioAtual;
+
+if(categoria==="picaretas"){
+desenharPicaretaPequena(61,y+24,34,item[3],indiceReal);
+texto(item[0],88,y+18,14,"#ffffff");
+texto("POWER: "+item[2],88,y+36,12,"#70dcff");
+if(indiceReal>=26)texto("NEW",310,y+17,9,"#ffe36e");
+}else{
+retangulo(49,y+10,25,25,`rgb(${item[3].join(",")})`,5);
+retangulo(53,y+13,9,7,"rgba(255,255,255,0.4)",2);
+texto(item[0],85,y+18,14,"#ffffff");
+texto("MULTIPLIER: "+item[2]+"x",85,y+36,12,"#70dcff");
+}
+
+let corBotao,nomeBotao;
+if(comprados.includes(indiceReal)){
+if(atual===indiceReal){corBotao="#23964d";nomeBotao="EQUIPPED"}
+else{corBotao="#2864b4";nomeBotao="EQUIP"}
+}else{
+corBotao=moedas>=item[1]?"#1e8c46":"#754044";
+nomeBotao="$ "+formatarDinheiro(item[1]);
+}
+retangulo(350,y+7,105,30,corBotao,7);
+texto(nomeBotao,402,y+27,12,"#fff","center");
+}
+ctx.restore();
+
+if(lista.length>3){
+retangulo(468,105,4,155,"#414150",3);
+const altura=Math.max(20,155*3/lista.length);
+const posicao=scroll*(155-altura)/(lista.length-3);
+retangulo(468,105+posicao,4,altura,"#64b4ff",3);
+}
+if(categoria==="picaretas"){
+texto(picaretasCompradas.length+"/"+picaretas.length+" UNLOCKED",45,267,10,"#aab5d9");
+}else{
+texto(mineriosComprados.length+"/"+minerios.length+" UNLOCKED",45,267,10,"#aab5d9");
+}
+}
+
+function botaoAdmin(x,y,w,h,cor,titulo,subtitulo){
+retangulo(x,y,w,h,"#10101a",8);
+retangulo(x+2,y+2,w-4,h-4,cor,6);
+texto(titulo,x+w/2,y+22,13,"#fff","center");
+if(subtitulo)texto(subtitulo,x+w/2,y+37,10,"#f0eaff","center");
+}
+
+function desenharAdmin(){
+retangulo(25,30,450,250,"#171722",12);
+const fundo=ctx.createLinearGradient(25,30,475,280);
+fundo.addColorStop(0,"#302044");
+fundo.addColorStop(1,"#171722");
+retangulo(27,32,446,246,fundo,10);
+
+ctx.strokeStyle="#b17be8";
+ctx.lineWidth=2;
+ctx.beginPath();
+ctx.roundRect(25,30,450,250,12);
+ctx.stroke();
+
+texto("ADMIN PANEL",45,62,24,"#d8aaff");
+retangulo(435,40,28,28,"#b42828",6);
+texto("X",449,61,19,"#fff","center");
+
+texto("Dinheiro atual: $ "+formatarDinheiro(moedas),250,91,16,"#ffdc00","center");
+
+botaoAdmin(55,105,185,48,"#267cbd","ADD MONEY","Escolher quantidade");
+botaoAdmin(260,105,185,48,"#8a45c5","ALL PICKAXES","Desbloquear picaretas");
+botaoAdmin(55,165,185,48,"#238c57","ALL ORES","Desbloquear minérios");
+botaoAdmin(260,165,185,48,"#bd7625","UNLOCK EVERYTHING","Picaretas + minérios");
+
+botaoAdmin(45,220,125,42,"#bd3434","REMOVE MONEY","");
+botaoAdmin(188,220,125,42,"#bd7625","REMOVE PICKAXES","");
+botaoAdmin(331,220,125,42,"#238c57","REMOVE ORES","");
+}
+
+function desenharConfiguracoes(){
+retangulo(25,30,450,250,"#171722",12);
+const fundo=ctx.createLinearGradient(25,30,475,280);
+fundo.addColorStop(0,"#202d49");
+fundo.addColorStop(1,"#171722");
+retangulo(27,32,446,246,fundo,10);
+
+ctx.strokeStyle="#64b4ff";
+ctx.lineWidth=2;
+ctx.beginPath();
+ctx.roundRect(25,30,450,250,12);
+ctx.stroke();
+
+texto("CONFIGURAÇÕES",45,65,23,"#64b4ff");
+retangulo(435,40,28,28,"#b42828",6);
+texto("X",449,61,19,"#fff","center");
+
+texto("VOLUME DOS EFEITOS",250,115,17,"#fff","center");
+
+retangulo(90,140,320,12,"#414150",6);
+retangulo(90,140,320*volumeGeral,12,"#42a5ff",6);
+
+ctx.save();
+ctx.shadowColor="#64b4ff";
+ctx.shadowBlur=8;
+retangulo(82+320*volumeGeral,132,18,28,"#ffffff",7);
+ctx.restore();
+
+texto(Math.round(volumeGeral*100)+"%",250,180,19,"#ffdc00","center");
+
+retangulo(145,205,210,45,"#7134bd",8);
+texto("ACESSO ADMIN",250,233,16,"#fff","center");
+
+texto("Digite o código para abrir o painel administrativo",250,270,10,"#aaa","center");
+}
+
+function desenhar(){
+ctx.clearRect(0,0,500,300);
+retangulo(0,0,500,300,"#000");
+
+const cor=picaretas[picaretaAtual][3];
+const corCSS=`rgb(${cor.join(",")})`;
+texto(picaretas[picaretaAtual][0],250,29,20,corCSS,"center");
+
+desenharPicareta();
+if(Date.now()-tempoGolpe>=100)diagonal=false;
+desenharMinerio();
+
+if(mostrarRecompensa){
+texto(recompensaTexto,350,85,25,"#ffdc00");
+if(Date.now()-tempoRecompensa>=1000)mostrarRecompensa=false;
+}
+
+texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
+
+retangulo(450,5,42,30,"#343b55",6);
+texto("CFG",471,26,13,"#ffffff","center");
+
+const g=ctx.createLinearGradient(20,220,20,275);
+g.addColorStop(0,"#54a8ff");
+g.addColorStop(0.45,"#2468d8");
+g.addColorStop(1,"#123b91");
+retangulo(16,216,128,63,"#081a3b",13);
+retangulo(19,219,122,57,g,11);
+ctx.strokeStyle="#8bc8ff";
+ctx.lineWidth=2;
+ctx.beginPath();
+ctx.roundRect(20,220,120,55,10);
+ctx.stroke();
+retangulo(29,237,25,19,"#f4c542",4);
+retangulo(29,233,25,7,"#ffe58a",3);
+linha(41,234,41,256,"#9b6415",2);
+texto("SHOP",91,254,21,"#ffffff","center");
+
+if(lojaAberta)desenharLoja();
+if(configuracoesAbertas)desenharConfiguracoes();
+if(adminAberto)desenharAdmin();
+
+requestAnimationFrame(desenhar);
+}
+
+function posicao(evento){
+const r=canvas.getBoundingClientRect();
+return{
+x:(evento.clientX-r.left)*500/r.width,
+y:(evento.clientY-r.top)*300/r.height
+};
+}
+
+canvas.addEventListener("pointerdown",evento=>{
+iniciarAudio();
+const p=posicao(evento);
+
+if(configuracoesAbertas){
+if(p.x>=435&&p.x<=463&&p.y>=40&&p.y<=68){
+configuracoesAbertas=false;
+somFecharLoja();
+return;
+}
+
+if(p.x>=80&&p.x<=430&&p.y>=125&&p.y<=175){
+volumeArrastando=true;
+volumeGeral=Math.max(0,Math.min(1,(p.x-90)/320));
+if(masterGain)masterGain.gain.setTargetAtTime(volumeGeral,audio.currentTime,0.03);
+salvar();
+canvas.setPointerCapture(evento.pointerId);
+return;
+}
+
+if(p.x>=145&&p.x<=355&&p.y>=205&&p.y<=250){
+abrirAdminPorCodigo();
+return;
+}
+return;
+}
+
+if(adminAberto){
+if(p.x>=435&&p.x<=463&&p.y>=40&&p.y<=68){
+adminAberto=false;
+somFecharLoja();
+return;
+}
+
+if(p.y>=105&&p.y<=153){
+if(p.x>=55&&p.x<=240){
+adicionarDinheiro();
+return;
+}
+if(p.x>=260&&p.x<=445){
+desbloquearPicaretas();
+return;
+}
+}
+
+if(p.y>=165&&p.y<=213){
+if(p.x>=55&&p.x<=240){
+desbloquearMinerios();
+return;
+}
+if(p.x>=260&&p.x<=445){
+desbloquearTudo();
+return;
+}
+}
+
+if(p.y>=220&&p.y<=265){
+if(p.x>=45&&p.x<=170){
+removerDinheiro();
+return;
+}
+if(p.x>=188&&p.x<=313){
+removerPicaretas();
+return;
+}
+if(p.x>=331&&p.x<=456){
+removerMinerios();
+return;
+}
+}
+return;
+}
+
+if(lojaAberta){
+if(p.x>=435&&p.x<=463&&p.y>=40&&p.y<=68){
+lojaAberta=false;
+somFecharLoja();
+return;
+}
+if(p.y>=72&&p.y<=100){
+if(p.x>=45&&p.x<=220){
+categoria="picaretas";scroll=0;somClique();return;
+}
+if(p.x>=230&&p.x<=405){
+categoria="minerios";scroll=0;somClique();return;
+}
+}
+if(p.x>=40&&p.x<=465&&p.y>=102&&p.y<=270){
+arrastando=true;
+moveuLista=false;
+inicioY=p.y;
+scrollInicial=scroll;
+canvas.setPointerCapture(evento.pointerId);
+}
+}else{
+if(p.x>=450&&p.x<=492&&p.y>=5&&p.y<=35){
+configuracoesAbertas=true;
+somAbrirLoja();
+}else if(p.x>=20&&p.x<=140&&p.y>=220&&p.y<=275){
+lojaAberta=true;
+scroll=0;
+somAbrirLoja();
+}else{
+minerar();
+}
+}
+});
+
+canvas.addEventListener("pointermove",evento=>{
+if(volumeArrastando){
+const p=posicao(evento);
+volumeGeral=Math.max(0,Math.min(1,(p.x-90)/320));
+if(masterGain&&audio){
+masterGain.gain.setTargetAtTime(volumeGeral,audio.currentTime,0.03);
+}
+salvar();
+return;
+}
+
+if(!arrastando)return;
+const p=posicao(evento);
+const movimento=inicioY-p.y;
+if(Math.abs(movimento)>5)moveuLista=true;
+const total=categoria==="picaretas"?picaretas.length-1:minerios.length-1;
+scroll=Math.max(0,Math.min(scrollInicial+Math.round(movimento/55),total-3));
+});
+
+canvas.addEventListener("pointerup",evento=>{
+if(volumeArrastando){
+volumeArrastando=false;
+salvar();
+return;
+}
+if(!arrastando)return;
+const p=posicao(evento);
+if(!moveuLista&&p.x>=40&&p.x<=465&&p.y>=105&&p.y<=270){
+const linha=Math.floor((p.y-105)/55);
+selecionarItem(linha);
+}
+arrastando=false;
+});
+
+canvas.addEventListener("pointercancel",()=>{
+arrastando=false;
+volumeArrastando=false;
+});
+
+canvas.addEventListener("wheel",evento=>{
+if(!lojaAberta)return;
+const p=posicao(evento);
+if(p.x>=40&&p.x<=465&&p.y>=102&&p.y<=270){
+scroll+=evento.deltaY>0?1:-1;
+limitarScroll();
+}
+evento.preventDefault();
+},{passive:false});
+
+document.addEventListener("keydown",evento=>{
+if(evento.code==="Space"&&!lojaAberta&&!adminAberto&&!configuracoesAbertas){
+evento.preventDefault();
+iniciarAudio();
+minerar();
+}
+});
+
+desenhar();
+</script>
+</body>
+</html>
