@@ -41,6 +41,16 @@ font-size:15px;
 </style>
 </head>
 <body>
+<div id="telaLogin" style="position:fixed;inset:0;background:#111;z-index:9999;display:flex;align-items:center;justify-content:center;color:white;font-family:Arial">
+  <div style="background:#222;padding:25px;border-radius:15px;width:85%;max-width:320px;text-align:center">
+    <h2>ULTIMATE MINER</h2>
+    <input id="nomeLogin" placeholder="Nome de usuário" maxlength="20" style="width:100%;padding:12px;margin:8px 0;box-sizing:border-box">
+    <input id="senhaLogin" type="password" placeholder="Senha" style="width:100%;padding:12px;margin:8px 0;box-sizing:border-box">
+    <button id="botaoEntrar" style="padding:12px;width:100%;margin-top:8px">Entrar</button>
+    <button id="botaoCriar" style="padding:12px;width:100%;margin-top:8px">Criar conta</button>
+    <p id="mensagemLogin"></p>
+  </div>
+</div>
 
 <canvas id="game" width="500" height="300"></canvas>
 
