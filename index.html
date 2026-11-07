@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
@@ -38,21 +37,47 @@ width:100%;font-weight:bold;color:white;background:#286bd2;
 font-size:15px;
 }
 .modal button.cancel{background:#454556}
+
+#loginModal{
+display:flex;position:fixed;inset:0;background:#000e;align-items:center;
+justify-content:center;z-index:10000;padding:18px;color:white;font-family:Arial,sans-serif
+}
+#loginBox{
+width:min(360px,92vw);padding:24px;border-radius:16px;text-align:center;
+background:linear-gradient(145deg,#292b48,#151522);border:2px solid #657acb;
+box-shadow:0 0 30px #376cff55
+}
+#loginBox h2{margin:0 0 8px;color:#80baff}
+#loginBox p{font-size:13px;color:#bbb;line-height:1.4}
+#loginBox input{
+width:100%;padding:13px;margin:7px 0;border:1px solid #657acb;border-radius:9px;
+background:#10101c;color:white;font-size:16px;outline:none
+}
+#loginBox button{
+width:100%;padding:12px;margin-top:9px;border:0;border-radius:9px;
+font-size:15px;font-weight:bold;color:white;background:#286bd2
+}
+#loginBox button.secondary{background:#454556}
+#loginBox button:disabled{opacity:.55}
+#mensagemLogin{min-height:18px;color:#ffb0b0!important}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<div id="telaLogin" style="position:fixed;inset:0;background:#111;z-index:9999;display:flex;align-items:center;justify-content:center;color:white;font-family:Arial">
-  <div style="background:#222;padding:25px;border-radius:15px;width:85%;max-width:320px;text-align:center">
+
+<canvas id="game" width="500" height="300"></canvas>
+
+<div id="loginModal">
+  <div id="loginBox">
     <h2>ULTIMATE MINER</h2>
-    <input id="nomeLogin" placeholder="Nome de usuário" maxlength="20" style="width:100%;padding:12px;margin:8px 0;box-sizing:border-box">
-    <input id="senhaLogin" type="password" placeholder="Senha" style="width:100%;padding:12px;margin:8px 0;box-sizing:border-box">
-    <button id="botaoEntrar" style="padding:12px;width:100%;margin-top:8px">Entrar</button>
-    <button id="botaoCriar" style="padding:12px;width:100%;margin-top:8px">Criar conta</button>
+    <p>Entre na sua conta ou crie uma nova para salvar seu progresso.</p>
+    <input id="nomeLogin" placeholder="Nome de usuário" maxlength="20" autocomplete="username">
+    <input id="senhaLogin" type="password" placeholder="Senha (mínimo 6 caracteres)" autocomplete="current-password">
+    <button id="botaoEntrar" type="button">ENTRAR</button>
+    <button id="botaoCriar" class="secondary" type="button">CRIAR CONTA</button>
     <p id="mensagemLogin"></p>
   </div>
 </div>
-
-<canvas id="game" width="500" height="300"></canvas>
 
 <div id="codeModal">
 <div class="modal">
@@ -65,13 +90,40 @@ font-size:15px;
 </div>
 
 <script>
-const SUPABASE_URL = "https://ufpxgmbymftqcsvkctwa.supabase.co";
-const SUPABASE_KEY = "SUA_CHAVE_PUBLISHABLE";
+const SUPABASE_URL="https://ufpxgmbymftqcsvkctwa.supabase.co";
+const SUPABASE_KEY="sb_publishable_7sb4Nv3_ksNdiOEEoJfvJw_9mK5sxMv";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+let usuarioAtual=null;
+let timerSalvamentoNuvem=null;
+let carregandoDados=false;
+
+const loginModal=document.getElementById("loginModal");
+const nomeLogin=document.getElementById("nomeLogin");
+const senhaLogin=document.getElementById("senhaLogin");
+const mensagemLogin=document.getElementById("mensagemLogin");
+const botaoEntrar=document.getElementById("botaoEntrar");
+const botaoCriar=document.getElementById("botaoCriar");
+
+function mensagemDeLogin(texto,erro=true){
+mensagemLogin.textContent=texto;
+mensagemLogin.style.color=erro?"#ffb0b0":"#9dffb0";
+}
+
+function usuarioEmail(nome){
+return nome.toLowerCase()+"@ultimateminer.com";
+}
+
+function nomeValido(nome){
+return /^[a-zA-Z0-9_]{3,20}$/.test(nome);
+}
+
+function bloquearLogin(bloquear){
+botaoEntrar.disabled=bloquear;
+botaoCriar.disabled=bloquear;
+botaoEntrar.textContent=bloquear?"AGUARDE...":"ENTRAR";
+}
+
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 const modal=document.getElementById("codeModal");
@@ -403,8 +455,8 @@ function somFecharLoja(){tom(650,0.10,0.20,"sine",400)}
 
 // SALVAMENTO
 
-function salvar(){
-const dados={
+function dadosDoJogo(){
+return{
 moedas,
 picaretasCompradas,
 mineriosComprados,
@@ -413,25 +465,56 @@ minerioAtual,
 volumeGeral,
 adminDesbloqueado,
 codigosUsados,
-
 multiplicadorCompras,
 precoMultiplicador,
-
 autoClickerComprado,
 autoClickerProComprado,
 autoClickerAtivo,
 autoClickerProAtivo
 };
-
-try{
-localStorage.setItem("mining_game_save",JSON.stringify(dados));
-}catch(e){}
 }
 
-function carregar(){
+function agendarSalvamentoNuvem(dados){
+if(!usuarioAtual||carregandoDados)return;
+if(timerSalvamentoNuvem)clearTimeout(timerSalvamentoNuvem);
+const id=usuarioAtual.id;
+const copia=JSON.parse(JSON.stringify(dados));
+timerSalvamentoNuvem=setTimeout(async()=>{
+if(!usuarioAtual||usuarioAtual.id!==id)return;
+const {error}=await supabaseClient
+.from("jogadores")
+.update({dados:copia})
+.eq("id",id);
+if(error)console.error("Erro ao salvar na nuvem:",error.message);
+},1200);
+}
+
+function salvar(){
+const dados=dadosDoJogo();
+if(!usuarioAtual||carregandoDados)return;
 try{
-const dados=JSON.parse(localStorage.getItem("mining_game_save"));
-if(!dados)return;
+localStorage.setItem("mining_game_save_"+usuarioAtual.id,JSON.stringify(dados));
+}catch(e){}
+agendarSalvamentoNuvem(dados);
+}
+
+function aplicarDados(dados){
+moedas=0;
+picaretasCompradas=[0];
+mineriosComprados=[0];
+picaretaAtual=0;
+minerioAtual=0;
+volumeGeral=1;
+adminDesbloqueado=false;
+codigosUsados=[];
+multiplicadorCompras=0;
+precoMultiplicador=100;
+autoClickerComprado=false;
+autoClickerProComprado=false;
+autoClickerAtivo=false;
+autoClickerProAtivo=false;
+
+if(!dados||typeof dados!=="object")return;
 
 moedas=Math.max(0,Number(dados.moedas)||0);
 
@@ -462,14 +545,226 @@ autoClickerProComprado=!!dados.autoClickerProComprado;
 autoClickerAtivo=!!dados.autoClickerAtivo&&autoClickerComprado;
 autoClickerProAtivo=!!dados.autoClickerProAtivo&&autoClickerProComprado;
 
-if(autoClickerAtivo&&autoClickerProAtivo){
-autoClickerAtivo=false;
+if(autoClickerAtivo&&autoClickerProAtivo)autoClickerAtivo=false;
 }
 
+async function entrarNoJogo(user,nome){
+usuarioAtual=user;
+const chaveLocal="mining_game_save_"+user.id;
+let dadosConta=null;
+
+const {data:registro,error}=await supabaseClient
+.from("jogadores")
+.select("nome,dados")
+.eq("id",user.id)
+.maybeSingle();
+
+if(error){
+usuarioAtual=null;
+mensagemDeLogin("Erro ao carregar conta: "+error.message);
+return false;
+}
+
+if(registro){
+dadosConta=registro.dados||{};
+}else{
+try{
+dadosConta=JSON.parse(localStorage.getItem(chaveLocal)||"{}");
+}catch(e){dadosConta={};}
+const {error:erroCriacao}=await supabaseClient
+.from("jogadores")
+.upsert({id:user.id,nome:nome||user.user_metadata?.nome||"Jogador",dados:dadosConta},{onConflict:"id"});
+if(erroCriacao){
+usuarioAtual=null;
+mensagemDeLogin("Não foi possível criar seu perfil: "+erroCriacao.message);
+return false;
+}
+}
+
+carregandoDados=true;
+aplicarDados(dadosConta);
+try{
+localStorage.setItem(chaveLocal,JSON.stringify(dadosConta));
 }catch(e){}
+carregandoDados=false;
+loginModal.style.display="none";
+mensagemLogin.textContent="";
+senhaLogin.value="";
+return true;
 }
 
-carregar();
+async function fazerLogin(){
+const nome=nomeLogin.value.trim();
+const senha=senhaLogin.value;
+if(!nomeValido(nome)){
+mensagemDeLogin("Use de 3 a 20 letras, números ou _ no nome.");
+return;
+}
+if(!senha){
+mensagemDeLogin("Digite sua senha.");
+return;
+}
+bloquearLogin(true);
+mensagemDeLogin("Entrando...",false);
+const {data,error}=await supabaseClient.auth.signInWithPassword({
+email:usuarioEmail(nome),
+password:senha
+});
+if(error){
+mensagemDeLogin("Nome ou senha incorretos.");
+bloquearLogin(false);
+return;
+}
+const ok=await entrarNoJogo(data.user,nome);
+bloquearLogin(false);
+if(!ok)return;
+}
+
+async function criarConta(){
+const nome=nomeLogin.value.trim();
+const senha=senhaLogin.value;
+if(!nomeValido(nome)){
+mensagemDeLogin("Use de 3 a 20 letras, números ou _ no nome.");
+return;
+}
+if(senha.length<6){
+mensagemDeLogin("A senha precisa ter pelo menos 6 caracteres.");
+return;
+}
+
+bloquearLogin(true);
+mensagemDeLogin("Criando sua conta...",false);
+
+let dadosIniciais={};
+let legado=null;
+try{
+legado=localStorage.getItem("mining_game_save");
+if(legado)dadosIniciais=JSON.parse(legado);
+}catch(e){dadosIniciais={};}
+
+const {data,error}=await supabaseClient.auth.signUp({
+email:usuarioEmail(nome),
+password:senha,
+options:{data:{nome}}
+});
+
+if(error){
+mensagemDeLogin(error.message.includes("already registered")?"Esse nome já está em uso.":"Não foi possível criar a conta: "+error.message);
+bloquearLogin(false);
+return;
+}
+
+if(data.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
+mensagemDeLogin("Esse nome já está em uso.");
+bloquearLogin(false);
+return;
+}
+
+let user=data.user;
+if(!data.session){
+const {data:loginData,error:loginError}=await supabaseClient.auth.signInWithPassword({
+email:usuarioEmail(nome),password:senha
+});
+if(loginError||!loginData.user){
+mensagemDeLogin("Conta criada. Agora toque em ENTRAR para acessar.");
+bloquearLogin(false);
+return;
+}
+user=loginData.user;
+}else{
+user=data.session.user;
+}
+
+const {error:erroPerfil}=await supabaseClient
+.from("jogadores")
+.upsert({id:user.id,nome,dados:dadosIniciais},{onConflict:"id"});
+
+if(erroPerfil){
+mensagemDeLogin("Conta criada, mas houve erro ao salvar o perfil: "+erroPerfil.message);
+bloquearLogin(false);
+return;
+}
+
+if(legado){
+try{localStorage.removeItem("mining_game_save");}catch(e){}
+}
+
+const entrou=await entrarNoJogo(user,nome);
+bloquearLogin(false);
+if(entrou)mensagemDeLogin("",false);
+}
+
+botaoEntrar.addEventListener("click",fazerLogin);
+botaoCriar.addEventListener("click",criarConta);
+senhaLogin.addEventListener("keydown",e=>{
+if(e.key==="Enter")fazerLogin();
+});
+
+async function sairDaConta(){
+if(!usuarioAtual)return;
+
+const usuarioId=usuarioAtual.id;
+const dados=dadosDoJogo();
+
+if(timerSalvamentoNuvem){
+clearTimeout(timerSalvamentoNuvem);
+timerSalvamentoNuvem=null;
+}
+
+try{
+localStorage.setItem("mining_game_save_"+usuarioId,JSON.stringify(dados));
+}catch(e){}
+
+const {error:erroSalvar}=await supabaseClient
+.from("jogadores")
+.update({dados})
+.eq("id",usuarioId);
+
+if(erroSalvar){
+alert("Não foi possível salvar seu progresso. Tente sair novamente.");
+return;
+}
+
+const {error}=await supabaseClient.auth.signOut();
+if(error){
+alert("Não foi possível sair da conta: "+error.message);
+return;
+}
+
+usuarioAtual=null;
+configuracoesAbertas=false;
+lojaAberta=false;
+melhoriasAbertas=false;
+adminAberto=false;
+carregandoDados=true;
+aplicarDados({});
+carregandoDados=false;
+loginModal.style.display="flex";
+nomeLogin.value="";
+senhaLogin.value="";
+mensagemDeLogin("Você saiu da conta.",false);
+}
+
+async function iniciarSistemaLogin(){
+const {data,error}=await supabaseClient.auth.getSession();
+if(error){
+mensagemDeLogin("Erro de conexão. Atualize a página e tente novamente.");
+return;
+}
+if(data.session){
+const nome=data.session.user.user_metadata?.nome||data.session.user.email?.split("@")[0]||"Jogador";
+await entrarNoJogo(data.session.user,nome);
+}
+}
+
+document.addEventListener("visibilitychange",()=>{
+if(document.visibilityState==="hidden"&&usuarioAtual){
+if(timerSalvamentoNuvem)clearTimeout(timerSalvamentoNuvem);
+const id=usuarioAtual.id;
+const dados=dadosDoJogo();
+supabaseClient.from("jogadores").update({dados}).eq("id",id);
+}
+});
 
 // DINHEIRO
 
@@ -1179,10 +1474,13 @@ autoClickerProAtivo?"ATIVADO":"DESATIVADO",
 );
 }
 
-// CÓDIGOS
+// CÓDIGOS E SAIR DA CONTA
 
-retangulo(145,238,210,32,"#7134bd",8);
-texto("🎁 RESGATAR CÓDIGO",250,260,14,"#fff","center");
+retangulo(45,238,190,32,"#7134bd",8);
+texto("🎁 CÓDIGOS",140,260,14,"#fff","center");
+
+retangulo(255,238,200,32,"#a83232",8);
+texto("SAIR DA CONTA",355,260,14,"#fff","center");
 }
 
 // ENGRENAGEM
@@ -1398,10 +1696,17 @@ alternarAutoClickerPro();
 return;
 }
 
-// RESGATE
+// CÓDIGOS
 
-if(p.x>=145&&p.x<=355&&p.y>=238&&p.y<=270){
+if(p.x>=45&&p.x<=235&&p.y>=238&&p.y<=270){
 abrirResgate();
+return;
+}
+
+// SAIR DA CONTA
+
+if(p.x>=255&&p.x<=455&&p.y>=238&&p.y<=270){
+sairDaConta();
 return;
 }
 
@@ -1673,8 +1978,9 @@ somClique();
 
 // INICIAR JOGO
 
+iniciarSistemaLogin();
 desenhar();
 
 </script>
 </body>
-</html>
+  </html>
