@@ -55,6 +55,13 @@ font-size:15px;
 </div>
 
 <script>
+const SUPABASE_URL = "https://ufpxgmbymftqcsvkctwa.supabase.co";
+const SUPABASE_KEY = "SUA_CHAVE_PUBLISHABLE";
+
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 const modal=document.getElementById("codeModal");
