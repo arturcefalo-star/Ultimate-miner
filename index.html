@@ -61,7 +61,10 @@ font-size:15px;font-weight:bold;color:white;background:#286bd2
 #loginBox button:disabled{opacity:.55}
 #mensagemLogin{min-height:18px;color:#ffb0b0!important}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 </head>
 <body>
 
@@ -90,9 +93,18 @@ font-size:15px;font-weight:bold;color:white;background:#286bd2
 </div>
 
 <script>
-const SUPABASE_URL="https://ufpxgmbymftqcsvkctwa.supabase.co";
-const SUPABASE_KEY="sb_publishable_7sb4Nv3_ksNdiOEEoJfvJw_9mK5sxMv";
-const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const firebaseConfig={
+apiKey:"AIzaSyCxpkYQcmdoOPeiSUb6CeP8F5iNBcLFrX0",
+authDomain:"ultimate-miner-6dcb2.firebaseapp.com",
+projectId:"ultimate-miner-6dcb2",
+storageBucket:"ultimate-miner-6dcb2.firebasestorage.app",
+messagingSenderId:"204675648250",
+appId:"1:204675648250:web:da41d34510c910425d1743"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+let functions=firebase.functions();
 
 let usuarioAtual=null;
 let timerSalvamentoNuvem=null;
@@ -124,336 +136,16 @@ botaoCriar.disabled=bloquear;
 botaoEntrar.textContent=bloquear?"AGUARDE...":"ENTRAR";
 }
 
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
-const modal=document.getElementById("codeModal");
-const codeInput=document.getElementById("codeInput");
-
-if(!ctx)throw new Error("Canvas não disponível");
-
-if(!ctx.roundRect){
-ctx.roundRect=function(x,y,w,h,r=0){
-const a=Math.max(0,Math.min(r,w/2,h/2));
-this.moveTo(x+a,y);
-this.lineTo(x+w-a,y);
-this.quadraticCurveTo(x+w,y,x+w,y+a);
-this.lineTo(x+w,y+h-a);
-this.quadraticCurveTo(x+w,y+h,x+w-a,y+h);
-this.lineTo(x+a,y+h);
-this.quadraticCurveTo(x,y+h,x,y+h-a);
-this.lineTo(x,y+a);
-this.quadraticCurveTo(x,y,x+a,y);
-this.closePath();
-};
+function comTempoLimite(promessa,ms,etapa){
+let temporizador;
+return Promise.race([
+Promise.resolve(promessa),
+new Promise((_,rejeitar)=>{temporizador=setTimeout(()=>{const erro=new Error("Tempo esgotado ao "+etapa+". Verifique a conexão e as configurações do Firebase.");erro.code="app/timeout";rejeitar(erro);},ms);})
+]).finally(()=>clearTimeout(temporizador));
 }
 
-const picaretas=[
-["Wood Pickaxe",0,1,[130,75,30]],
-["Stone Pickaxe",180,3,[140,140,140]],
-["Copper Pickaxe",650,6,[190,110,60]],
-["Gold Pickaxe",1800,10,[255,215,55]],
-["Iron Pickaxe",4200,15,[190,190,210]],
-["Diamond Pickaxe",9000,22,[0,220,255]],
-["Obsidian Pickaxe",18000,31,[55,35,80]],
-["Ruby Pickaxe",35000,42,[220,20,60]],
-["Emerald Pickaxe",65000,56,[0,200,90]],
-["Amethyst Pickaxe",110000,73,[150,70,220]],
-["Sapphire Pickaxe",180000,94,[30,100,255]],
-["Titanium Pickaxe",290000,120,[160,180,190]],
-["Cobalt Pickaxe",460000,151,[20,70,180]],
-["Uranium Pickaxe",720000,189,[120,255,20]],
-["Plasma Pickaxe",1100000,235,[0,255,220]],
-["Void Pickaxe",1650000,290,[65,0,110]],
-["Meteor Pickaxe",2400000,355,[110,75,65]],
-["Magma Pickaxe",3400000,430,[255,75,0]],
-["Crystal Pickaxe",4800000,520,[130,220,255]],
-["Ancient Pickaxe",6700000,630,[180,150,90]],
-["Dragon Pickaxe",9200000,760,[180,20,20]],
-["Celestial Pickaxe",12500000,910,[255,240,160]],
-["Quantum Pickaxe",17000000,1080,[0,255,180]],
-["Galactic Pickaxe",23000000,1280,[100,50,220]],
-["Eternity Pickaxe",31000000,1510,[255,100,200]],
-["Infinity Pickaxe",42000000,1780,[255,255,255]],
-["Starsteel Pickaxe",58000000,2100,[120,190,255]],
-["Solar Pickaxe",80000000,2500,[255,150,30]],
-["Lunar Pickaxe",110000000,3000,[190,200,255]],
-["Godslayer Pickaxe",150000000,3600,[255,50,80]],
-["Abyssal Pickaxe",205000000,4300,[75,0,130]],
-["Phoenix Pickaxe",280000000,5200,[255,90,20]],
-["Titan Pickaxe",380000000,6300,[100,220,180]],
-["Divine Pickaxe",520000000,7600,[255,245,170]],
-["Omniverse Pickaxe",710000000,9200,[180,100,255]],
-["Genesis Pickaxe",1000000000,11200,[255,255,255]]
-];
 
-const minerios=[
-["Stone",0,1,[110,110,110]],
-["Coal",100,1.5,[30,30,30]],
-["Copper",400,2,[190,110,60]],
-["Gold",1200,2.5,[255,215,55]],
-["Iron",3000,3,[190,190,210]],
-["Diamond",7000,3.5,[0,220,255]],
-["Obsidian",15000,4,[55,35,80]],
-["Ruby",30000,4.5,[220,20,60]],
-["Emerald",55000,5,[0,200,90]],
-["Amethyst",95000,5.5,[150,70,220]],
-["Sapphire",160000,6,[30,100,255]],
-["Titanium",260000,6.5,[160,180,190]],
-["Cobalt",420000,7,[20,70,180]],
-["Uranium",680000,7.5,[120,255,20]],
-["Plasma",1050000,8,[0,255,220]],
-["Void",1600000,8.5,[65,0,110]],
-["Meteorite",2200000,9,[110,75,65]],
-["Magma",3100000,9.5,[255,75,0]],
-["Crystal",4400000,10,[130,220,255]],
-["Ancient Ore",6200000,10.5,[180,150,90]],
-["Dragonite",8700000,11,[180,20,20]],
-["Celestite",12000000,11.5,[255,240,160]],
-["Quantum Ore",16500000,12,[0,255,180]],
-["Galactium",22500000,12.5,[100,50,220]],
-["Eternium",30000000,13,[255,100,200]],
-["Infinity Ore",40000000,13.5,[255,255,255]],
-["Starsteel Ore",55000000,14,[120,190,255]],
-["Solar Ore",75000000,14.5,[255,150,30]],
-["Lunar Ore",105000000,15,[190,200,255]],
-["Godslayer Ore",145000000,15.5,[255,50,80]],
-["Abyssal Ore",195000000,16,[75,0,130]],
-["Phoenix Ore",270000000,16.5,[255,90,20]],
-["Titan Ore",370000000,17,[100,220,180]],
-["Divine Ore",500000000,17.5,[255,245,170]],
-["Omniverse Ore",690000000,18,[180,100,255]],
-["Genesis Ore",950000000,18.5,[255,255,255]]
-];
-
-let moedas=0;
-let picaretasCompradas=[0],mineriosComprados=[0];
-let picaretaAtual=0,minerioAtual=0;
-
-let lojaAberta=false;
-let adminAberto=false;
-let configuracoesAbertas=false;
-let melhoriasAbertas=false;
-
-let adminDesbloqueado=false;
-let categoria="picaretas",scroll=0;
-
-let diagonal=false,tempoGolpe=0;
-let recompensaTexto="",mostrarRecompensa=false,tempoRecompensa=0;
-
-let arrastando=false,inicioY=0,scrollInicial=0,moveuLista=false;
-let volumeArrastando=false;
-
-let audio=null,audioAtivo=false,masterGain=null;
-let volumeGeral=1;
-
-let codigosUsados=[];
-let codigoModalAberto=false;
-
-// AVISOS
-
-let avisoTexto="";
-let avisoTempo=0;
-
-function mostrarAviso(mensagem){
-avisoTexto=mensagem;
-avisoTempo=Date.now();
-}
-
-window.alert=function(mensagem){
-mostrarAviso(String(mensagem));
-};
-
-// SISTEMA DE MELHORIAS
-
-let multiplicadorCompras=0;
-let precoMultiplicador=100;
-
-let autoClickerComprado=false;
-let autoClickerProComprado=false;
-
-let autoClickerAtivo=false;
-let autoClickerProAtivo=false;
-
-let ultimoAutoClick=Date.now();
-
-function multiplicadorDinheiro(){
-return 1+(multiplicadorCompras*0.5);
-}
-
-function comprarMultiplicador(){
-if(moedas<precoMultiplicador){
-mostrarAviso("SALDO INSUFICIENTE");
-return;
-}
-
-moedas-=precoMultiplicador;
-multiplicadorCompras++;
-precoMultiplicador*=3;
-
-somRaro();
-salvar();
-}
-
-function comprarAutoClicker(){
-if(autoClickerComprado)return;
-
-if(moedas<100000){
-mostrarAviso("SALDO INSUFICIENTE");
-return;
-}
-
-moedas-=100000;
-autoClickerComprado=true;
-autoClickerAtivo=false;
-
-somRaro();
-salvar();
-mostrarAviso("AUTO CLICKER DESBLOQUEADO!");
-}
-
-function comprarAutoClickerPro(){
-if(autoClickerProComprado)return;
-
-if(moedas<10000000){
-mostrarAviso("SALDO INSUFICIENTE");
-return;
-}
-
-moedas-=10000000;
-autoClickerProComprado=true;
-autoClickerProAtivo=false;
-
-somRaro();
-salvar();
-mostrarAviso("AUTO CLICKER PRO DESBLOQUEADO!");
-}
-
-function alternarAutoClicker(){
-if(!autoClickerComprado)return;
-
-autoClickerAtivo=!autoClickerAtivo;
-
-if(autoClickerAtivo){
-autoClickerProAtivo=false;
-ultimoAutoClick=Date.now();
-somEquipar();
-}else{
-somClique();
-}
-
-salvar();
-}
-
-function alternarAutoClickerPro(){
-if(!autoClickerProComprado)return;
-
-autoClickerProAtivo=!autoClickerProAtivo;
-
-if(autoClickerProAtivo){
-autoClickerAtivo=false;
-ultimoAutoClick=Date.now();
-somRaro();
-}else{
-somClique();
-}
-
-salvar();
-}
-
-// ÁUDIO
-
-function iniciarAudio(){
-if(audioAtivo){
-if(audio&&audio.state==="suspended")audio.resume();
-return;
-}
-try{
-const A=window.AudioContext||window.webkitAudioContext;
-if(!A)return;
-audio=new A();
-masterGain=audio.createGain();
-masterGain.gain.value=volumeGeral*1.8;
-masterGain.connect(audio.destination);
-audioAtivo=true;
-if(audio.state==="suspended")audio.resume();
-}catch(e){}
-}
-
-function tom(freq,duracao,volume,tipo="sine",freqFinal=null,atraso=0){
-if(!audioAtivo||!audio)return;
-try{
-const agora=audio.currentTime+atraso;
-const osc=audio.createOscillator();
-const ganho=audio.createGain();
-osc.type=tipo;
-osc.frequency.setValueAtTime(freq,agora);
-if(freqFinal!==null)osc.frequency.exponentialRampToValueAtTime(Math.max(1,freqFinal),agora+duracao);
-ganho.gain.setValueAtTime(0.0001,agora);
-ganho.gain.exponentialRampToValueAtTime(volume,agora+0.01);
-ganho.gain.exponentialRampToValueAtTime(0.0001,agora+duracao);
-osc.connect(ganho);
-ganho.connect(masterGain);
-osc.start(agora);
-osc.stop(agora+duracao+0.02);
-}catch(e){}
-}
-
-function ruido(duracao,volume,frequencia=1200,atraso=0){
-if(!audioAtivo||!audio)return;
-try{
-const tamanho=Math.ceil(audio.sampleRate*duracao);
-const buffer=audio.createBuffer(1,tamanho,audio.sampleRate);
-const dados=buffer.getChannelData(0);
-for(let i=0;i<tamanho;i++)dados[i]=Math.random()*2-1;
-const fonte=audio.createBufferSource();
-const filtro=audio.createBiquadFilter();
-const ganho=audio.createGain();
-const agora=audio.currentTime+atraso;
-fonte.buffer=buffer;
-filtro.type="lowpass";
-filtro.frequency.value=frequencia;
-ganho.gain.setValueAtTime(volume,agora);
-ganho.gain.exponentialRampToValueAtTime(0.0001,agora+duracao);
-fonte.connect(filtro);
-filtro.connect(ganho);
-ganho.connect(masterGain);
-fonte.start(agora);
-fonte.stop(agora+duracao);
-}catch(e){}
-}
-
-function somMinerar(){
-ruido(0.075,0.9,650);
-ruido(0.055,0.55,1100,0.006);
-}
-
-function somCompra(){
-tom(520,0.13,0.25,"sine",700);
-tom(780,0.18,0.25,"sine",1050,0.10);
-tom(1040,0.22,0.20,"sine",1300,0.19);
-}
-
-function somEquipar(){
-tom(650,0.10,0.22,"sine",850);
-tom(950,0.15,0.22,"sine",1150,0.08);
-}
-
-function somRaro(){
-tom(660,0.35,0.25,"sine",1000);
-tom(990,0.40,0.25,"sine",1500,0.10);
-tom(1320,0.55,0.22,"sine",1800,0.22);
-}
-
-function somClique(){tom(480,0.045,0.16,"sine",350)}
-
-function somAbrirLoja(){
-tom(380,0.10,0.22,"sine",550);
-tom(620,0.13,0.20,"sine",850,0.07);
-}
-
-function somFecharLoja(){tom(650,0.10,0.20,"sine",400)}
-
-// SALVAMENTO
+// SALVAMENTO E CONTAS FIREBASE
 
 function dadosDoJogo(){
 return{
@@ -477,24 +169,24 @@ autoClickerProAtivo
 function agendarSalvamentoNuvem(dados){
 if(!usuarioAtual||carregandoDados)return;
 if(timerSalvamentoNuvem)clearTimeout(timerSalvamentoNuvem);
-const id=usuarioAtual.id;
+const id=usuarioAtual.uid;
 const copia=JSON.parse(JSON.stringify(dados));
 timerSalvamentoNuvem=setTimeout(async()=>{
-if(!usuarioAtual||usuarioAtual.id!==id)return;
-const {error}=await supabaseClient
-.from("jogadores")
-.update({dados:copia})
-.eq("id",id);
-if(error)console.error("Erro ao salvar na nuvem:",error.message);
-},1200);
+if(!usuarioAtual||usuarioAtual.uid!==id)return;
+try{
+await db.collection("jogadores").doc(id).set({
+nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
+dados:copia,
+atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
+},{merge:true});
+}catch(error){console.error("Erro ao salvar no Firebase:",error);}
+},1000);
 }
 
 function salvar(){
 const dados=dadosDoJogo();
 if(!usuarioAtual||carregandoDados)return;
-try{
-localStorage.setItem("mining_game_save_"+usuarioAtual.id,JSON.stringify(dados));
-}catch(e){}
+try{localStorage.setItem("mining_game_save_"+usuarioAtual.uid,JSON.stringify(dados));}catch(e){}
 agendarSalvamentoNuvem(dados);
 }
 
@@ -515,223 +207,154 @@ autoClickerAtivo=false;
 autoClickerProAtivo=false;
 
 if(!dados||typeof dados!=="object")return;
-
 moedas=Math.max(0,Number(dados.moedas)||0);
-
 picaretasCompradas=Array.isArray(dados.picaretasCompradas)?dados.picaretasCompradas.filter(i=>Number.isInteger(i)&&i>=0&&i<picaretas.length):[0];
 mineriosComprados=Array.isArray(dados.mineriosComprados)?dados.mineriosComprados.filter(i=>Number.isInteger(i)&&i>=0&&i<minerios.length):[0];
-
 if(!picaretasCompradas.includes(0))picaretasCompradas.push(0);
 if(!mineriosComprados.includes(0))mineriosComprados.push(0);
-
 if(picaretasCompradas.includes(dados.picaretaAtual))picaretaAtual=dados.picaretaAtual;
 if(mineriosComprados.includes(dados.minerioAtual))minerioAtual=dados.minerioAtual;
-
 if(Number.isFinite(dados.volumeGeral))volumeGeral=Math.max(0,Math.min(1,dados.volumeGeral));
-
-adminDesbloqueado=!!dados.adminDesbloqueado;
+adminDesbloqueado=false;
 codigosUsados=Array.isArray(dados.codigosUsados)?dados.codigosUsados:[];
-
 multiplicadorCompras=Math.max(0,Math.floor(Number(dados.multiplicadorCompras)||0));
-
 precoMultiplicador=Number(dados.precoMultiplicador);
-if(!Number.isFinite(precoMultiplicador)||precoMultiplicador<100){
-precoMultiplicador=100*Math.pow(3,multiplicadorCompras);
-}
-
+if(!Number.isFinite(precoMultiplicador)||precoMultiplicador<100)precoMultiplicador=100*Math.pow(3,multiplicadorCompras);
 autoClickerComprado=!!dados.autoClickerComprado;
 autoClickerProComprado=!!dados.autoClickerProComprado;
-
 autoClickerAtivo=!!dados.autoClickerAtivo&&autoClickerComprado;
 autoClickerProAtivo=!!dados.autoClickerProAtivo&&autoClickerProComprado;
-
 if(autoClickerAtivo&&autoClickerProAtivo)autoClickerAtivo=false;
 }
 
-async function entrarNoJogo(user,nome){
+let entradaEmAndamento=null;
+let uidEntradaEmAndamento=null;
+let operacaoManualDeConta=false;
+
+function entrarNoJogo(user,nome){
+mensagemDeLogin("Conta reconhecida. Carregando seu progresso...",false);
+if(entradaEmAndamento&&uidEntradaEmAndamento===user.uid)return entradaEmAndamento;
+uidEntradaEmAndamento=user.uid;
+entradaEmAndamento=(async()=>{
 usuarioAtual=user;
-const chaveLocal="mining_game_save_"+user.id;
-let dadosConta=null;
-
-const {data:registro,error}=await supabaseClient
-.from("jogadores")
-.select("nome,dados")
-.eq("id",user.id)
-.maybeSingle();
-
-if(error){
-usuarioAtual=null;
-mensagemDeLogin("Erro ao carregar conta: "+error.message);
-return false;
-}
-
-if(registro){
-dadosConta=registro.dados||{};
-}else{
 try{
-dadosConta=JSON.parse(localStorage.getItem(chaveLocal)||"{}");
-}catch(e){dadosConta={};}
-const {error:erroCriacao}=await supabaseClient
-.from("jogadores")
-.upsert({id:user.id,nome:nome||user.user_metadata?.nome||"Jogador",dados:dadosConta},{onConflict:"id"});
-if(erroCriacao){
-usuarioAtual=null;
-mensagemDeLogin("Não foi possível criar seu perfil: "+erroCriacao.message);
-return false;
+mensagemDeLogin("Conectado! Consultando seus dados salvos...",false);
+const ref=db.collection("jogadores").doc(user.uid);
+const snap=await comTempoLimite(ref.get(),15000,"consultar os dados da conta");
+let dadosConta={};
+if(snap.exists){
+dadosConta=snap.data().dados||{};
+}else{
+try{dadosConta=JSON.parse(localStorage.getItem("mining_game_save_"+user.uid)||"{}");}catch(e){dadosConta={};}
+await comTempoLimite(ref.set({
+nome:nome||user.displayName||user.email.split("@")[0],
+dados:dadosConta,
+criadoEm:firebase.firestore.FieldValue.serverTimestamp()
+},{merge:true}),15000,"criar o registro do jogador");
 }
-}
-
 carregandoDados=true;
 aplicarDados(dadosConta);
-try{
-localStorage.setItem(chaveLocal,JSON.stringify(dadosConta));
-}catch(e){}
+try{localStorage.setItem("mining_game_save_"+user.uid,JSON.stringify(dadosConta));}catch(e){}
 carregandoDados=false;
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
 return true;
+}catch(error){
+usuarioAtual=null;
+carregandoDados=false;
+console.error("Erro ao carregar conta:",error);
+let detalhe=error.code==="permission-denied"
+?"O Firebase bloqueou o acesso aos dados. Verifique as regras do Firestore da coleção jogadores."
+:"Erro ao carregar seu progresso: "+(error.message||"falha de conexão");
+mensagemDeLogin(detalhe);
+return false;
+}
+})();
+return entradaEmAndamento.finally(()=>{
+if(uidEntradaEmAndamento===user.uid){
+entradaEmAndamento=null;
+uidEntradaEmAndamento=null;
+}
+});
 }
 
 async function fazerLogin(){
 const nome=nomeLogin.value.trim();
 const senha=senhaLogin.value;
-if(!nomeValido(nome)){
-mensagemDeLogin("Use de 3 a 20 letras, números ou _ no nome.");
-return;
-}
-if(!senha){
-mensagemDeLogin("Digite sua senha.");
-return;
-}
+if(!nomeValido(nome)){mensagemDeLogin("Use de 3 a 20 letras, números ou _.");return;}
+if(!senha){mensagemDeLogin("Digite sua senha.");return;}
 bloquearLogin(true);
-mensagemDeLogin("Entrando...",false);
-const {data,error}=await supabaseClient.auth.signInWithPassword({
-email:usuarioEmail(nome),
-password:senha
-});
-if(error){
-mensagemDeLogin("Nome ou senha incorretos.");
+operacaoManualDeConta=true;
+mensagemDeLogin("ETAPA 1/2: conectando à conta...",false);
+let avisoLogin=setTimeout(()=>{mensagemDeLogin("Ainda aguardando o Firebase. Se continuar assim, atualize a página e confira se publicou este arquivo novo.");},40000);
+try{
+const cred=await comTempoLimite(auth.signInWithEmailAndPassword(usuarioEmail(nome),senha),20000,"entrar na conta");
+mensagemDeLogin("ETAPA 2/2: conta reconhecida; carregando progresso...",false);
+const ok=await entrarNoJogo(cred.user,nome);
+if(!ok&&auth.currentUser)await auth.signOut();
+}catch(error){
+console.error("Erro no login:",error);
+mensagemDeLogin(error.code==="auth/user-not-found"||error.code==="auth/wrong-password"||error.code==="auth/invalid-credential"?"Nome ou senha incorretos.":error.code==="app/timeout"?"O Firebase demorou demais para responder. Verifique a internet e tente novamente.":(error.message||"Não foi possível entrar."));
+}finally{
+clearTimeout(avisoLogin);
+operacaoManualDeConta=false;
 bloquearLogin(false);
-return;
 }
-const ok=await entrarNoJogo(data.user,nome);
-bloquearLogin(false);
-if(!ok)return;
 }
 
 async function criarConta(){
 const nome=nomeLogin.value.trim();
 const senha=senhaLogin.value;
-if(!nomeValido(nome)){
-mensagemDeLogin("Use de 3 a 20 letras, números ou _ no nome.");
-return;
-}
-if(senha.length<6){
-mensagemDeLogin("A senha precisa ter pelo menos 6 caracteres.");
-return;
-}
-
+if(!nomeValido(nome)){mensagemDeLogin("Use de 3 a 20 letras, números ou _.");return;}
+if(senha.length<6){mensagemDeLogin("A senha precisa ter pelo menos 6 caracteres.");return;}
 bloquearLogin(true);
+operacaoManualDeConta=true;
 mensagemDeLogin("Criando sua conta...",false);
-
 let dadosIniciais={};
 let legado=null;
+try{legado=localStorage.getItem("mining_game_save");if(legado)dadosIniciais=JSON.parse(legado);}catch(e){dadosIniciais={};}
 try{
-legado=localStorage.getItem("mining_game_save");
-if(legado)dadosIniciais=JSON.parse(legado);
-}catch(e){dadosIniciais={};}
-
-const {data,error}=await supabaseClient.auth.signUp({
-email:usuarioEmail(nome),
-password:senha,
-options:{data:{nome}}
-});
-
-if(error){
-mensagemDeLogin(error.message.includes("already registered")?"Esse nome já está em uso.":"Não foi possível criar a conta: "+error.message);
-bloquearLogin(false);
-return;
-}
-
-if(data.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
-mensagemDeLogin("Esse nome já está em uso.");
-bloquearLogin(false);
-return;
-}
-
-let user=data.user;
-if(!data.session){
-const {data:loginData,error:loginError}=await supabaseClient.auth.signInWithPassword({
-email:usuarioEmail(nome),password:senha
-});
-if(loginError||!loginData.user){
-mensagemDeLogin("Conta criada. Agora toque em ENTRAR para acessar.");
-bloquearLogin(false);
-return;
-}
-user=loginData.user;
-}else{
-user=data.session.user;
-}
-
-const {error:erroPerfil}=await supabaseClient
-.from("jogadores")
-.upsert({id:user.id,nome,dados:dadosIniciais},{onConflict:"id"});
-
-if(erroPerfil){
-mensagemDeLogin("Conta criada, mas houve erro ao salvar o perfil: "+erroPerfil.message);
-bloquearLogin(false);
-return;
-}
-
-if(legado){
-try{localStorage.removeItem("mining_game_save");}catch(e){}
-}
-
-const entrou=await entrarNoJogo(user,nome);
-bloquearLogin(false);
+const cred=await comTempoLimite(auth.createUserWithEmailAndPassword(usuarioEmail(nome),senha),20000,"criar a conta no Firebase");
+await comTempoLimite(cred.user.updateProfile({displayName:nome}),15000,"salvar o nome da conta");
+await comTempoLimite(db.collection("jogadores").doc(cred.user.uid).set({
+nome,
+dados:dadosIniciais,
+criadoEm:firebase.firestore.FieldValue.serverTimestamp()
+}),15000,"salvar os dados iniciais no Firestore");
+if(legado){try{localStorage.removeItem("mining_game_save");}catch(e){}}
+const entrou=await entrarNoJogo(cred.user,nome);
 if(entrou)mensagemDeLogin("",false);
+else mensagemDeLogin("Sua conta foi criada, mas não foi possível carregar os dados. Entre novamente ou verifique as regras do Firestore.");
+}catch(error){
+console.error("Erro ao criar conta:",error);
+mensagemDeLogin(error.code==="auth/email-already-in-use"?"Esse nome já existe. Use ENTRAR com a senha dessa conta.":error.code==="app/timeout"?"O Firebase demorou demais para responder. A conta pode ter sido criada; tente ENTRAR com esse nome.":"Não foi possível criar a conta: "+(error.message||"erro desconhecido"));
+}finally{
+operacaoManualDeConta=false;
+bloquearLogin(false);
+}
 }
 
 botaoEntrar.addEventListener("click",fazerLogin);
 botaoCriar.addEventListener("click",criarConta);
-senhaLogin.addEventListener("keydown",e=>{
-if(e.key==="Enter")fazerLogin();
-});
+senhaLogin.addEventListener("keydown",e=>{if(e.key==="Enter")fazerLogin();});
 
 async function sairDaConta(){
 if(!usuarioAtual)return;
-
-const usuarioId=usuarioAtual.id;
+const usuarioId=usuarioAtual.uid;
 const dados=dadosDoJogo();
-
-if(timerSalvamentoNuvem){
-clearTimeout(timerSalvamentoNuvem);
-timerSalvamentoNuvem=null;
-}
-
+if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
 try{
-localStorage.setItem("mining_game_save_"+usuarioId,JSON.stringify(dados));
-}catch(e){}
-
-const {error:erroSalvar}=await supabaseClient
-.from("jogadores")
-.update({dados})
-.eq("id",usuarioId);
-
-if(erroSalvar){
-alert("Não foi possível salvar seu progresso. Tente sair novamente.");
-return;
-}
-
-const {error}=await supabaseClient.auth.signOut();
-if(error){
-alert("Não foi possível sair da conta: "+error.message);
-return;
-}
-
+await db.collection("jogadores").doc(usuarioId).set({
+nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
+dados,
+atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
+},{merge:true});
+}catch(error){alert("Não foi possível salvar seu progresso: "+error.message);return;}
+try{await auth.signOut();}catch(error){alert("Não foi possível sair da conta: "+error.message);return;}
 usuarioAtual=null;
+codigoAdminSessao="";
+adminDesbloqueado=false;
 configuracoesAbertas=false;
 lojaAberta=false;
 melhoriasAbertas=false;
@@ -746,25 +369,87 @@ mensagemDeLogin("Você saiu da conta.",false);
 }
 
 async function iniciarSistemaLogin(){
-const {data,error}=await supabaseClient.auth.getSession();
-if(error){
-mensagemDeLogin("Erro de conexão. Atualize a página e tente novamente.");
-return;
+try{
+const user=auth.currentUser;
+if(user){
+const nome=user.displayName||user.email.split("@")[0]||"Jogador";
+await entrarNoJogo(user,nome);
 }
-if(data.session){
-const nome=data.session.user.user_metadata?.nome||data.session.user.email?.split("@")[0]||"Jogador";
-await entrarNoJogo(data.session.user,nome);
+}catch(error){mensagemDeLogin("Erro de conexão com o Firebase. Atualize a página.");}
 }
+auth.onAuthStateChanged(async user=>{
+if(user&&!usuarioAtual&&!operacaoManualDeConta){
+const nome=user.displayName||user.email.split("@")[0]||"Jogador";
+await entrarNoJogo(user,nome);
 }
+});
 
 document.addEventListener("visibilitychange",()=>{
 if(document.visibilityState==="hidden"&&usuarioAtual){
 if(timerSalvamentoNuvem)clearTimeout(timerSalvamentoNuvem);
-const id=usuarioAtual.id;
+const id=usuarioAtual.uid;
 const dados=dadosDoJogo();
-supabaseClient.from("jogadores").update({dados}).eq("id",id);
+db.collection("jogadores").doc(id).set({
+nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
+dados,
+atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
+},{merge:true}).catch(error=>console.error("Erro ao salvar:",error));
 }
 });
+
+// GERENCIAMENTO DE OUTROS JOGADORES PELO PAINEL ADMIN
+async function gerenciarJogador(){
+if(!adminDesbloqueado){alert("Desbloqueie o painel usando o código secreto.");return;}
+const nome=prompt("Digite o nome exato do jogador:");
+if(!nome)return;
+const escolha=prompt(`GERENCIAR: ${nome}
+
+1 - Adicionar moedas
+2 - Remover moedas
+3 - Dar uma picareta específica
+4 - Remover uma picareta específica
+5 - Dar um minério específico
+6 - Remover um minério específico
+
+Digite o número da ação:`);
+const operacoes={
+"1":["addMoney","Quantidade de moedas para adicionar:"],
+"2":["removeMoney","Quantidade de moedas para remover:"],
+"3":["givePickaxe","Número da picareta:"],
+"4":["removePickaxe","Número da picareta:"],
+"5":["giveOre","Número do minério:"],
+"6":["removeOre","Número do minério:"]
+};
+if(!operacoes[escolha])return;
+const [acao,pergunta]=operacoes[escolha];
+let valor;
+if(acao.includes("Pickaxe")){
+alert("PICARETAS:\n"+picaretas.map((x,i)=>i+" - "+x[0]).join("\n"));
+valor=prompt(pergunta);
+}else if(acao.includes("Ore")){
+alert("MINÉRIOS:\n"+minerios.map((x,i)=>i+" - "+x[0]).join("\n"));
+valor=prompt(pergunta);
+}else{
+valor=prompt(pergunta);
+}
+if(valor===null)return;
+valor=Number(String(valor).replace(",",".").trim());
+if(!Number.isFinite(valor)||valor<0||(acao.includes("Money")&&valor<=0)||(!Number.isInteger(valor)&&!acao.includes("Money"))){
+alert("Valor inválido.");return;
+}
+if(acao.includes("Pickaxe")&&valor>=picaretas.length){alert("Número de picareta inexistente.");return;}
+if(acao.includes("Ore")&&valor>=minerios.length){alert("Número de minério inexistente.");return;}
+try{
+const executar=functions.httpsCallable("adminGerenciarJogador");
+const resposta=await executar({adminCode:codigoAdminSessao,nomeJogador:nome.trim(),acao,valor});
+alert(resposta.data?.mensagem||"Jogador atualizado com sucesso!");
+if(usuarioAtual&&resposta.data?.uid===usuarioAtual.uid&&resposta.data?.dados){
+carregandoDados=true;aplicarDados(resposta.data.dados);carregandoDados=false;
+}
+}catch(error){
+alert("Não foi possível gerenciar o jogador. A função segura do Firebase ainda precisa ser publicada. Detalhe: "+(error.message||error));
+}
+}
 
 // DINHEIRO
 
@@ -883,7 +568,7 @@ codigoModalAberto=false;
 modal.style.display="none";
 }
 
-function resgatarCodigo(){
+async function resgatarCodigo(){
 const codigo=codeInput.value.trim().toUpperCase();
 
 if(!codigo){
@@ -891,13 +576,17 @@ alert("Digite um código!");
 return;
 }
 
-if(codigo==="XX6767XX"){
+if(codigo.length>=4){
+try{
+const validar=functions.httpsCallable("validarCodigoAdmin");
+await validar({adminCode:codigo});
+codigoAdminSessao=codigo;
 adminDesbloqueado=true;
-salvar();
 somRaro();
 fecharResgate();
 alert("Painel administrativo desbloqueado!");
 return;
+}catch(error){}
 }
 
 if(codigosUsados.includes(codigo)){
@@ -1410,7 +1099,7 @@ texto("Dinheiro atual: $ "+formatarDinheiro(moedas),250,91,16,"#ffdc00","center"
 botaoAdmin(55,105,185,48,"#267cbd","ADD MONEY","Escolher quantidade");
 botaoAdmin(260,105,185,48,"#8a45c5","ALL PICKAXES","Desbloquear picaretas");
 botaoAdmin(55,165,185,48,"#238c57","ALL ORES","Desbloquear minérios");
-botaoAdmin(260,165,185,48,"#bd7625","UNLOCK EVERYTHING","Picaretas + minérios");
+botaoAdmin(260,165,185,48,"#bd7625","GERENCIAR JOGADOR","Moedas, picaretas e minérios");
 botaoAdmin(45,220,125,42,"#bd3434","REMOVE MONEY","");
 botaoAdmin(188,220,125,42,"#bd7625","REMOVE PICKAXES","");
 botaoAdmin(331,220,125,42,"#238c57","REMOVE ORES","");
@@ -1740,7 +1429,7 @@ desbloquearMinerios();
 return;
 }
 if(p.x>=260&&p.x<=445){
-desbloquearTudo();
+gerenciarJogador();
 return;
 }
 }
