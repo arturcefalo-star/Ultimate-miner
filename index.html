@@ -60,6 +60,73 @@ font-size:15px;font-weight:bold;color:white;background:#286bd2
 #loginBox button.secondary{background:#454556}
 #loginBox button:disabled{opacity:.55}
 #mensagemLogin{min-height:18px;color:#ffb0b0!important}
+
+[hidden]{display:none!important}
+
+#aviso{
+position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
+max-width:min(440px,92vw);padding:10px 14px;border-radius:10px;
+border:1px solid transparent;font-size:13px;font-weight:bold;line-height:1.35;
+text-align:center;white-space:pre-line;overflow-wrap:anywhere;color:#fff;
+z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
+}
+#aviso.visivel{opacity:1}
+#aviso.erro{background:#4d1616;color:#ffb4b4;border-color:#a33}
+#aviso.ok{background:#12381f;color:#a4ffbb;border-color:#2c8a4a}
+#aviso.info{background:#1a2848;color:#bcd6ff;border-color:#4a6fb8}
+
+#adminModal{
+display:none;position:fixed;inset:0;background:#000c;
+align-items:center;justify-content:center;z-index:12;padding:12px
+}
+#adminBox{
+width:min(540px,100%);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);
+overflow-y:auto;padding:16px;border-radius:16px;color:#fff;font-size:14px;
+background:linear-gradient(145deg,#302044,#171722);
+border:2px solid #b17be8;box-shadow:0 0 30px #8a45c555
+}
+.adm-topo{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.adm-topo h2{margin:0;font-size:20px;color:#d8aaff}
+.adm-x{width:36px;height:36px;border:0;border-radius:8px;background:#b42828;color:#fff;font-size:18px;font-weight:bold;cursor:pointer}
+
+.adm-resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.adm-chip{background:#10101a;border:1px solid #4b3470;border-radius:8px;padding:6px 8px;min-width:0}
+.adm-chip span{display:block;font-size:11px;color:#a99bc4}
+.adm-chip strong{display:block;font-size:14px;color:#ffdc00;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.adm-abas{display:flex;gap:6px;margin-bottom:12px}
+.adm-abas button{flex:1;padding:10px;border:0;border-radius:8px;background:#3a3050;color:#ddd;font-weight:bold;font-size:14px;cursor:pointer}
+.adm-abas button.ativa{background:#8a45c5;color:#fff}
+
+.adm-aba h3{margin:14px 0 6px;font-size:14px;color:#d8aaff}
+.adm-aba h3:first-child{margin-top:0}
+.adm-dica{margin:0 0 8px;font-size:12px;color:#bbb;line-height:1.4}
+
+.adm-in{
+width:100%;padding:11px;margin-bottom:6px;border:1px solid #657acb;border-radius:9px;
+background:#10101c;color:#fff;font-size:16px;outline:none
+}
+.adm-in:focus{border-color:#b17be8}
+
+.adm-linha{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px}
+.adm-b{padding:11px 8px;border:0;border-radius:9px;color:#fff;background:#286bd2;font-weight:bold;font-size:13px;cursor:pointer}
+.adm-b:disabled{opacity:.55;cursor:default}
+.adm-b.verde{background:#238c57}
+.adm-b.laranja{background:#bd7625}
+.adm-b.roxo{background:#8a45c5}
+.adm-b.vermelho{background:#bd3434}
+.adm-b.aguardando{background:#e0a100;color:#1a1200}
+.adm-b.grande{width:100%;margin-top:4px;padding:13px;font-size:15px}
+
+.adm-log{max-height:130px;overflow-y:auto;background:#10101a;border-radius:8px;padding:6px 8px;font-size:12px;line-height:1.5}
+.adm-log div{overflow-wrap:anywhere}
+.adm-log .ok{color:#9dffb0}
+.adm-log .erro{color:#ffb0b0}
+.adm-log .hora{color:#8e82a8;margin-right:6px}
+.adm-log:empty::before{content:"Nenhuma ação nesta sessão.";color:#8e82a8}
+
+#adminBox button:focus-visible,#adminBox select:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@media (max-width:420px){.adm-resumo,.adm-linha{grid-template-columns:repeat(2,1fr)}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -92,6 +159,91 @@ font-size:15px;font-weight:bold;color:white;background:#286bd2
 </div>
 </div>
 
+<div id="aviso" role="status" aria-live="polite"></div>
+
+<div id="adminModal">
+<div id="adminBox" role="dialog" aria-modal="true" aria-label="Painel de administração">
+
+<div class="adm-topo">
+<h2>⚙ Painel de admin</h2>
+<button id="adminFechar" class="adm-x" type="button" aria-label="Fechar painel">✕</button>
+</div>
+
+<div id="adminResumo" class="adm-resumo"></div>
+
+<div class="adm-abas">
+<button type="button" class="ativa" data-aba="eu">Minha conta</button>
+<button type="button" data-aba="outro">Outro jogador</button>
+</div>
+
+<div id="abaEu" class="adm-aba">
+
+<h3>💰 Dinheiro</h3>
+<input id="admValor" class="adm-in" placeholder="Quantidade (ex.: 5000, 2,5M, 10K)" autocomplete="off" autocapitalize="characters" spellcheck="false">
+<div class="adm-linha">
+<button type="button" class="adm-b azul" data-acao="moedas-add">Adicionar</button>
+<button type="button" class="adm-b laranja" data-acao="moedas-remover">Remover</button>
+<button type="button" class="adm-b roxo" data-acao="moedas-definir">Definir</button>
+<button type="button" class="adm-b vermelho" data-acao="moedas-zerar" data-perigo>Zerar</button>
+</div>
+
+<h3>⛏ Picaretas</h3>
+<select id="admPicareta" class="adm-in" aria-label="Picareta"></select>
+<div class="adm-linha">
+<button type="button" class="adm-b azul" data-acao="picareta-dar">Liberar</button>
+<button type="button" class="adm-b laranja" data-acao="picareta-remover">Remover</button>
+<button type="button" class="adm-b verde" data-acao="picareta-todas">Liberar todas</button>
+<button type="button" class="adm-b vermelho" data-acao="picareta-resetar" data-perigo>Resetar</button>
+</div>
+
+<h3>💎 Minérios</h3>
+<select id="admMinerio" class="adm-in" aria-label="Minério"></select>
+<div class="adm-linha">
+<button type="button" class="adm-b azul" data-acao="minerio-dar">Liberar</button>
+<button type="button" class="adm-b laranja" data-acao="minerio-remover">Remover</button>
+<button type="button" class="adm-b verde" data-acao="minerio-todos">Liberar todos</button>
+<button type="button" class="adm-b vermelho" data-acao="minerio-resetar" data-perigo>Resetar</button>
+</div>
+
+<h3>⬆ Melhorias</h3>
+<div class="adm-linha">
+<button type="button" class="adm-b verde" data-acao="auto-liberar">Auto clicker: liberar</button>
+<button type="button" class="adm-b laranja" data-acao="auto-remover">Auto clicker: remover</button>
+<button type="button" class="adm-b verde" data-acao="pro-liberar">Auto clicker Pro: liberar</button>
+<button type="button" class="adm-b laranja" data-acao="pro-remover">Auto clicker Pro: remover</button>
+</div>
+<div class="adm-linha" style="margin-top:6px">
+<input id="admMult" class="adm-in" style="margin:0" placeholder="Nível do multiplicador (0 a 500)" inputmode="numeric" autocomplete="off">
+<button type="button" class="adm-b roxo" data-acao="mult-definir">Aplicar nível</button>
+</div>
+
+<button type="button" class="adm-b verde grande" data-acao="tudo">Liberar todas as picaretas e minérios</button>
+</div>
+
+<div id="abaOutro" class="adm-aba" hidden>
+<p class="adm-dica">Roda no servidor (Cloud Function). O jogador precisa ter conta. Se ele estiver online, o jogo dele pode sobrescrever a mudança no próximo salvamento.</p>
+<input id="admJogador" class="adm-in" placeholder="Nome exato do jogador" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false">
+<select id="admAcao" class="adm-in" aria-label="Ação"></select>
+
+<div id="admCampoValor">
+<input id="admRemotoValor" class="adm-in" placeholder="Quantidade de moedas (ex.: 5000, 2,5M)" autocomplete="off" autocapitalize="characters" spellcheck="false">
+</div>
+<div id="admCampoItem" hidden>
+<select id="admRemotoItem" class="adm-in" aria-label="Item"></select>
+</div>
+<div id="admCampoDest" hidden>
+<input id="admDestinatario" class="adm-in" placeholder="Nome de quem recebe as moedas" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false">
+</div>
+
+<button id="admExecutar" type="button" class="adm-b azul grande" data-acao="remoto">Executar</button>
+</div>
+
+<h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">📜 Histórico da sessão</h3>
+<div id="admLog" class="adm-log"></div>
+
+</div>
+</div>
+
 <script>
 const firebaseConfig={
 apiKey:"AIzaSyCxpkYQcmdoOPeiSUb6CeP8F5iNBcLFrX0",
@@ -109,6 +261,8 @@ let functions=firebase.functions();
 let usuarioAtual=null;
 let timerSalvamentoNuvem=null;
 let carregandoDados=false;
+let dadosCarregados=false;
+let saindoDaConta=false;
 
 const loginModal=document.getElementById("loginModal");
 const nomeLogin=document.getElementById("nomeLogin");
@@ -142,6 +296,128 @@ return Promise.race([
 Promise.resolve(promessa),
 new Promise((_,rejeitar)=>{temporizador=setTimeout(()=>{const erro=new Error("Tempo esgotado ao "+etapa+". Verifique a conexão e as configurações do Firebase.");erro.code="app/timeout";rejeitar(erro);},ms);})
 ]).finally(()=>clearTimeout(temporizador));
+}
+
+
+// UTILITÁRIOS
+
+const MAX_MOEDAS=1e36;
+const SUFIXOS_NUMERO={K:1e3,M:1e6,B:1e9,T:1e12,QA:1e15,QI:1e18,SX:1e21,SP:1e24,OC:1e27,NO:1e30,DC:1e33};
+
+// Lê números como as pessoas digitam: 5000, 1.500.000, 2,5M, 10K, 1e6
+function lerNumero(texto){
+const t=String(texto==null?"":texto).trim().toUpperCase().replace(/\s+/g,"").replace(/^\$/,"");
+if(!t)return NaN;
+if(/^\d+(\.\d+)?E\d+$/.test(t))return Number(t);
+const m=t.match(/^([0-9.,]+)([A-Z]{0,2})$/);
+if(!m)return NaN;
+let num=m[1];
+if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(num))num=num.replace(/\./g,"").replace(",",".");
+else if(/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(num))num=num.replace(/,/g,"");
+else num=num.replace(",",".");
+if(!/^\d+(\.\d+)?$/.test(num))return NaN;
+let valor=Number(num);
+if(m[2]){
+if(!Object.prototype.hasOwnProperty.call(SUFIXOS_NUMERO,m[2]))return NaN;
+valor*=SUFIXOS_NUMERO[m[2]];
+}
+return valor;
+}
+
+// SHA-256 síncrono (assim o código de admin não precisa ficar escrito no arquivo)
+function sha256Simples(texto){
+const dados=new TextEncoder().encode(String(texto));
+const K=[],H=[];
+for(let n=2,i=0;i<64;n++){
+let primo=true;
+for(let d=2;d*d<=n;d++)if(n%d===0){primo=false;break;}
+if(!primo)continue;
+if(i<8)H[i]=(Math.pow(n,1/2)%1)*4294967296|0;
+K[i]=(Math.pow(n,1/3)%1)*4294967296|0;
+i++;
+}
+const bits=dados.length*8;
+const total=((dados.length+9+63)>>6)<<6;
+const bloco=new Uint8Array(total);
+bloco.set(dados);
+bloco[dados.length]=0x80;
+const vis=new DataView(bloco.buffer);
+vis.setUint32(total-8,Math.floor(bits/4294967296));
+vis.setUint32(total-4,bits>>>0);
+const W=new Array(64);
+const rot=(x,n)=>(x>>>n)|(x<<(32-n));
+for(let off=0;off<total;off+=64){
+for(let t=0;t<16;t++)W[t]=vis.getUint32(off+t*4)|0;
+for(let t=16;t<64;t++){
+const s0=rot(W[t-15],7)^rot(W[t-15],18)^(W[t-15]>>>3);
+const s1=rot(W[t-2],17)^rot(W[t-2],19)^(W[t-2]>>>10);
+W[t]=(W[t-16]+s0+W[t-7]+s1)|0;
+}
+let a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+for(let t=0;t<64;t++){
+const S1=rot(e,6)^rot(e,11)^rot(e,25);
+const ch=(e&f)^(~e&g);
+const t1=(h+S1+ch+K[t]+W[t])|0;
+const S0=rot(a,2)^rot(a,13)^rot(a,22);
+const maj=(a&b)^(a&c)^(b&c);
+const t2=(S0+maj)|0;
+h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
+}
+H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;
+H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0;
+}
+return H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("");
+}
+
+// Hash do código de administrador (o código em si não fica mais escrito aqui)
+const ADMIN_HASH="af64be2399c0701518f085a99a1da3d8e3d367c07282fc136f66b2529d143341";
+
+// O jogo só pode salvar depois que o progresso da conta foi carregado
+function jogoPronto(){
+return !!usuarioAtual&&dadosCarregados;
+}
+
+// Aplica dados vindos do servidor sem perder o desbloqueio do painel admin
+function aplicarDadosDoServidor(dados){
+const admin=adminDesbloqueado,codigo=codigoAdminSessao;
+carregandoDados=true;
+aplicarDados(dados);
+carregandoDados=false;
+adminDesbloqueado=admin;
+codigoAdminSessao=codigo;
+}
+
+function textoErroLogin(error){
+const c=error&&error.code;
+if(c==="auth/user-not-found"||c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Nome ou senha incorretos.";
+if(c==="auth/user-disabled")return "Esta conta foi banida ou desativada.";
+if(c==="auth/too-many-requests")return "Muitas tentativas seguidas. Aguarde um pouco e tente de novo.";
+if(c==="auth/network-request-failed")return "Sem conexão com a internet. Tente novamente.";
+if(c==="app/timeout")return "O Firebase demorou demais para responder. Verifique a internet e tente novamente.";
+return (error&&error.message)||"Não foi possível entrar.";
+}
+
+function textoErroCriar(error){
+const c=error&&error.code;
+if(c==="auth/email-already-in-use")return "Esse nome já existe. Use ENTRAR com a senha dessa conta.";
+if(c==="auth/weak-password")return "Senha fraca demais. Use pelo menos 6 caracteres.";
+if(c==="auth/operation-not-allowed")return "O cadastro por e-mail e senha está desativado no Firebase (Authentication > Sign-in method).";
+if(c==="auth/network-request-failed")return "Sem conexão com a internet. Tente novamente.";
+if(c==="app/timeout")return "O Firebase demorou demais para responder. A conta pode ter sido criada; tente ENTRAR com esse nome.";
+return "Não foi possível criar a conta: "+((error&&error.message)||"erro desconhecido");
+}
+
+function textoErroFuncao(error){
+const codigo=String(error&&error.code||"");
+const msg=String(error&&error.message||"").trim();
+if(codigo==="app/timeout")return msg;
+if(codigo==="functions/not-found"&&/^not[_ -]?found$/i.test(msg))return "A função adminGerenciarJogador não está publicada no Firebase (ou está em outra região).";
+if(codigo==="functions/internal"&&/^internal$/i.test(msg))return "Falha interna do servidor. Confira se a função adminGerenciarJogador está publicada.";
+if(codigo==="functions/permission-denied")return "O servidor negou o acesso"+(msg&&!/^permission[_ -]?denied$/i.test(msg)?": "+msg:". Confira o código de administrador configurado na função.");
+if(codigo==="functions/unauthenticated")return "Você precisa estar logado para usar o painel.";
+if(codigo==="functions/unavailable")return "Servidor indisponível. Verifique a internet e tente de novo.";
+if(codigo==="functions/invalid-argument")return "O servidor recusou os dados enviados"+(msg?": "+msg:".");
+return "Falha ao executar a ação: "+(msg||codigo||"erro desconhecido");
 }
 
 
@@ -273,18 +549,21 @@ let codigosUsados=[];
 let codigoModalAberto=false;
 let codigoAdminSessao="";
 
-// AVISOS
+// AVISOS (caixa em HTML: quebra linha e nunca corta o texto)
 
-let avisoTexto="";
-let avisoTempo=0;
+const avisoEl=document.getElementById("aviso");
+let avisoTimer=null;
 
-function mostrarAviso(mensagem){
-avisoTexto=mensagem;
-avisoTempo=Date.now();
+function mostrarAviso(mensagem,tipo="erro"){
+const texto=String(mensagem);
+avisoEl.textContent=texto;
+avisoEl.className="visivel "+tipo;
+clearTimeout(avisoTimer);
+avisoTimer=setTimeout(()=>{avisoEl.className="";},Math.min(8000,Math.max(2000,texto.length*55)));
 }
 
 window.alert=function(mensagem){
-mostrarAviso(String(mensagem));
+mostrarAviso(mensagem,"info");
 };
 
 // SISTEMA DE MELHORIAS
@@ -332,7 +611,7 @@ autoClickerAtivo=false;
 
 somRaro();
 salvar();
-mostrarAviso("AUTO CLICKER DESBLOQUEADO!");
+mostrarAviso("AUTO CLICKER DESBLOQUEADO!","ok");
 }
 
 function comprarAutoClickerPro(){
@@ -349,7 +628,7 @@ autoClickerProAtivo=false;
 
 somRaro();
 salvar();
-mostrarAviso("AUTO CLICKER PRO DESBLOQUEADO!");
+mostrarAviso("AUTO CLICKER PRO DESBLOQUEADO!","ok");
 }
 
 function alternarAutoClicker(){
@@ -498,7 +777,7 @@ autoClickerProAtivo
 }
 
 function agendarSalvamentoNuvem(dados){
-if(!usuarioAtual||carregandoDados)return;
+if(!jogoPronto()||carregandoDados)return;
 if(timerSalvamentoNuvem)clearTimeout(timerSalvamentoNuvem);
 const id=usuarioAtual.uid;
 const copia=JSON.parse(JSON.stringify(dados));
@@ -516,7 +795,7 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 
 function salvar(){
 const dados=dadosDoJogo();
-if(!usuarioAtual||carregandoDados)return;
+if(!jogoPronto()||carregandoDados)return;
 try{localStorage.setItem("mining_game_save_"+usuarioAtual.uid,JSON.stringify(dados));}catch(e){}
 agendarSalvamentoNuvem(dados);
 }
@@ -547,7 +826,7 @@ if(picaretasCompradas.includes(dados.picaretaAtual))picaretaAtual=dados.picareta
 if(mineriosComprados.includes(dados.minerioAtual))minerioAtual=dados.minerioAtual;
 if(Number.isFinite(dados.volumeGeral))volumeGeral=Math.max(0,Math.min(1,dados.volumeGeral));
 adminDesbloqueado=false;
-codigosUsados=Array.isArray(dados.codigosUsados)?dados.codigosUsados:[];
+codigosUsados=Array.isArray(dados.codigosUsados)?dados.codigosUsados.filter(c=>typeof c==="string"):[];
 multiplicadorCompras=Math.max(0,Math.floor(Number(dados.multiplicadorCompras)||0));
 precoMultiplicador=Number(dados.precoMultiplicador);
 if(!Number.isFinite(precoMultiplicador)||precoMultiplicador<100)precoMultiplicador=100*Math.pow(3,multiplicadorCompras);
@@ -567,6 +846,7 @@ mensagemDeLogin("Conta reconhecida. Carregando seu progresso...",false);
 if(entradaEmAndamento&&uidEntradaEmAndamento===user.uid)return entradaEmAndamento;
 uidEntradaEmAndamento=user.uid;
 entradaEmAndamento=(async()=>{
+dadosCarregados=false;
 usuarioAtual=user;
 try{
 mensagemDeLogin("Conectado! Consultando seus dados salvos...",false);
@@ -587,6 +867,7 @@ carregandoDados=true;
 aplicarDados(dadosConta);
 try{localStorage.setItem("mining_game_save_"+user.uid,JSON.stringify(dadosConta));}catch(e){}
 carregandoDados=false;
+dadosCarregados=true;
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
@@ -594,9 +875,10 @@ return true;
 }catch(error){
 usuarioAtual=null;
 carregandoDados=false;
+dadosCarregados=false;
 console.error("Erro ao carregar conta:",error);
 let detalhe=error.code==="permission-denied"
-?"O Firebase bloqueou o acesso aos dados. Verifique as regras do Firestore da coleção jogadores."
+?"O Firebase bloqueou o acesso aos dados. Verifique as regras do Firestore da coleção jogadores (ou a conta pode estar banida)."
 :"Erro ao carregar seu progresso: "+(error.message||"falha de conexão");
 mensagemDeLogin(detalhe);
 return false;
@@ -626,7 +908,7 @@ const ok=await entrarNoJogo(cred.user,nome);
 if(!ok&&auth.currentUser)await auth.signOut();
 }catch(error){
 console.error("Erro no login:",error);
-mensagemDeLogin(error.code==="auth/user-not-found"||error.code==="auth/wrong-password"||error.code==="auth/invalid-credential"?"Nome ou senha incorretos.":error.code==="app/timeout"?"O Firebase demorou demais para responder. Verifique a internet e tente novamente.":(error.message||"Não foi possível entrar."));
+mensagemDeLogin(textoErroLogin(error));
 }finally{
 clearTimeout(avisoLogin);
 operacaoManualDeConta=false;
@@ -659,7 +941,7 @@ if(entrou)mensagemDeLogin("",false);
 else mensagemDeLogin("Sua conta foi criada, mas não foi possível carregar os dados. Entre novamente ou verifique as regras do Firestore.");
 }catch(error){
 console.error("Erro ao criar conta:",error);
-mensagemDeLogin(error.code==="auth/email-already-in-use"?"Esse nome já existe. Use ENTRAR com a senha dessa conta.":error.code==="app/timeout"?"O Firebase demorou demais para responder. A conta pode ter sido criada; tente ENTRAR com esse nome.":"Não foi possível criar a conta: "+(error.message||"erro desconhecido"));
+mensagemDeLogin(textoErroCriar(error));
 }finally{
 operacaoManualDeConta=false;
 bloquearLogin(false);
@@ -671,25 +953,29 @@ botaoCriar.addEventListener("click",criarConta);
 senhaLogin.addEventListener("keydown",e=>{if(e.key==="Enter")fazerLogin();});
 
 async function sairDaConta(){
-if(!usuarioAtual)return;
+if(!usuarioAtual||saindoDaConta)return;
+saindoDaConta=true;
+try{
 const usuarioId=usuarioAtual.uid;
-const dados=dadosDoJogo();
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
+if(dadosCarregados){
 try{
 await db.collection("jogadores").doc(usuarioId).set({
 nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
-dados,
+dados:dadosDoJogo(),
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
-}catch(error){alert("Não foi possível salvar seu progresso: "+error.message);return;}
-try{await auth.signOut();}catch(error){alert("Não foi possível sair da conta: "+error.message);return;}
+}catch(error){mostrarAviso("Não foi possível salvar seu progresso: "+error.message);return;}
+}
+try{await auth.signOut();}catch(error){mostrarAviso("Não foi possível sair da conta: "+error.message);return;}
+dadosCarregados=false;
 usuarioAtual=null;
 codigoAdminSessao="";
 adminDesbloqueado=false;
 configuracoesAbertas=false;
 lojaAberta=false;
 melhoriasAbertas=false;
-adminAberto=false;
+fecharAdmin();
 carregandoDados=true;
 aplicarDados({});
 carregandoDados=false;
@@ -697,6 +983,9 @@ loginModal.style.display="flex";
 nomeLogin.value="";
 senhaLogin.value="";
 mensagemDeLogin("Você saiu da conta.",false);
+}finally{
+saindoDaConta=false;
+}
 }
 
 async function iniciarSistemaLogin(){
@@ -715,83 +1004,23 @@ await entrarNoJogo(user,nome);
 }
 });
 
-document.addEventListener("visibilitychange",()=>{
-if(document.visibilityState==="hidden"&&usuarioAtual){
-if(timerSalvamentoNuvem)clearTimeout(timerSalvamentoNuvem);
+// Salva na nuvem na hora (aba escondida ou página fechando).
+// Nunca salva antes do progresso carregar, para não apagar o save com valores zerados.
+function salvarNuvemAgora(){
+if(!jogoPronto()||carregandoDados)return;
+if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
 const id=usuarioAtual.uid;
-const dados=dadosDoJogo();
 db.collection("jogadores").doc(id).set({
 nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
-dados,
+dados:dadosDoJogo(),
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true}).catch(error=>console.error("Erro ao salvar:",error));
 }
+
+document.addEventListener("visibilitychange",()=>{
+if(document.visibilityState==="hidden")salvarNuvemAgora();
 });
-
-// GERENCIAMENTO DE OUTROS JOGADORES PELO PAINEL ADMIN
-async function gerenciarJogador(){
-if(!adminDesbloqueado){alert("Desbloqueie o painel usando o código secreto.");return;}
-const nome=prompt("Digite o nome exato do jogador:");
-if(!nome)return;
-const escolha=prompt(`GERENCIAR: ${nome}
-
-1 - Adicionar moedas
-2 - Remover moedas
-3 - Dar uma picareta específica
-4 - Remover uma picareta específica
-5 - Dar um minério específico
-6 - Remover um minério específico
-7 - BANIR jogador
-8 - DESBANIR jogador
-9 - Transferir moedas para outro jogador
-
-Digite o número da ação:`);
-const operacoes={
-"1":["addMoney","Quantidade de moedas para adicionar:"],
-"2":["removeMoney","Quantidade de moedas para remover:"],
-"3":["givePickaxe","Número da picareta:"],
-"4":["removePickaxe","Número da picareta:"],
-"5":["giveOre","Número do minério:"],
-"6":["removeOre","Número do minério:"],
-"7":["banPlayer",""],
-"8":["unbanPlayer",""],
-"9":["transferMoney","Quantidade de moedas para transferir:"]
-};
-if(!operacoes[escolha])return;
-const [acao,pergunta]=operacoes[escolha];
-let valor=0;
-let destinatario="";
-if(acao==="transferMoney"){
-destinatario=prompt("Nome exato do jogador que vai receber as moedas:");
-if(!destinatario)return;
-valor=prompt(pergunta);
-}else if(acao.includes("Pickaxe")){
-alert("PICARETAS:\n"+picaretas.map((x,i)=>i+" - "+x[0]).join("\n"));
-valor=prompt(pergunta);
-}else if(acao.includes("Ore")){
-alert("MINÉRIOS:\n"+minerios.map((x,i)=>i+" - "+x[0]).join("\n"));
-valor=prompt(pergunta);
-}else if(acao.includes("Money")){
-valor=prompt(pergunta);
-}
-if(valor===null)return;
-valor=Number(String(valor).replace(",",".").trim());
-if(!Number.isFinite(valor)||valor<0||((acao.includes("Money"))&&valor<=0)||((!Number.isInteger(valor))&&acao!=="addMoney"&&acao!=="removeMoney")){
-alert("Valor inválido.");return;
-}
-if(acao.includes("Pickaxe")&&valor>=picaretas.length){alert("Número de picareta inexistente.");return;}
-if(acao.includes("Ore")&&valor>=minerios.length){alert("Número de minério inexistente.");return;}
-try{
-const executar=functions.httpsCallable("adminGerenciarJogador");
-const resposta=await executar({adminCode:codigoAdminSessao,nomeJogador:nome.trim(),acao,valor,destinatario:destinatario.trim()});
-alert(resposta.data?.mensagem||"Jogador atualizado com sucesso!");
-if(usuarioAtual&&resposta.data?.uid===usuarioAtual.uid&&resposta.data?.dados){
-carregandoDados=true;aplicarDados(resposta.data.dados);carregandoDados=false;
-}
-}catch(error){
-alert("Não foi possível gerenciar o jogador. A função segura do Firebase ainda precisa ser publicada. Detalhe: "+(error.message||error));
-}
-}
+window.addEventListener("pagehide",salvarNuvemAgora);
 
 // DINHEIRO
 
@@ -809,6 +1038,7 @@ return Math.floor(valor).toString();
 }
 
 function minerar(){
+if(!jogoPronto())return;
 const recompensaBase=picaretas[picaretaAtual][2]*minerios[minerioAtual][2];
 const recompensa=recompensaBase*multiplicadorDinheiro();
 
@@ -826,75 +1056,437 @@ tempoGolpe=Date.now();
 salvar();
 }
 
-// DINHEIRO ADMIN
+// PAINEL DE ADMINISTRAÇÃO (HTML)
 
-function adicionarDinheiro(){
-const resposta=prompt("Quanto dinheiro você quer adicionar?");
-if(resposta===null)return;
+const adminModal=document.getElementById("adminModal");
+const adminBox=document.getElementById("adminBox");
+const admResumo=document.getElementById("adminResumo");
+const admValor=document.getElementById("admValor");
+const admPicareta=document.getElementById("admPicareta");
+const admMinerio=document.getElementById("admMinerio");
+const admMult=document.getElementById("admMult");
+const admJogador=document.getElementById("admJogador");
+const admAcao=document.getElementById("admAcao");
+const admRemotoValor=document.getElementById("admRemotoValor");
+const admRemotoItem=document.getElementById("admRemotoItem");
+const admDestinatario=document.getElementById("admDestinatario");
+const admCampoValor=document.getElementById("admCampoValor");
+const admCampoItem=document.getElementById("admCampoItem");
+const admCampoDest=document.getElementById("admCampoDest");
+const admLogEl=document.getElementById("admLog");
 
-const valor=Number(resposta.replace(/,/g,"").trim());
+const admHistorico=[];
+let ultimaAtualizacaoAdmin=0;
+let admExecutando=false;
 
-if(!Number.isFinite(valor)||valor<=0){
-alert("Digite uma quantidade válida.");
-return;
+// Ações que o servidor aceita (mesmos nomes e parâmetros da função adminGerenciarJogador)
+const ACOES_REMOTAS={
+addMoney:{rotulo:"Adicionar moedas",campo:"valor"},
+removeMoney:{rotulo:"Remover moedas",campo:"valor",perigo:true},
+givePickaxe:{rotulo:"Dar uma picareta",campo:"picareta"},
+removePickaxe:{rotulo:"Remover uma picareta",campo:"picareta",perigo:true},
+giveOre:{rotulo:"Dar um minério",campo:"minerio"},
+removeOre:{rotulo:"Remover um minério",campo:"minerio",perigo:true},
+banPlayer:{rotulo:"Banir jogador",campo:null,perigo:true},
+unbanPlayer:{rotulo:"Desbanir jogador",campo:null},
+transferMoney:{rotulo:"Transferir moedas para outro jogador",campo:"transferencia",perigo:true}
+};
+
+function preencherLista(select,lista,inicio){
+select.textContent="";
+for(let i=inicio;i<lista.length;i++){
+const opcao=document.createElement("option");
+opcao.value=String(i);
+opcao.textContent=i+" - "+lista[i][0];
+select.appendChild(opcao);
+}
 }
 
-moedas+=valor;
+function renderizarLogAdmin(){
+admLogEl.textContent="";
+for(const item of admHistorico.slice(0,10)){
+const linha=document.createElement("div");
+linha.className=item.tipo;
+const hora=document.createElement("span");
+hora.className="hora";
+hora.textContent=item.hora;
+linha.appendChild(hora);
+linha.appendChild(document.createTextNode(item.texto));
+admLogEl.appendChild(linha);
+}
+}
+
+function admResultado(texto,tipo){
+const hora=new Date().toLocaleTimeString("pt-BR",{hour12:false});
+admHistorico.unshift({hora,texto,tipo});
+if(admHistorico.length>40)admHistorico.pop();
+renderizarLogAdmin();
+mostrarAviso(texto,tipo);
+}
+
+function atualizarAdmin(){
+ultimaAtualizacaoAdmin=Date.now();
+if(!adminAberto)return;
+const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
+const itens=[
+["Jogador",nome],
+["Dinheiro","$ "+formatarDinheiro(moedas)],
+["Multiplicador",multiplicadorDinheiro().toFixed(1)+"x"],
+["Picaretas",picaretasCompradas.length+"/"+picaretas.length],
+["Minérios",mineriosComprados.length+"/"+minerios.length],
+["Auto clicker",autoClickerProComprado?"Pro":(autoClickerComprado?"Normal":"Nenhum")]
+];
+admResumo.textContent="";
+for(const [rotulo,valor] of itens){
+const chip=document.createElement("div");
+chip.className="adm-chip";
+const r=document.createElement("span");
+r.textContent=rotulo;
+const v=document.createElement("strong");
+v.textContent=valor;
+chip.appendChild(r);
+chip.appendChild(v);
+admResumo.appendChild(chip);
+}
+}
+
+function abrirAdmin(){
+if(!adminDesbloqueado||!jogoPronto())return;
+adminAberto=true;
+adminModal.style.display="flex";
+atualizarAdmin();
+somAbrirLoja();
+}
+
+function fecharAdmin(){
+adminAberto=false;
+adminModal.style.display="none";
+}
+
+function trocarAbaAdmin(aba){
+document.getElementById("abaEu").hidden=aba!=="eu";
+document.getElementById("abaOutro").hidden=aba!=="outro";
+for(const botao of adminBox.querySelectorAll(".adm-abas button"))botao.classList.toggle("ativa",botao.dataset.aba===aba);
+}
+
+// Botão que pede um segundo clique para ações destrutivas
+function confirmarClique(botao){
+if(botao.dataset.aguardando==="1"){
+clearTimeout(botao._timerConfirmar);
+botao.dataset.aguardando="";
+botao.textContent=botao.dataset.rotulo;
+botao.classList.remove("aguardando");
+return true;
+}
+botao.dataset.rotulo=botao.textContent;
+botao.dataset.aguardando="1";
+botao.textContent="Clique de novo para confirmar";
+botao.classList.add("aguardando");
+botao._timerConfirmar=setTimeout(()=>{
+botao.dataset.aguardando="";
+botao.textContent=botao.dataset.rotulo;
+botao.classList.remove("aguardando");
+},3500);
+return false;
+}
+
+// MINHA CONTA
+
+function lerValorAdmin(campo,permitirZero){
+const v=lerNumero(campo.value);
+if(!Number.isFinite(v)||v<0||(v===0&&!permitirZero)){
+admResultado("Digite uma quantidade válida, como 5000, 2,5M ou 10K.","erro");
+return null;
+}
+return Math.min(v,MAX_MOEDAS);
+}
+
+function admMoedas(modo){
+if(modo==="zerar"){
+moedas=0;
 salvar();
+somClique();
+admResultado("Dinheiro zerado.","ok");
+atualizarAdmin();
+return;
+}
+const v=lerValorAdmin(admValor,modo==="definir");
+if(v===null)return;
+if(modo==="add"){
+moedas=Math.min(MAX_MOEDAS,moedas+v);
 somCompra();
+admResultado("Adicionado $ "+formatarDinheiro(v)+".","ok");
+}else if(modo==="remover"){
+if(v>moedas){
+admResultado("Você só tem $ "+formatarDinheiro(moedas)+".","erro");
+return;
+}
+moedas-=v;
+somClique();
+admResultado("Removido $ "+formatarDinheiro(v)+".","ok");
+}else{
+moedas=v;
+somClique();
+admResultado("Dinheiro definido em $ "+formatarDinheiro(v)+".","ok");
+}
+salvar();
+atualizarAdmin();
 }
 
-function removerDinheiro(){
-const resposta=prompt("Quanto dinheiro deseja remover?");
-if(resposta===null)return;
+function admItens(tipo,modo){
+const pick=tipo==="picareta";
+const lista=pick?picaretas:minerios;
+const indice=Number(pick?admPicareta.value:admMinerio.value);
+let comprados=(pick?picaretasCompradas:mineriosComprados).slice();
+let atual=pick?picaretaAtual:minerioAtual;
+let msg="";
 
-const valor=Number(resposta.replace(/,/g,"").trim());
+if(modo==="dar"){
+if(!Number.isInteger(indice)||indice<0||indice>=lista.length)return;
+if(!comprados.includes(indice))comprados.push(indice);
+msg="Liberado: "+lista[indice][0]+".";
+somRaro();
+}else if(modo==="remover"){
+if(!Number.isInteger(indice)||indice<=0||indice>=lista.length){
+admResultado("Escolha um item da lista para remover.","erro");
+return;
+}
+comprados=comprados.filter(i=>i!==indice);
+if(atual===indice)atual=0;
+msg="Removido: "+lista[indice][0]+".";
+somClique();
+}else if(modo==="todos"){
+comprados=lista.map((item,i)=>i);
+msg=pick?"Todas as picaretas liberadas.":"Todos os minérios liberados.";
+somRaro();
+}else{
+comprados=[0];
+atual=0;
+msg=pick?"Picaretas resetadas (ficou só a inicial).":"Minérios resetados (ficou só o inicial).";
+somClique();
+}
 
+comprados.sort((a,b)=>a-b);
+if(pick){
+picaretasCompradas=comprados;
+picaretaAtual=atual;
+}else{
+mineriosComprados=comprados;
+minerioAtual=atual;
+}
+salvar();
+admResultado(msg,"ok");
+atualizarAdmin();
+}
+
+function admMelhoria(qual,ligar){
+if(qual==="auto"){
+autoClickerComprado=ligar;
+if(!ligar)autoClickerAtivo=false;
+}else{
+autoClickerProComprado=ligar;
+if(!ligar)autoClickerProAtivo=false;
+}
+salvar();
+somClique();
+admResultado((qual==="auto"?"Auto clicker ":"Auto clicker Pro ")+(ligar?"liberado.":"removido."),"ok");
+atualizarAdmin();
+}
+
+function admMultiplicador(){
+const n=lerNumero(admMult.value);
+if(!Number.isInteger(n)||n<0||n>500){
+admResultado("Digite um nível inteiro de 0 a 500.","erro");
+return;
+}
+multiplicadorCompras=n;
+precoMultiplicador=100*Math.pow(3,n);
+salvar();
+somClique();
+admResultado("Multiplicador no nível "+n+" ("+multiplicadorDinheiro().toFixed(1)+"x).","ok");
+atualizarAdmin();
+}
+
+// OUTRO JOGADOR (servidor)
+
+function atualizarCamposRemotos(){
+const def=ACOES_REMOTAS[admAcao.value];
+if(!def)return;
+admCampoValor.hidden=!(def.campo==="valor"||def.campo==="transferencia");
+admCampoItem.hidden=!(def.campo==="picareta"||def.campo==="minerio");
+admCampoDest.hidden=def.campo!=="transferencia";
+if(def.campo==="picareta")preencherLista(admRemotoItem,picaretas,0);
+else if(def.campo==="minerio")preencherLista(admRemotoItem,minerios,0);
+}
+
+async function admExecutarRemoto(botao){
+if(admExecutando)return;
+
+const nome=admJogador.value.trim();
+if(!nomeValido(nome)){
+admResultado("Nome do jogador inválido: use de 3 a 20 letras, números ou _.","erro");
+return;
+}
+
+const acao=admAcao.value;
+const def=ACOES_REMOTAS[acao];
+if(!def){
+admResultado("Escolha uma ação.","erro");
+return;
+}
+
+let valor=0;
+let destinatario="";
+
+if(def.campo==="valor"||def.campo==="transferencia"){
+valor=lerNumero(admRemotoValor.value);
 if(!Number.isFinite(valor)||valor<=0){
-alert("Quantidade inválida!");
+admResultado("Digite uma quantidade válida, como 5000, 2,5M ou 10K.","erro");
+return;
+}
+if(def.campo==="transferencia"&&!Number.isInteger(valor)){
+admResultado("A transferência precisa ser um número inteiro de moedas.","erro");
+return;
+}
+valor=Math.min(valor,MAX_MOEDAS);
+}else if(def.campo==="picareta"||def.campo==="minerio"){
+valor=Number(admRemotoItem.value);
+const total=def.campo==="picareta"?picaretas.length:minerios.length;
+if(!Number.isInteger(valor)||valor<0||valor>=total){
+admResultado("Escolha um item da lista.","erro");
+return;
+}
+}
+
+if(def.campo==="transferencia"){
+destinatario=admDestinatario.value.trim();
+if(!nomeValido(destinatario)){
+admResultado("Nome de quem recebe inválido: use de 3 a 20 letras, números ou _.","erro");
+return;
+}
+if(destinatario.toLowerCase()===nome.toLowerCase()){
+admResultado("Quem envia e quem recebe são o mesmo jogador.","erro");
+return;
+}
+}
+
+if(def.perigo&&!confirmarClique(botao))return;
+
+admExecutando=true;
+botao.disabled=true;
+botao.textContent="Enviando...";
+try{
+const executar=functions.httpsCallable("adminGerenciarJogador");
+const resposta=await comTempoLimite(
+executar({adminCode:codigoAdminSessao,nomeJogador:nome,acao,valor,destinatario}),
+30000,"executar a ação no servidor"
+);
+const dados=resposta&&resposta.data?resposta.data:{};
+admResultado(def.rotulo+" em "+nome+": "+(dados.mensagem||"concluído com sucesso."),"ok");
+if(usuarioAtual&&dados.uid===usuarioAtual.uid&&dados.dados){
+aplicarDadosDoServidor(dados.dados);
+atualizarAdmin();
+}
+}catch(error){
+console.error("Erro no painel admin:",error);
+admResultado(textoErroFuncao(error),"erro");
+}finally{
+admExecutando=false;
+botao.disabled=false;
+botao.textContent="Executar";
+}
+}
+
+// INICIALIZAÇÃO E EVENTOS
+
+preencherLista(admPicareta,picaretas,1);
+preencherLista(admMinerio,minerios,1);
+for(const [chave,def] of Object.entries(ACOES_REMOTAS)){
+const opcao=document.createElement("option");
+opcao.value=chave;
+opcao.textContent=def.rotulo;
+admAcao.appendChild(opcao);
+}
+admAcao.addEventListener("change",atualizarCamposRemotos);
+atualizarCamposRemotos();
+
+adminBox.addEventListener("click",evento=>{
+const botao=evento.target.closest("button");
+if(!botao||!adminBox.contains(botao))return;
+
+if(botao.id==="adminFechar"){
+fecharAdmin();
+somFecharLoja();
+return;
+}
+if(botao.dataset.aba){
+trocarAbaAdmin(botao.dataset.aba);
 return;
 }
 
-if(valor>moedas){
-alert("Você não tem esse dinheiro!");
+const acao=botao.dataset.acao;
+if(!acao)return;
+if(botao.hasAttribute("data-perigo")&&!confirmarClique(botao))return;
+if(!jogoPronto()){
+admResultado("Entre na sua conta antes de usar o painel.","erro");
 return;
 }
 
-moedas-=valor;
-salvar();
-somClique();
+switch(acao){
+case "moedas-add":admMoedas("add");break;
+case "moedas-remover":admMoedas("remover");break;
+case "moedas-definir":admMoedas("definir");break;
+case "moedas-zerar":admMoedas("zerar");break;
+case "picareta-dar":admItens("picareta","dar");break;
+case "picareta-remover":admItens("picareta","remover");break;
+case "picareta-todas":admItens("picareta","todos");break;
+case "picareta-resetar":admItens("picareta","resetar");break;
+case "minerio-dar":admItens("minerio","dar");break;
+case "minerio-remover":admItens("minerio","remover");break;
+case "minerio-todos":admItens("minerio","todos");break;
+case "minerio-resetar":admItens("minerio","resetar");break;
+case "auto-liberar":admMelhoria("auto",true);break;
+case "auto-remover":admMelhoria("auto",false);break;
+case "pro-liberar":admMelhoria("pro",true);break;
+case "pro-remover":admMelhoria("pro",false);break;
+case "mult-definir":admMultiplicador();break;
+case "tudo":
+admItens("picareta","todos");
+admItens("minerio","todos");
+break;
+case "remoto":admExecutarRemoto(botao);break;
 }
+});
 
-function desbloquearPicaretas(){
-picaretasCompradas=picaretas.map((item,index)=>index);
-salvar();
-somRaro();
+// Mudou algum campo: cancela qualquer confirmação pendente para não confirmar outra ação por engano
+function cancelarConfirmacoes(){
+for(const botao of adminBox.querySelectorAll("button[data-aguardando='1']")){
+clearTimeout(botao._timerConfirmar);
+botao.dataset.aguardando="";
+botao.textContent=botao.dataset.rotulo;
+botao.classList.remove("aguardando");
 }
+}
+adminBox.addEventListener("input",cancelarConfirmacoes);
+adminBox.addEventListener("change",cancelarConfirmacoes);
 
-function desbloquearMinerios(){
-mineriosComprados=minerios.map((item,index)=>index);
-salvar();
-somRaro();
+adminModal.addEventListener("pointerdown",evento=>{
+if(evento.target===adminModal){
+fecharAdmin();
+somFecharLoja();
 }
+});
 
-function desbloquearTudo(){
-desbloquearPicaretas();
-desbloquearMinerios();
+document.addEventListener("keydown",evento=>{
+if(evento.key!=="Escape")return;
+if(adminAberto){
+fecharAdmin();
+somFecharLoja();
+}else if(codigoModalAberto){
+fecharResgate();
 }
+});
 
-function removerPicaretas(){
-picaretasCompradas=[0];
-picaretaAtual=0;
-salvar();
-somClique();
-}
-
-function removerMinerios(){
-mineriosComprados=[0];
-minerioAtual=0;
-salvar();
-somClique();
-}
 
 // CÓDIGOS
 
@@ -910,27 +1502,31 @@ codigoModalAberto=false;
 modal.style.display="none";
 }
 
-// FUNÇÃO CORRIGIDA
-async function resgatarCodigo(){
-const codigo=codeInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
+function resgatarCodigo(){
+const codigo=codeInput.value.trim().toUpperCase();
 
 if(!codigo){
-alert("Digite um código!");
+mostrarAviso("Digite um código!");
 return;
 }
 
-if(codigo==="MINERADOR404"){
-codigoAdminSessao="MINERADOR-404";
+if(!jogoPronto()){
+mostrarAviso("Entre na sua conta antes de resgatar códigos.");
+return;
+}
+
+if(sha256Simples(codigo)===ADMIN_HASH){
+codigoAdminSessao=codigo;
 adminDesbloqueado=true;
 salvar();
 somRaro();
 fecharResgate();
-alert("PAINEL ADMINISTRATIVO DESBLOQUEADO!");
+mostrarAviso("PAINEL ADMINISTRATIVO DESBLOQUEADO!","ok");
 return;
 }
 
 if(codigosUsados.includes(codigo)){
-alert("Você já utilizou esse código!");
+mostrarAviso("Você já utilizou esse código!");
 return;
 }
 
@@ -940,11 +1536,11 @@ codigosUsados.push(codigo);
 salvar();
 somRaro();
 fecharResgate();
-alert("Código resgatado! Você recebeu $10.000!");
+mostrarAviso("Código resgatado! Você recebeu $10.000!","ok");
 return;
 }
 
-alert("Código inválido!");
+mostrarAviso("Código inválido!");
 }
 
 document.getElementById("redeemButton").addEventListener("click",resgatarCodigo);
@@ -1403,48 +1999,6 @@ autoClickerProComprado?"COMPRADO":"$ 10M",
 );
 }
 
-// BOTÕES ADMIN
-
-function botaoAdmin(x,y,w,h,cor,titulo,subtitulo){
-retangulo(x,y,w,h,"#10101a",8);
-retangulo(x+2,y+2,w-4,h-4,cor,6);
-
-texto(titulo,x+w/2,y+22,13,"#fff","center");
-
-if(subtitulo)texto(subtitulo,x+w/2,y+37,10,"#f0eaff","center");
-}
-
-function desenharAdmin(){
-retangulo(25,30,450,250,"#171722",12);
-
-const fundo=ctx.createLinearGradient(25,30,475,280);
-fundo.addColorStop(0,"#302044");
-fundo.addColorStop(1,"#171722");
-
-retangulo(27,32,446,246,fundo,10);
-
-ctx.strokeStyle="#b17be8";
-ctx.lineWidth=2;
-ctx.beginPath();
-ctx.roundRect(25,30,450,250,12);
-ctx.stroke();
-
-texto("ADMIN PANEL",45,62,24,"#d8aaff");
-
-retangulo(435,40,28,28,"#b42828",6);
-texto("X",449,61,19,"#fff","center");
-
-texto("Dinheiro atual: $ "+formatarDinheiro(moedas),250,91,16,"#ffdc00","center");
-
-botaoAdmin(55,105,185,48,"#267cbd","ADD MONEY","Escolher quantidade");
-botaoAdmin(260,105,185,48,"#8a45c5","ALL PICKAXES","Desbloquear picaretas");
-botaoAdmin(55,165,185,48,"#238c57","ALL ORES","Desbloquear minérios");
-botaoAdmin(260,165,185,48,"#bd7625","GERENCIAR JOGADOR","Moedas, picaretas e minérios");
-botaoAdmin(45,220,125,42,"#bd3434","REMOVE MONEY","");
-botaoAdmin(188,220,125,42,"#bd7625","REMOVE PICKAXES","");
-botaoAdmin(331,220,125,42,"#238c57","REMOVE ORES","");
-}
-
 // CONFIGURAÇÕES
 
 function desenharConfiguracoes(){
@@ -1546,7 +2100,7 @@ ctx.restore();
 
 // BOTÃO PRINCIPAL
 
-function desenhar(){
+function desenharQuadro(){
 ctx.clearRect(0,0,500,300);
 retangulo(0,0,500,300,"#000");
 
@@ -1634,36 +2188,38 @@ autoClickerProAtivo?"⚡ PRO ON":"⚡ AUTO ON",
 
 // AUTO CLICK FUNCIONANDO
 
-if(!codigoModalAberto){
-const agora=Date.now();
-
-if(autoClickerProAtivo&&autoClickerProComprado){
-if(agora-ultimoAutoClick>=40){
-ultimoAutoClick=agora;
-minerar();
-}
-}else if(autoClickerAtivo&&autoClickerComprado){
-if(agora-ultimoAutoClick>=200){
-ultimoAutoClick=agora;
-minerar();
-}
-}
-}
+processarAutoClick();
 
 // PAINÉIS
 
 if(lojaAberta)desenharLoja();
 if(melhoriasAbertas)desenharMelhorias();
 if(configuracoesAbertas)desenharConfiguracoes();
-if(adminAberto)desenharAdmin();
-
-// AVISOS DENTRO DO JOGO
-
-if(avisoTexto&&Date.now()-avisoTempo<1800){
-retangulo(145,267,210,25,"#5c1717",6);
-texto(avisoTexto,250,284,12,"#ff7777","center");
+if(adminAberto&&Date.now()-ultimaAtualizacaoAdmin>500)atualizarAdmin();
 }
 
+// Auto clicker por tempo decorrido: mantém 5/s (normal) e 25/s (Pro) mesmo com 30 ou 60 FPS
+function processarAutoClick(){
+const agora=Date.now();
+const pro=autoClickerProAtivo&&autoClickerProComprado;
+const normal=!pro&&autoClickerAtivo&&autoClickerComprado;
+const intervalo=pro?40:(normal?200:0);
+if(!intervalo||codigoModalAberto||adminAberto||!jogoPronto()){
+ultimoAutoClick=agora;
+return;
+}
+let repeticoes=0;
+while(agora-ultimoAutoClick>=intervalo&&repeticoes<4){
+ultimoAutoClick+=intervalo;
+minerar();
+repeticoes++;
+}
+if(agora-ultimoAutoClick>=intervalo)ultimoAutoClick=agora;
+}
+
+// Se um quadro falhar, o jogo continua rodando em vez de congelar
+function desenhar(){
+try{desenharQuadro();}catch(erro){console.error("Erro ao desenhar:",erro);}
 requestAnimationFrame(desenhar);
 }
 
@@ -1684,6 +2240,8 @@ canvas.addEventListener("pointerdown",evento=>{
 iniciarAudio();
 
 const p=posicao(evento);
+
+if(!jogoPronto()||adminAberto)return;
 
 // CONFIGURAÇÕES
 
@@ -1742,55 +2300,7 @@ return;
 return;
 }
 
-// ADMIN
-
-if(adminAberto){
-
-if(p.x>=435&&p.x<=463&&p.y>=40&&p.y<=68){
-adminAberto=false;
-somFecharLoja();
-return;
-}
-
-if(p.y>=105&&p.y<=153){
-if(p.x>=55&&p.x<=240){
-adicionarDinheiro();
-return;
-}
-if(p.x>=260&&p.x<=445){
-desbloquearPicaretas();
-return;
-}
-}
-
-if(p.y>=165&&p.y<=213){
-if(p.x>=55&&p.x<=240){
-desbloquearMinerios();
-return;
-}
-if(p.x>=260&&p.x<=445){
-gerenciarJogador();
-return;
-}
-}
-
-if(p.y>=220&&p.y<=265){
-if(p.x>=45&&p.x<=170){
-removerDinheiro();
-return;
-}
-if(p.x>=188&&p.x<=313){
-removerPicaretas();
-return;
-}
-if(p.x>=331&&p.x<=456){
-removerMinerios();
-return;
-}
-}
-
-return;
-}
+// ADMIN: o painel agora é em HTML e cobre o canvas enquanto está aberto
 
 // UPGRADES
 
@@ -1867,8 +2377,7 @@ configuracoesAbertas=true;
 somAbrirLoja();
 
 }else if(adminDesbloqueado&&p.x>=15&&p.x<=145&&p.y>=125&&p.y<=160){
-adminAberto=true;
-somAbrirLoja();
+abrirAdmin();
 
 }else if(p.x>=16&&p.x<=144&&p.y>=170&&p.y<=205){
 melhoriasAbertas=true;
@@ -1933,8 +2442,10 @@ if(!arrastando)return;
 
 const p=posicao(evento);
 
-if(!moveuLista&&p.x>=40&&p.x<=465&&p.y>=105&&p.y<=270){
-selecionarItem(Math.floor((p.y-105)/55));
+const linhaClicada=Math.floor((p.y-105)/55);
+const dentroDaLinha=p.y>=105&&(p.y-105)-linhaClicada*55<=45;
+if(!moveuLista&&dentroDaLinha&&p.x>=40&&p.x<=465&&p.y<=270){
+selecionarItem(linhaClicada);
 }
 
 arrastando=false;
@@ -1966,7 +2477,9 @@ evento.preventDefault();
 
 document.addEventListener("keydown",evento=>{
 
-if(codigoModalAberto)return;
+const alvo=evento.target;
+const digitando=alvo&&(alvo.tagName==="INPUT"||alvo.tagName==="TEXTAREA"||alvo.tagName==="SELECT"||alvo.isContentEditable);
+if(digitando||codigoModalAberto||adminAberto||!jogoPronto())return;
 
 if(evento.code==="Space"&&!lojaAberta&&!adminAberto&&!configuracoesAbertas&&!melhoriasAbertas){
 evento.preventDefault();
