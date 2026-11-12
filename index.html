@@ -410,6 +410,9 @@ const escolha=prompt(`GERENCIAR: ${nome}
 4 - Remover uma picareta específica
 5 - Dar um minério específico
 6 - Remover um minério específico
+7 - BANIR jogador
+8 - DESBANIR jogador
+9 - Transferir moedas para outro jogador
 
 Digite o número da ação:`);
 const operacoes={
@@ -418,30 +421,38 @@ const operacoes={
 "3":["givePickaxe","Número da picareta:"],
 "4":["removePickaxe","Número da picareta:"],
 "5":["giveOre","Número do minério:"],
-"6":["removeOre","Número do minério:"]
+"6":["removeOre","Número do minério:"],
+"7":["banPlayer",""],
+"8":["unbanPlayer",""],
+"9":["transferMoney","Quantidade de moedas para transferir:"]
 };
 if(!operacoes[escolha])return;
 const [acao,pergunta]=operacoes[escolha];
-let valor;
-if(acao.includes("Pickaxe")){
+let valor=0;
+let destinatario="";
+if(acao==="transferMoney"){
+destinatario=prompt("Nome exato do jogador que vai receber as moedas:");
+if(!destinatario)return;
+valor=prompt(pergunta);
+}else if(acao.includes("Pickaxe")){
 alert("PICARETAS:\n"+picaretas.map((x,i)=>i+" - "+x[0]).join("\n"));
 valor=prompt(pergunta);
 }else if(acao.includes("Ore")){
 alert("MINÉRIOS:\n"+minerios.map((x,i)=>i+" - "+x[0]).join("\n"));
 valor=prompt(pergunta);
-}else{
+}else if(acao.includes("Money")){
 valor=prompt(pergunta);
 }
 if(valor===null)return;
 valor=Number(String(valor).replace(",",".").trim());
-if(!Number.isFinite(valor)||valor<0||(acao.includes("Money")&&valor<=0)||(!Number.isInteger(valor)&&!acao.includes("Money"))){
+if(!Number.isFinite(valor)||valor<0||((acao.includes("Money"))&&valor<=0)||((!Number.isInteger(valor))&&acao!=="addMoney"&&acao!=="removeMoney")){
 alert("Valor inválido.");return;
 }
 if(acao.includes("Pickaxe")&&valor>=picaretas.length){alert("Número de picareta inexistente.");return;}
 if(acao.includes("Ore")&&valor>=minerios.length){alert("Número de minério inexistente.");return;}
 try{
 const executar=functions.httpsCallable("adminGerenciarJogador");
-const resposta=await executar({adminCode:codigoAdminSessao,nomeJogador:nome.trim(),acao,valor});
+const resposta=await executar({adminCode:codigoAdminSessao,nomeJogador:nome.trim(),acao,valor,destinatario:destinatario.trim()});
 alert(resposta.data?.mensagem||"Jogador atualizado com sucesso!");
 if(usuarioAtual&&resposta.data?.uid===usuarioAtual.uid&&resposta.data?.dados){
 carregandoDados=true;aplicarDados(resposta.data.dados);carregandoDados=false;
