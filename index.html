@@ -910,16 +910,17 @@ codigoModalAberto=false;
 modal.style.display="none";
 }
 
+// FUNÇÃO CORRIGIDA
 async function resgatarCodigo(){
-const codigo=codeInput.value.trim().toUpperCase();
+const codigo=codeInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
 
 if(!codigo){
 alert("Digite um código!");
 return;
 }
 
-if(codigo==="MINERADOR-404"){
-codigoAdminSessao=codigo;
+if(codigo==="MINERADOR404"){
+codigoAdminSessao="MINERADOR-404";
 adminDesbloqueado=true;
 salvar();
 somRaro();
