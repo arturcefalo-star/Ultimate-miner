@@ -147,6 +147,336 @@ new Promise((_,rejeitar)=>{temporizador=setTimeout(()=>{const erro=new Error("Te
 
 // SALVAMENTO E CONTAS FIREBASE
 
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const modal=document.getElementById("codeModal");
+const codeInput=document.getElementById("codeInput");
+
+if(!ctx)throw new Error("Canvas não disponível");
+
+if(!ctx.roundRect){
+ctx.roundRect=function(x,y,w,h,r=0){
+const a=Math.max(0,Math.min(r,w/2,h/2));
+this.moveTo(x+a,y);
+this.lineTo(x+w-a,y);
+this.quadraticCurveTo(x+w,y,x+w,y+a);
+this.lineTo(x+w,y+h-a);
+this.quadraticCurveTo(x+w,y+h,x+w-a,y+h);
+this.lineTo(x+a,y+h);
+this.quadraticCurveTo(x,y+h,x,y+h-a);
+this.lineTo(x,y+a);
+this.quadraticCurveTo(x,y,x+a,y);
+this.closePath();
+};
+}
+
+const picaretas=[
+["Wood Pickaxe",0,1,[130,75,30]],
+["Stone Pickaxe",180,3,[140,140,140]],
+["Copper Pickaxe",650,6,[190,110,60]],
+["Gold Pickaxe",1800,10,[255,215,55]],
+["Iron Pickaxe",4200,15,[190,190,210]],
+["Diamond Pickaxe",9000,22,[0,220,255]],
+["Obsidian Pickaxe",18000,31,[55,35,80]],
+["Ruby Pickaxe",35000,42,[220,20,60]],
+["Emerald Pickaxe",65000,56,[0,200,90]],
+["Amethyst Pickaxe",110000,73,[150,70,220]],
+["Sapphire Pickaxe",180000,94,[30,100,255]],
+["Titanium Pickaxe",290000,120,[160,180,190]],
+["Cobalt Pickaxe",460000,151,[20,70,180]],
+["Uranium Pickaxe",720000,189,[120,255,20]],
+["Plasma Pickaxe",1100000,235,[0,255,220]],
+["Void Pickaxe",1650000,290,[65,0,110]],
+["Meteor Pickaxe",2400000,355,[110,75,65]],
+["Magma Pickaxe",3400000,430,[255,75,0]],
+["Crystal Pickaxe",4800000,520,[130,220,255]],
+["Ancient Pickaxe",6700000,630,[180,150,90]],
+["Dragon Pickaxe",9200000,760,[180,20,20]],
+["Celestial Pickaxe",12500000,910,[255,240,160]],
+["Quantum Pickaxe",17000000,1080,[0,255,180]],
+["Galactic Pickaxe",23000000,1280,[100,50,220]],
+["Eternity Pickaxe",31000000,1510,[255,100,200]],
+["Infinity Pickaxe",42000000,1780,[255,255,255]],
+["Starsteel Pickaxe",58000000,2100,[120,190,255]],
+["Solar Pickaxe",80000000,2500,[255,150,30]],
+["Lunar Pickaxe",110000000,3000,[190,200,255]],
+["Godslayer Pickaxe",150000000,3600,[255,50,80]],
+["Abyssal Pickaxe",205000000,4300,[75,0,130]],
+["Phoenix Pickaxe",280000000,5200,[255,90,20]],
+["Titan Pickaxe",380000000,6300,[100,220,180]],
+["Divine Pickaxe",520000000,7600,[255,245,170]],
+["Omniverse Pickaxe",710000000,9200,[180,100,255]],
+["Genesis Pickaxe",1000000000,11200,[255,255,255]]
+];
+
+const minerios=[
+["Stone",0,1,[110,110,110]],
+["Coal",100,1.5,[30,30,30]],
+["Copper",400,2,[190,110,60]],
+["Gold",1200,2.5,[255,215,55]],
+["Iron",3000,3,[190,190,210]],
+["Diamond",7000,3.5,[0,220,255]],
+["Obsidian",15000,4,[55,35,80]],
+["Ruby",30000,4.5,[220,20,60]],
+["Emerald",55000,5,[0,200,90]],
+["Amethyst",95000,5.5,[150,70,220]],
+["Sapphire",160000,6,[30,100,255]],
+["Titanium",260000,6.5,[160,180,190]],
+["Cobalt",420000,7,[20,70,180]],
+["Uranium",680000,7.5,[120,255,20]],
+["Plasma",1050000,8,[0,255,220]],
+["Void",1600000,8.5,[65,0,110]],
+["Meteorite",2200000,9,[110,75,65]],
+["Magma",3100000,9.5,[255,75,0]],
+["Crystal",4400000,10,[130,220,255]],
+["Ancient Ore",6200000,10.5,[180,150,90]],
+["Dragonite",8700000,11,[180,20,20]],
+["Celestite",12000000,11.5,[255,240,160]],
+["Quantum Ore",16500000,12,[0,255,180]],
+["Galactium",22500000,12.5,[100,50,220]],
+["Eternium",30000000,13,[255,100,200]],
+["Infinity Ore",40000000,13.5,[255,255,255]],
+["Starsteel Ore",55000000,14,[120,190,255]],
+["Solar Ore",75000000,14.5,[255,150,30]],
+["Lunar Ore",105000000,15,[190,200,255]],
+["Godslayer Ore",145000000,15.5,[255,50,80]],
+["Abyssal Ore",195000000,16,[75,0,130]],
+["Phoenix Ore",270000000,16.5,[255,90,20]],
+["Titan Ore",370000000,17,[100,220,180]],
+["Divine Ore",500000000,17.5,[255,245,170]],
+["Omniverse Ore",690000000,18,[180,100,255]],
+["Genesis Ore",950000000,18.5,[255,255,255]]
+];
+
+let moedas=0;
+let picaretasCompradas=[0],mineriosComprados=[0];
+let picaretaAtual=0,minerioAtual=0;
+
+let lojaAberta=false;
+let adminAberto=false;
+let configuracoesAbertas=false;
+let melhoriasAbertas=false;
+
+let adminDesbloqueado=false;
+let categoria="picaretas",scroll=0;
+
+let diagonal=false,tempoGolpe=0;
+let recompensaTexto="",mostrarRecompensa=false,tempoRecompensa=0;
+
+let arrastando=false,inicioY=0,scrollInicial=0,moveuLista=false;
+let volumeArrastando=false;
+
+let audio=null,audioAtivo=false,masterGain=null;
+let volumeGeral=1;
+
+let codigosUsados=[];
+let codigoModalAberto=false;
+
+// AVISOS
+
+let avisoTexto="";
+let avisoTempo=0;
+
+function mostrarAviso(mensagem){
+avisoTexto=mensagem;
+avisoTempo=Date.now();
+}
+
+window.alert=function(mensagem){
+mostrarAviso(String(mensagem));
+};
+
+// SISTEMA DE MELHORIAS
+
+let multiplicadorCompras=0;
+let precoMultiplicador=100;
+
+let autoClickerComprado=false;
+let autoClickerProComprado=false;
+
+let autoClickerAtivo=false;
+let autoClickerProAtivo=false;
+
+let ultimoAutoClick=Date.now();
+
+function multiplicadorDinheiro(){
+return 1+(multiplicadorCompras*0.5);
+}
+
+function comprarMultiplicador(){
+if(moedas<precoMultiplicador){
+mostrarAviso("SALDO INSUFICIENTE");
+return;
+}
+
+moedas-=precoMultiplicador;
+multiplicadorCompras++;
+precoMultiplicador*=3;
+
+somRaro();
+salvar();
+}
+
+function comprarAutoClicker(){
+if(autoClickerComprado)return;
+
+if(moedas<100000){
+mostrarAviso("SALDO INSUFICIENTE");
+return;
+}
+
+moedas-=100000;
+autoClickerComprado=true;
+autoClickerAtivo=false;
+
+somRaro();
+salvar();
+mostrarAviso("AUTO CLICKER DESBLOQUEADO!");
+}
+
+function comprarAutoClickerPro(){
+if(autoClickerProComprado)return;
+
+if(moedas<10000000){
+mostrarAviso("SALDO INSUFICIENTE");
+return;
+}
+
+moedas-=10000000;
+autoClickerProComprado=true;
+autoClickerProAtivo=false;
+
+somRaro();
+salvar();
+mostrarAviso("AUTO CLICKER PRO DESBLOQUEADO!");
+}
+
+function alternarAutoClicker(){
+if(!autoClickerComprado)return;
+
+autoClickerAtivo=!autoClickerAtivo;
+
+if(autoClickerAtivo){
+autoClickerProAtivo=false;
+ultimoAutoClick=Date.now();
+somEquipar();
+}else{
+somClique();
+}
+
+salvar();
+}
+
+function alternarAutoClickerPro(){
+if(!autoClickerProComprado)return;
+
+autoClickerProAtivo=!autoClickerProAtivo;
+
+if(autoClickerProAtivo){
+autoClickerAtivo=false;
+ultimoAutoClick=Date.now();
+somRaro();
+}else{
+somClique();
+}
+
+salvar();
+}
+
+// ÁUDIO
+
+function iniciarAudio(){
+if(audioAtivo){
+if(audio&&audio.state==="suspended")audio.resume();
+return;
+}
+try{
+const A=window.AudioContext||window.webkitAudioContext;
+if(!A)return;
+audio=new A();
+masterGain=audio.createGain();
+masterGain.gain.value=volumeGeral*1.8;
+masterGain.connect(audio.destination);
+audioAtivo=true;
+if(audio.state==="suspended")audio.resume();
+}catch(e){}
+}
+
+function tom(freq,duracao,volume,tipo="sine",freqFinal=null,atraso=0){
+if(!audioAtivo||!audio)return;
+try{
+const agora=audio.currentTime+atraso;
+const osc=audio.createOscillator();
+const ganho=audio.createGain();
+osc.type=tipo;
+osc.frequency.setValueAtTime(freq,agora);
+if(freqFinal!==null)osc.frequency.exponentialRampToValueAtTime(Math.max(1,freqFinal),agora+duracao);
+ganho.gain.setValueAtTime(0.0001,agora);
+ganho.gain.exponentialRampToValueAtTime(volume,agora+0.01);
+ganho.gain.exponentialRampToValueAtTime(0.0001,agora+duracao);
+osc.connect(ganho);
+ganho.connect(masterGain);
+osc.start(agora);
+osc.stop(agora+duracao+0.02);
+}catch(e){}
+}
+
+function ruido(duracao,volume,frequencia=1200,atraso=0){
+if(!audioAtivo||!audio)return;
+try{
+const tamanho=Math.ceil(audio.sampleRate*duracao);
+const buffer=audio.createBuffer(1,tamanho,audio.sampleRate);
+const dados=buffer.getChannelData(0);
+for(let i=0;i<tamanho;i++)dados[i]=Math.random()*2-1;
+const fonte=audio.createBufferSource();
+const filtro=audio.createBiquadFilter();
+const ganho=audio.createGain();
+const agora=audio.currentTime+atraso;
+fonte.buffer=buffer;
+filtro.type="lowpass";
+filtro.frequency.value=frequencia;
+ganho.gain.setValueAtTime(volume,agora);
+ganho.gain.exponentialRampToValueAtTime(0.0001,agora+duracao);
+fonte.connect(filtro);
+filtro.connect(ganho);
+ganho.connect(masterGain);
+fonte.start(agora);
+fonte.stop(agora+duracao);
+}catch(e){}
+}
+
+function somMinerar(){
+ruido(0.075,0.9,650);
+ruido(0.055,0.55,1100,0.006);
+}
+
+function somCompra(){
+tom(520,0.13,0.25,"sine",700);
+tom(780,0.18,0.25,"sine",1050,0.10);
+tom(1040,0.22,0.20,"sine",1300,0.19);
+}
+
+function somEquipar(){
+tom(650,0.10,0.22,"sine",850);
+tom(950,0.15,0.22,"sine",1150,0.08);
+}
+
+function somRaro(){
+tom(660,0.35,0.25,"sine",1000);
+tom(990,0.40,0.25,"sine",1500,0.10);
+tom(1320,0.55,0.22,"sine",1800,0.22);
+}
+
+function somClique(){tom(480,0.045,0.16,"sine",350)}
+
+function somAbrirLoja(){
+tom(380,0.10,0.22,"sine",550);
+tom(620,0.13,0.20,"sine",850,0.07);
+}
+
+function somFecharLoja(){tom(650,0.10,0.20,"sine",400)}
+
+
 function dadosDoJogo(){
 return{
 moedas,
