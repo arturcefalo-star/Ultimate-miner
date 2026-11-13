@@ -153,8 +153,8 @@ background:#10101c;color:#fff;font-size:16px;outline:none
     <h2>ULTIMATE MINER</h2>
     <p>Entre na sua conta ou crie uma nova para salvar seu progresso.</p>
     <div id="contasSalvas" aria-label="Contas usadas anteriormente"></div>
-    <input id="nomeLogin" placeholder="Nome de usuário" maxlength="20" autocomplete="username">
-    <input id="senhaLogin" type="password" placeholder="Senha (mínimo 6 caracteres)" autocomplete="current-password">
+    <input id="nomeLogin" name="username" placeholder="Nome de usuário" maxlength="20" autocomplete="username">
+    <input id="senhaLogin" name="password" type="password" placeholder="Senha (mínimo 6 caracteres)" autocomplete="current-password">
     <button id="botaoEntrar" type="button">ENTRAR</button>
     <button id="botaoCriar" class="secondary" type="button">CRIAR CONTA</button>
     <p id="mensagemLogin"></p>
@@ -255,6 +255,9 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div>
 <div id="admCampoItem" hidden>
 <select id="admRemotoItem" class="adm-in" aria-label="Item"></select>
+</div>
+<div id="admCampoNivel" hidden>
+<input id="admRemotoNivel" class="adm-in" placeholder="Nível do multiplicador (0 a 500)" inputmode="numeric" autocomplete="off">
 </div>
 <div id="admCampoDest" hidden>
 <input id="admDestinatario" class="adm-in" placeholder="Nome de quem recebe as moedas" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false">
@@ -448,7 +451,8 @@ console.error("Erro ao sincronizar os dados do jogador em tempo real:",error);
 
 function textoErroLogin(error){
 const c=error&&error.code;
-if(c==="auth/user-not-found"||c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Nome ou senha incorretos.";
+if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Senha incorreta. Digite a senha atual.";
+if(c==="auth/user-not-found")return "Essa conta não foi encontrada. Confira o nome de usuário.";
 if(c==="auth/user-disabled")return "Esta conta foi banida ou desativada.";
 if(c==="auth/too-many-requests")return "Muitas tentativas seguidas. Aguarde um pouco e tente de novo.";
 if(c==="auth/network-request-failed")return "Sem conexão com a internet. Tente novamente.";
@@ -1189,6 +1193,8 @@ const admJogador=document.getElementById("admJogador");
 const admAcao=document.getElementById("admAcao");
 const admRemotoValor=document.getElementById("admRemotoValor");
 const admRemotoItem=document.getElementById("admRemotoItem");
+const admCampoNivel=document.getElementById("admCampoNivel");
+const admRemotoNivel=document.getElementById("admRemotoNivel");
 const admDestinatario=document.getElementById("admDestinatario");
 const admCampoValor=document.getElementById("admCampoValor");
 const admCampoItem=document.getElementById("admCampoItem");
@@ -1206,7 +1212,12 @@ removeMoney:{rotulo:"Remover moedas",campo:"valor",perigo:true},
 givePickaxe:{rotulo:"Dar uma picareta",campo:"picareta"},
 removePickaxe:{rotulo:"Remover uma picareta",campo:"picareta",perigo:true},
 giveOre:{rotulo:"Dar um minério",campo:"minerio"},
-removeOre:{rotulo:"Remover um minério",campo:"minerio",perigo:true}
+removeOre:{rotulo:"Remover um minério",campo:"minerio",perigo:true},
+giveAuto:{rotulo:"Liberar Auto Clicker",campo:"nenhum"},
+removeAuto:{rotulo:"Remover Auto Clicker",campo:"nenhum",perigo:true},
+givePro:{rotulo:"Liberar Auto Clicker Pro",campo:"nenhum"},
+removePro:{rotulo:"Remover Auto Clicker Pro",campo:"nenhum",perigo:true},
+setMultiplier:{rotulo:"Definir nível do multiplicador",campo:"nivel"}
 };
 
 function preencherLista(select,lista,inicio){
@@ -1467,6 +1478,7 @@ const def=ACOES_REMOTAS[admAcao.value];
 if(!def)return;
 admCampoValor.hidden=def.campo!=="valor";
 admCampoItem.hidden=!(def.campo==="picareta"||def.campo==="minerio");
+admCampoNivel.hidden=def.campo!=="nivel";
 admCampoDest.hidden=true;
 if(def.campo==="picareta")preencherLista(admRemotoItem,picaretas,0);
 else if(def.campo==="minerio")preencherLista(admRemotoItem,minerios,0);
@@ -1486,10 +1498,13 @@ if(def.campo==="valor"){
 valor=lerNumero(admRemotoValor.value);
 if(!Number.isFinite(valor)||valor<=0){admResultado("Digite uma quantidade válida, como 5000, 2,5M ou 10K.","erro");return;}
 valor=Math.min(valor,MAX_MOEDAS);
-}else{
+}else if(def.campo==="picareta"||def.campo==="minerio"){
 valor=Number(admRemotoItem.value);
 const total=def.campo==="picareta"?picaretas.length:minerios.length;
 if(!Number.isInteger(valor)||valor<0||valor>=total){admResultado("Escolha um item da lista.","erro");return;}
+}else if(def.campo==="nivel"){
+valor=Number(admRemotoNivel.value);
+if(!Number.isInteger(valor)||valor<0||valor>500){admResultado("Digite um nível inteiro de 0 a 500.","erro");return;}
 }
 if(def.perigo&&!confirmarClique(botao))return;
 admExecutando=true;botao.disabled=true;botao.textContent="Salvando...";
@@ -1540,7 +1555,7 @@ dados.picaretasCompradas.sort((a,b)=>a-b);
 dados.mineriosComprados.sort((a,b)=>a-b);
 await comTempoLimite(ref.set({dados,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
 const nome=String(registro.nome||jogador.nome);
-const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:"";
+const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="nivel"?(valor+" ("+(1+valor*0.5).toFixed(1)+"x)"):"";
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
 aplicarDadosDoServidor(dados);
