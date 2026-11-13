@@ -262,6 +262,7 @@ let timerSalvamentoNuvem=null;
 let carregandoDados=false;
 let dadosCarregados=false;
 let saindoDaConta=false;
+let cancelarMonitoramentoJogador=null;
 
 const loginModal=document.getElementById("loginModal");
 const nomeLogin=document.getElementById("nomeLogin");
@@ -336,6 +337,29 @@ aplicarDados(dados);
 carregandoDados=false;
 adminDesbloqueado=admin;
 codigoAdminSessao=codigo;
+}
+
+// Mantém o jogo sincronizado quando o painel Admin altera a conta pelo Firestore.
+function iniciarMonitoramentoJogador(uid){
+if(cancelarMonitoramentoJogador){
+try{cancelarMonitoramentoJogador();}catch(e){}
+cancelarMonitoramentoJogador=null;
+}
+const ref=db.collection("jogadores").doc(uid);
+cancelarMonitoramentoJogador=ref.onSnapshot(snapshot=>{
+if(!usuarioAtual||usuarioAtual.uid!==uid||!dadosCarregados||!snapshot.exists)return;
+if(snapshot.metadata&&snapshot.metadata.hasPendingWrites)return;
+const registro=snapshot.data()||{};
+const dados=registro.dados;
+if(!dados||typeof dados!=="object"||Array.isArray(dados))return;
+// Cancela um salvamento antigo pendente para ele não sobrescrever a alteração remota.
+if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
+aplicarDadosDoServidor(dados);
+try{localStorage.setItem("mining_game_save_"+uid,JSON.stringify(dados));}catch(e){}
+atualizarAdmin();
+},error=>{
+console.error("Erro ao sincronizar os dados do jogador em tempo real:",error);
+});
 }
 
 function textoErroLogin(error){
@@ -757,13 +781,18 @@ autoClickerProAtivo=false;
 
 if(!dados||typeof dados!=="object")return;
 moedas=Math.max(0,Number(dados.moedas)||0);
-picaretasCompradas=Array.isArray(dados.picaretasCompradas)?dados.picaretasCompradas.filter(i=>Number.isInteger(i)&&i>=0&&i<picaretas.length):[0];
-mineriosComprados=Array.isArray(dados.mineriosComprados)?dados.mineriosComprados.filter(i=>Number.isInteger(i)&&i>=0&&i<minerios.length):[0];
+picaretasCompradas=Array.isArray(dados.picaretasCompradas)?dados.picaretasCompradas.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<picaretas.length):[0];
+mineriosComprados=Array.isArray(dados.mineriosComprados)?dados.mineriosComprados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<minerios.length):[0];
+picaretasCompradas=[...new Set(picaretasCompradas)];
+mineriosComprados=[...new Set(mineriosComprados)];
 if(!picaretasCompradas.includes(0))picaretasCompradas.push(0);
 if(!mineriosComprados.includes(0))mineriosComprados.push(0);
-if(picaretasCompradas.includes(dados.picaretaAtual))picaretaAtual=dados.picaretaAtual;
-if(mineriosComprados.includes(dados.minerioAtual))minerioAtual=dados.minerioAtual;
-if(Number.isFinite(dados.volumeGeral))volumeGeral=Math.max(0,Math.min(1,dados.volumeGeral));
+const picaretaSalva=Number(dados.picaretaAtual);
+const minerioSalvo=Number(dados.minerioAtual);
+if(picaretasCompradas.includes(picaretaSalva))picaretaAtual=picaretaSalva;
+if(mineriosComprados.includes(minerioSalvo))minerioAtual=minerioSalvo;
+const volumeSalvo=Number(dados.volumeGeral);
+if(Number.isFinite(volumeSalvo))volumeGeral=Math.max(0,Math.min(1,volumeSalvo));
 adminDesbloqueado=false;
 codigosUsados=Array.isArray(dados.codigosUsados)?dados.codigosUsados.filter(c=>typeof c==="string"):[];
 multiplicadorCompras=Math.max(0,Math.floor(Number(dados.multiplicadorCompras)||0));
@@ -809,6 +838,7 @@ carregandoDados=false;
 adminDesbloqueado=(user.uid===ADMIN_UID);
 codigoAdminSessao="";
 dadosCarregados=true;
+iniciarMonitoramentoJogador(user.uid);
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
@@ -899,6 +929,7 @@ saindoDaConta=true;
 try{
 const usuarioId=usuarioAtual.uid;
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
+if(cancelarMonitoramentoJogador){try{cancelarMonitoramentoJogador();}catch(e){}cancelarMonitoramentoJogador=null;}
 if(dadosCarregados){
 try{
 await db.collection("jogadores").doc(usuarioId).set({
@@ -1324,6 +1355,17 @@ moedas:0,picaretasCompradas:[0],mineriosComprados:[0],picaretaAtual:0,minerioAtu
 volumeGeral:1,codigosUsados:[],multiplicadorCompras:0,precoMultiplicador:100,
 autoClickerComprado:false,autoClickerProComprado:false,autoClickerAtivo:false,autoClickerProAtivo:false
 },registro.dados||{});
+dados.moedas=Math.max(0,Number(dados.moedas)||0);
+dados.picaretasCompradas=Array.isArray(dados.picaretasCompradas)?dados.picaretasCompradas.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<picaretas.length):[0];
+dados.mineriosComprados=Array.isArray(dados.mineriosComprados)?dados.mineriosComprados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<minerios.length):[0];
+dados.picaretasCompradas=[...new Set(dados.picaretasCompradas)];
+dados.mineriosComprados=[...new Set(dados.mineriosComprados)];
+if(!dados.picaretasCompradas.includes(0))dados.picaretasCompradas.push(0);
+if(!dados.mineriosComprados.includes(0))dados.mineriosComprados.push(0);
+dados.picaretaAtual=Number(dados.picaretaAtual)||0;
+dados.minerioAtual=Number(dados.minerioAtual)||0;
+if(!dados.picaretasCompradas.includes(dados.picaretaAtual))dados.picaretaAtual=0;
+if(!dados.mineriosComprados.includes(dados.minerioAtual))dados.minerioAtual=0;
 if(acao==="addMoney")dados.moedas=Math.min(MAX_MOEDAS,Math.max(0,Number(dados.moedas)||0)+valor);
 if(acao==="removeMoney")dados.moedas=Math.max(0,(Number(dados.moedas)||0)-valor);
 if(acao==="givePickaxe"){
@@ -1343,9 +1385,11 @@ dados.mineriosComprados.sort((a,b)=>a-b);
 }
 if(acao==="removeOre"){
 if(valor===0)throw new Error("O minério inicial não pode ser removido.");
-dados.mineriosComprados=(Array.isArray(dados.mineriosComprados)?dados.mineriosComprados:[0]).filter(i=>i!==valor);
+dados.mineriosComprados=dados.mineriosComprados.filter(i=>i!==valor);
 if(dados.minerioAtual===valor)dados.minerioAtual=0;
 }
+dados.picaretasCompradas.sort((a,b)=>a-b);
+dados.mineriosComprados.sort((a,b)=>a-b);
 await comTempoLimite(ref.set({dados,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
 const nome=String(registro.nome||jogador.nome);
 const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:"";
