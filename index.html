@@ -131,7 +131,6 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 </head>
 <body>
 
@@ -221,8 +220,8 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div>
 
 <div id="abaOutro" class="adm-aba" hidden>
-<p class="adm-dica">Roda no servidor (Cloud Function). O jogador precisa ter conta. Se ele estiver online, o jogo dele pode sobrescrever a mudança no próximo salvamento.</p>
-<input id="admJogador" class="adm-in" placeholder="Nome exato do jogador" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false">
+<p class="adm-dica">Escolha uma conta cadastrada. As alterações são salvas diretamente no Firebase.</p>
+<div class="adm-linha"><select id="admJogador" class="adm-in" aria-label="Selecionar jogador" style="margin:0"></select><button id="admAtualizarJogadores" type="button" class="adm-b roxo" style="max-width:112px">Atualizar lista</button></div>
 <select id="admAcao" class="adm-in" aria-label="Ação"></select>
 
 <div id="admCampoValor">
@@ -256,7 +255,7 @@ appId:"1:204675648250:web:da41d34510c910425d1743"
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
-let functions=firebase.functions();
+const ADMIN_UID="fWMMFNbKxmYozmkwsAwPTJO2skI3";
 
 let usuarioAtual=null;
 let timerSalvamentoNuvem=null;
@@ -324,54 +323,6 @@ valor*=SUFIXOS_NUMERO[m[2]];
 return valor;
 }
 
-// SHA-256 síncrono (assim o código de admin não precisa ficar escrito no arquivo)
-function sha256Simples(texto){
-const dados=new TextEncoder().encode(String(texto));
-const K=[],H=[];
-for(let n=2,i=0;i<64;n++){
-let primo=true;
-for(let d=2;d*d<=n;d++)if(n%d===0){primo=false;break;}
-if(!primo)continue;
-if(i<8)H[i]=(Math.pow(n,1/2)%1)*4294967296|0;
-K[i]=(Math.pow(n,1/3)%1)*4294967296|0;
-i++;
-}
-const bits=dados.length*8;
-const total=((dados.length+9+63)>>6)<<6;
-const bloco=new Uint8Array(total);
-bloco.set(dados);
-bloco[dados.length]=0x80;
-const vis=new DataView(bloco.buffer);
-vis.setUint32(total-8,Math.floor(bits/4294967296));
-vis.setUint32(total-4,bits>>>0);
-const W=new Array(64);
-const rot=(x,n)=>(x>>>n)|(x<<(32-n));
-for(let off=0;off<total;off+=64){
-for(let t=0;t<16;t++)W[t]=vis.getUint32(off+t*4)|0;
-for(let t=16;t<64;t++){
-const s0=rot(W[t-15],7)^rot(W[t-15],18)^(W[t-15]>>>3);
-const s1=rot(W[t-2],17)^rot(W[t-2],19)^(W[t-2]>>>10);
-W[t]=(W[t-16]+s0+W[t-7]+s1)|0;
-}
-let a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
-for(let t=0;t<64;t++){
-const S1=rot(e,6)^rot(e,11)^rot(e,25);
-const ch=(e&f)^(~e&g);
-const t1=(h+S1+ch+K[t]+W[t])|0;
-const S0=rot(a,2)^rot(a,13)^rot(a,22);
-const maj=(a&b)^(a&c)^(b&c);
-const t2=(S0+maj)|0;
-h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
-}
-H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;
-H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0;
-}
-return H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("");
-}
-
-// Hash do código de administrador (o código em si não fica mais escrito aqui)
-const ADMIN_HASH="af64be2399c0701518f085a99a1da3d8e3d367c07282fc136f66b2529d143341";
-
 // O jogo só pode salvar depois que o progresso da conta foi carregado
 function jogoPronto(){
 return !!usuarioAtual&&dadosCarregados;
@@ -407,18 +358,6 @@ if(c==="app/timeout")return "O Firebase demorou demais para responder. A conta p
 return "Não foi possível criar a conta: "+((error&&error.message)||"erro desconhecido");
 }
 
-function textoErroFuncao(error){
-const codigo=String(error&&error.code||"");
-const msg=String(error&&error.message||"").trim();
-if(codigo==="app/timeout")return msg;
-if(codigo==="functions/not-found"&&/^not[_ -]?found$/i.test(msg))return "A função adminGerenciarJogador não está publicada no Firebase (ou está em outra região).";
-if(codigo==="functions/internal"&&/^internal$/i.test(msg))return "Falha interna do servidor. Confira se a função adminGerenciarJogador está publicada.";
-if(codigo==="functions/permission-denied")return "O servidor negou o acesso"+(msg&&!/^permission[_ -]?denied$/i.test(msg)?": "+msg:". Confira o código de administrador configurado na função.");
-if(codigo==="functions/unauthenticated")return "Você precisa estar logado para usar o painel.";
-if(codigo==="functions/unavailable")return "Servidor indisponível. Verifique a internet e tente de novo.";
-if(codigo==="functions/invalid-argument")return "O servidor recusou os dados enviados"+(msg?": "+msg:".");
-return "Falha ao executar a ação: "+(msg||codigo||"erro desconhecido");
-}
 
 
 // SALVAMENTO E CONTAS FIREBASE
@@ -765,7 +704,7 @@ mineriosComprados,
 picaretaAtual,
 minerioAtual,
 volumeGeral,
-adminDesbloqueado,
+adminDesbloqueado:false,
 codigosUsados,
 multiplicadorCompras,
 precoMultiplicador,
@@ -867,6 +806,8 @@ carregandoDados=true;
 aplicarDados(dadosConta);
 try{localStorage.setItem("mining_game_save_"+user.uid,JSON.stringify(dadosConta));}catch(e){}
 carregandoDados=false;
+adminDesbloqueado=(user.uid===ADMIN_UID);
+codigoAdminSessao="";
 dadosCarregados=true;
 loginModal.style.display="none";
 mensagemLogin.textContent="";
@@ -1079,17 +1020,14 @@ const admHistorico=[];
 let ultimaAtualizacaoAdmin=0;
 let admExecutando=false;
 
-// Ações que o servidor aceita (mesmos nomes e parâmetros da função adminGerenciarJogador)
+// Ações disponíveis para administrar outras contas pelo Firestore
 const ACOES_REMOTAS={
 addMoney:{rotulo:"Adicionar moedas",campo:"valor"},
 removeMoney:{rotulo:"Remover moedas",campo:"valor",perigo:true},
 givePickaxe:{rotulo:"Dar uma picareta",campo:"picareta"},
 removePickaxe:{rotulo:"Remover uma picareta",campo:"picareta",perigo:true},
 giveOre:{rotulo:"Dar um minério",campo:"minerio"},
-removeOre:{rotulo:"Remover um minério",campo:"minerio",perigo:true},
-banPlayer:{rotulo:"Banir jogador",campo:null,perigo:true},
-unbanPlayer:{rotulo:"Desbanir jogador",campo:null},
-transferMoney:{rotulo:"Transferir moedas para outro jogador",campo:"transferencia",perigo:true}
+removeOre:{rotulo:"Remover um minério",campo:"minerio",perigo:true}
 };
 
 function preencherLista(select,lista,inicio){
@@ -1151,10 +1089,11 @@ admResumo.appendChild(chip);
 }
 
 function abrirAdmin(){
-if(!adminDesbloqueado||!jogoPronto())return;
+if(!adminDesbloqueado||!jogoPronto()||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
 adminAberto=true;
 adminModal.style.display="flex";
 atualizarAdmin();
+carregarJogadoresAdmin();
 somAbrirLoja();
 }
 
@@ -1307,93 +1246,120 @@ admResultado("Multiplicador no nível "+n+" ("+multiplicadorDinheiro().toFixed(1
 atualizarAdmin();
 }
 
-// OUTRO JOGADOR (servidor)
+// OUTRO JOGADOR (Firestore, autorizado pelas regras do projeto)
+let jogadoresAdmin=[];
+
+async function carregarJogadoresAdmin(){
+if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+const select=admJogador;
+const valorAnterior=select.value;
+select.disabled=true;
+select.textContent="";
+const carregando=document.createElement("option");
+carregando.value="";carregando.textContent="Carregando jogadores...";
+select.appendChild(carregando);
+try{
+const snapshot=await comTempoLimite(db.collection("jogadores").get(),20000,"listar jogadores");
+jogadoresAdmin=snapshot.docs.map(doc=>({
+uid:doc.id,
+nome:String((doc.data()&&doc.data().nome)||"Jogador"),
+ dados:(doc.data()&&doc.data().dados)||{}
+})).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
+select.textContent="";
+for(const jogador of jogadoresAdmin){
+const op=document.createElement("option");
+op.value=jogador.uid;
+op.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"");
+select.appendChild(op);
+}
+if(!jogadoresAdmin.length){const op=document.createElement("option");op.value="";op.textContent="Nenhum jogador encontrado";select.appendChild(op);}
+if(jogadoresAdmin.some(j=>j.uid===valorAnterior))select.value=valorAnterior;
+admResultado("Lista carregada: "+jogadoresAdmin.length+" conta(s).","ok");
+}catch(error){
+console.error("Erro ao listar jogadores:",error);
+select.textContent="";
+const op=document.createElement("option");op.value="";op.textContent="Erro ao carregar jogadores";select.appendChild(op);
+admResultado("Não foi possível listar jogadores. Confira as regras do Firestore: "+(error.message||"erro"),"erro");
+}finally{select.disabled=false;}
+}
 
 function atualizarCamposRemotos(){
 const def=ACOES_REMOTAS[admAcao.value];
 if(!def)return;
-admCampoValor.hidden=!(def.campo==="valor"||def.campo==="transferencia");
+admCampoValor.hidden=def.campo!=="valor";
 admCampoItem.hidden=!(def.campo==="picareta"||def.campo==="minerio");
-admCampoDest.hidden=def.campo!=="transferencia";
+admCampoDest.hidden=true;
 if(def.campo==="picareta")preencherLista(admRemotoItem,picaretas,0);
 else if(def.campo==="minerio")preencherLista(admRemotoItem,minerios,0);
 }
 
 async function admExecutarRemoto(botao){
 if(admExecutando)return;
-
-const nome=admJogador.value.trim();
-if(!nomeValido(nome)){
-admResultado("Nome do jogador inválido: use de 3 a 20 letras, números ou _.","erro");
-return;
-}
-
+if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+const uid=admJogador.value;
+const jogador=jogadoresAdmin.find(j=>j.uid===uid);
+if(!jogador){admResultado("Selecione um jogador da lista.","erro");return;}
 const acao=admAcao.value;
 const def=ACOES_REMOTAS[acao];
-if(!def){
-admResultado("Escolha uma ação.","erro");
-return;
-}
-
+if(!def){admResultado("Escolha uma ação válida.","erro");return;}
 let valor=0;
-let destinatario="";
-
-if(def.campo==="valor"||def.campo==="transferencia"){
+if(def.campo==="valor"){
 valor=lerNumero(admRemotoValor.value);
-if(!Number.isFinite(valor)||valor<=0){
-admResultado("Digite uma quantidade válida, como 5000, 2,5M ou 10K.","erro");
-return;
-}
-if(def.campo==="transferencia"&&!Number.isInteger(valor)){
-admResultado("A transferência precisa ser um número inteiro de moedas.","erro");
-return;
-}
+if(!Number.isFinite(valor)||valor<=0){admResultado("Digite uma quantidade válida, como 5000, 2,5M ou 10K.","erro");return;}
 valor=Math.min(valor,MAX_MOEDAS);
-}else if(def.campo==="picareta"||def.campo==="minerio"){
+}else{
 valor=Number(admRemotoItem.value);
 const total=def.campo==="picareta"?picaretas.length:minerios.length;
-if(!Number.isInteger(valor)||valor<0||valor>=total){
-admResultado("Escolha um item da lista.","erro");
-return;
+if(!Number.isInteger(valor)||valor<0||valor>=total){admResultado("Escolha um item da lista.","erro");return;}
 }
-}
-
-if(def.campo==="transferencia"){
-destinatario=admDestinatario.value.trim();
-if(!nomeValido(destinatario)){
-admResultado("Nome de quem recebe inválido: use de 3 a 20 letras, números ou _.","erro");
-return;
-}
-if(destinatario.toLowerCase()===nome.toLowerCase()){
-admResultado("Quem envia e quem recebe são o mesmo jogador.","erro");
-return;
-}
-}
-
 if(def.perigo&&!confirmarClique(botao))return;
-
-admExecutando=true;
-botao.disabled=true;
-botao.textContent="Enviando...";
+admExecutando=true;botao.disabled=true;botao.textContent="Salvando...";
 try{
-const executar=functions.httpsCallable("adminGerenciarJogador");
-const resposta=await comTempoLimite(
-executar({adminCode:codigoAdminSessao,nomeJogador:nome,acao,valor,destinatario}),
-30000,"executar a ação no servidor"
-);
-const dados=resposta&&resposta.data?resposta.data:{};
-admResultado(def.rotulo+" em "+nome+": "+(dados.mensagem||"concluído com sucesso."),"ok");
-if(usuarioAtual&&dados.uid===usuarioAtual.uid&&dados.dados){
-aplicarDadosDoServidor(dados.dados);
+const ref=db.collection("jogadores").doc(uid);
+const snap=await comTempoLimite(ref.get(),15000,"consultar jogador selecionado");
+if(!snap.exists)throw new Error("Essa conta não existe mais.");
+const registro=snap.data()||{};
+const dados=Object.assign({
+moedas:0,picaretasCompradas:[0],mineriosComprados:[0],picaretaAtual:0,minerioAtual:0,
+volumeGeral:1,codigosUsados:[],multiplicadorCompras:0,precoMultiplicador:100,
+autoClickerComprado:false,autoClickerProComprado:false,autoClickerAtivo:false,autoClickerProAtivo:false
+},registro.dados||{});
+if(acao==="addMoney")dados.moedas=Math.min(MAX_MOEDAS,Math.max(0,Number(dados.moedas)||0)+valor);
+if(acao==="removeMoney")dados.moedas=Math.max(0,(Number(dados.moedas)||0)-valor);
+if(acao==="givePickaxe"){
+dados.picaretasCompradas=Array.isArray(dados.picaretasCompradas)?dados.picaretasCompradas:[0];
+if(!dados.picaretasCompradas.includes(valor))dados.picaretasCompradas.push(valor);
+dados.picaretasCompradas.sort((a,b)=>a-b);
+}
+if(acao==="removePickaxe"){
+if(valor===0)throw new Error("A picareta inicial não pode ser removida.");
+dados.picaretasCompradas=(Array.isArray(dados.picaretasCompradas)?dados.picaretasCompradas:[0]).filter(i=>i!==valor);
+if(dados.picaretaAtual===valor)dados.picaretaAtual=0;
+}
+if(acao==="giveOre"){
+dados.mineriosComprados=Array.isArray(dados.mineriosComprados)?dados.mineriosComprados:[0];
+if(!dados.mineriosComprados.includes(valor))dados.mineriosComprados.push(valor);
+dados.mineriosComprados.sort((a,b)=>a-b);
+}
+if(acao==="removeOre"){
+if(valor===0)throw new Error("O minério inicial não pode ser removido.");
+dados.mineriosComprados=(Array.isArray(dados.mineriosComprados)?dados.mineriosComprados:[0]).filter(i=>i!==valor);
+if(dados.minerioAtual===valor)dados.minerioAtual=0;
+}
+await comTempoLimite(ref.set({dados,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
+const nome=String(registro.nome||jogador.nome);
+const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:"";
+admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
+if(uid===usuarioAtual.uid){
+aplicarDadosDoServidor(dados);
 atualizarAdmin();
 }
+jogador.dados=dados;
 }catch(error){
-console.error("Erro no painel admin:",error);
-admResultado(textoErroFuncao(error),"erro");
+console.error("Erro ao gerenciar jogador:",error);
+admResultado("Não foi possível alterar a conta: "+(error.message||"erro no Firestore"),"erro");
 }finally{
-admExecutando=false;
-botao.disabled=false;
-botao.textContent="Executar";
+admExecutando=false;botao.disabled=false;botao.textContent="Executar";
 }
 }
 
@@ -1408,6 +1374,7 @@ opcao.textContent=def.rotulo;
 admAcao.appendChild(opcao);
 }
 admAcao.addEventListener("change",atualizarCamposRemotos);
+document.getElementById("admAtualizarJogadores").addEventListener("click",carregarJogadoresAdmin);
 atualizarCamposRemotos();
 
 adminBox.addEventListener("click",evento=>{
@@ -1512,16 +1479,6 @@ return;
 
 if(!jogoPronto()){
 mostrarAviso("Entre na sua conta antes de resgatar códigos.");
-return;
-}
-
-if(sha256Simples(codigo)===ADMIN_HASH){
-codigoAdminSessao=codigo;
-adminDesbloqueado=true;
-salvar();
-somRaro();
-fecharResgate();
-mostrarAviso("PAINEL ADMINISTRATIVO DESBLOQUEADO!","ok");
 return;
 }
 
@@ -2134,22 +2091,23 @@ desenharEngrenagem(471,20);
 
 // BOTÃO UPGRADES
 
+const gradUpgrade=ctx.createLinearGradient(18,172,142,203);
+gradUpgrade.addColorStop(0,"#9b59d0");
+gradUpgrade.addColorStop(0.52,"#7134bd");
+gradUpgrade.addColorStop(1,"#45206f");
 retangulo(16,170,128,35,"#30144e",8);
-retangulo(18,172,124,31,"#7134bd",6);
-
-ctx.strokeStyle="#fff";
-ctx.lineWidth=2;
-ctx.beginPath();
-ctx.roundRect(18,172,124,31,6);
-ctx.stroke();
-
+retangulo(18,172,124,31,gradUpgrade,6);
 texto("⬆ UPGRADES",80,193,15,"#fff","center");
 
 // BOTÃO ADMIN
 
-if(adminDesbloqueado){
+if(adminDesbloqueado&&usuarioAtual&&usuarioAtual.uid===ADMIN_UID){
+const gradAdmin=ctx.createLinearGradient(18,127,142,158);
+gradAdmin.addColorStop(0,"#c47bea");
+gradAdmin.addColorStop(0.48,"#914bd0");
+gradAdmin.addColorStop(1,"#54268d");
 retangulo(16,125,128,35,"#30144e",8);
-retangulo(18,127,124,31,"#793ac2",6);
+retangulo(18,127,124,31,gradAdmin,6);
 texto("⚙ ADMIN",80,148,15,"#fff","center");
 }
 
@@ -2376,7 +2334,7 @@ if(p.x>=450&&p.x<=492&&p.y>=5&&p.y<=35){
 configuracoesAbertas=true;
 somAbrirLoja();
 
-}else if(adminDesbloqueado&&p.x>=15&&p.x<=145&&p.y>=125&&p.y<=160){
+}else if(adminDesbloqueado&&usuarioAtual&&usuarioAtual.uid===ADMIN_UID&&p.x>=15&&p.x<=145&&p.y>=125&&p.y<=160){
 abrirAdmin();
 
 }else if(p.x>=16&&p.x<=144&&p.y>=170&&p.y<=205){
