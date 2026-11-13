@@ -341,10 +341,22 @@ linha.className="conta-salva";
 const escolher=document.createElement("button");
 escolher.type="button";
 escolher.textContent="👤 "+nome;
-escolher.addEventListener("click",()=>{
+escolher.addEventListener("click",async()=>{
 nomeLogin.value=nome;
+const emailSalvo=usuarioEmail(nome);
+const sessaoAtual=auth.currentUser;
+if(sessaoAtual&&sessaoAtual.email&&sessaoAtual.email.toLowerCase()===emailSalvo.toLowerCase()){
+  senhaLogin.value="";
+  mensagemDeLogin("Conta reconhecida. Entrando sem pedir a senha...",false);
+  await entrarNoJogo(sessaoAtual,nome);
+  return;
+}
 senhaLogin.value="";
-mensagemDeLogin("Conta selecionada. Digite sua senha para entrar.",false);
+if(sessaoAtual){
+  mensagemDeLogin("Esta conta não é a sessão conectada. Para trocar de conta, digite a senha dela.",true);
+}else{
+  mensagemDeLogin("A sessão desta conta não está conectada. Digite a senha para entrar.",true);
+}
 senhaLogin.focus();
 });
 const remover=document.createElement("button");
