@@ -60,6 +60,18 @@ font-size:15px;font-weight:bold;color:white;background:#286bd2
 #loginBox button.secondary{background:#454556}
 #loginBox button:disabled{opacity:.55}
 #mensagemLogin{min-height:18px;color:#ffb0b0!important}
+#contasSalvas{display:flex;flex-direction:column;gap:6px;margin:10px 0;max-height:120px;overflow:auto}
+.conta-salva{display:flex;align-items:center;gap:6px}
+.conta-salva button{margin:0;padding:10px;background:#263b65;text-align:left;flex:1}
+.conta-salva button.remover-conta{flex:0 0 38px;width:38px;padding:10px;background:#633333}
+#senhaModal{display:none;position:fixed;inset:0;background:#000d;align-items:center;justify-content:center;z-index:15000;padding:18px}
+#senhaBox{width:min(360px,92vw);padding:22px;border-radius:16px;background:linear-gradient(145deg,#292b48,#151522);border:2px solid #64b4ff;color:#fff;text-align:center;box-shadow:0 0 30px #376cff55}
+#senhaBox h2{margin:0 0 8px;color:#80baff}
+#senhaBox p{font-size:13px;color:#bbb;line-height:1.4}
+#senhaBox input{width:100%;padding:12px;margin:6px 0;border:1px solid #657acb;border-radius:9px;background:#10101c;color:white;font-size:16px;outline:none}
+#senhaBox button{width:100%;padding:12px;margin-top:8px;border:0;border-radius:9px;font-size:14px;font-weight:bold;color:white;background:#286bd2}
+#senhaBox button.cancel{background:#454556}
+#mensagemSenha{min-height:18px;color:#ffb0b0;font-size:12px}
 
 [hidden]{display:none!important}
 
@@ -140,11 +152,25 @@ background:#10101c;color:#fff;font-size:16px;outline:none
   <div id="loginBox">
     <h2>ULTIMATE MINER</h2>
     <p>Entre na sua conta ou crie uma nova para salvar seu progresso.</p>
+    <div id="contasSalvas" aria-label="Contas usadas anteriormente"></div>
     <input id="nomeLogin" placeholder="Nome de usuário" maxlength="20" autocomplete="username">
     <input id="senhaLogin" type="password" placeholder="Senha (mínimo 6 caracteres)" autocomplete="current-password">
     <button id="botaoEntrar" type="button">ENTRAR</button>
     <button id="botaoCriar" class="secondary" type="button">CRIAR CONTA</button>
     <p id="mensagemLogin"></p>
+  </div>
+</div>
+
+<div id="senhaModal">
+  <div id="senhaBox" role="dialog" aria-modal="true" aria-label="Trocar senha">
+    <h2>🔐 TROCAR SENHA</h2>
+    <p>Confirme sua senha atual e escolha uma nova senha.</p>
+    <input id="senhaAtual" type="password" placeholder="Senha atual" autocomplete="current-password">
+    <input id="senhaNova" type="password" placeholder="Nova senha (mínimo 6 caracteres)" autocomplete="new-password">
+    <input id="senhaConfirmar" type="password" placeholder="Confirmar nova senha" autocomplete="new-password">
+    <button id="botaoAtualizarSenha" type="button">ATUALIZAR SENHA</button>
+    <button id="botaoCancelarSenha" class="cancel" type="button">CANCELAR</button>
+    <p id="mensagemSenha"></p>
   </div>
 </div>
 
@@ -270,6 +296,64 @@ const senhaLogin=document.getElementById("senhaLogin");
 const mensagemLogin=document.getElementById("mensagemLogin");
 const botaoEntrar=document.getElementById("botaoEntrar");
 const botaoCriar=document.getElementById("botaoCriar");
+const contasSalvas=document.getElementById("contasSalvas");
+const senhaModal=document.getElementById("senhaModal");
+const senhaAtualInput=document.getElementById("senhaAtual");
+const senhaNovaInput=document.getElementById("senhaNova");
+const senhaConfirmarInput=document.getElementById("senhaConfirmar");
+const mensagemSenha=document.getElementById("mensagemSenha");
+const botaoAtualizarSenha=document.getElementById("botaoAtualizarSenha");
+const botaoCancelarSenha=document.getElementById("botaoCancelarSenha");
+
+const CHAVE_CONTAS_SALVAS="ultimate_miner_contas_salvas";
+function lerContasSalvas(){
+try{
+const lista=JSON.parse(localStorage.getItem(CHAVE_CONTAS_SALVAS)||"[]");
+return Array.isArray(lista)?lista.filter(n=>typeof n==="string"&&nomeValido(n)).slice(0,8):[];
+}catch(e){return [];}
+}
+function salvarContaUsada(nome){
+const lista=lerContasSalvas().filter(n=>n.toLowerCase()!==nome.toLowerCase());
+lista.unshift(nome);
+try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista.slice(0,8)));}catch(e){}
+mostrarContasSalvas();
+}
+function removerContaSalva(nome){
+const lista=lerContasSalvas().filter(n=>n.toLowerCase()!==nome.toLowerCase());
+try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista));}catch(e){}
+mostrarContasSalvas();
+}
+function mostrarContasSalvas(){
+if(!contasSalvas)return;
+contasSalvas.innerHTML="";
+const lista=lerContasSalvas();
+if(!lista.length)return;
+const titulo=document.createElement("div");
+titulo.textContent="CONTAS USADAS";
+titulo.style.cssText="font-size:11px;color:#9db9ef;text-align:left;font-weight:bold;margin-bottom:2px";
+contasSalvas.appendChild(titulo);
+lista.forEach(nome=>{
+const linha=document.createElement("div");
+linha.className="conta-salva";
+const escolher=document.createElement("button");
+escolher.type="button";
+escolher.textContent="👤 "+nome;
+escolher.addEventListener("click",()=>{
+nomeLogin.value=nome;
+senhaLogin.value="";
+mensagemDeLogin("Conta selecionada. Digite sua senha para entrar.",false);
+senhaLogin.focus();
+});
+const remover=document.createElement("button");
+remover.type="button";
+remover.className="remover-conta";
+remover.textContent="×";
+remover.title="Remover conta desta lista";
+remover.addEventListener("click",()=>removerContaSalva(nome));
+linha.append(escolher,remover);
+contasSalvas.appendChild(linha);
+});
+}
 
 function mensagemDeLogin(texto,erro=true){
 mensagemLogin.textContent=texto;
@@ -842,6 +926,7 @@ iniciarMonitoramentoJogador(user.uid);
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
+salvarContaUsada(nome||user.displayName||user.email.split("@")[0]);
 return true;
 }catch(error){
 usuarioAtual=null;
@@ -922,6 +1007,69 @@ bloquearLogin(false);
 botaoEntrar.addEventListener("click",fazerLogin);
 botaoCriar.addEventListener("click",criarConta);
 senhaLogin.addEventListener("keydown",e=>{if(e.key==="Enter")fazerLogin();});
+mostrarContasSalvas();
+
+function abrirTrocaSenha(){
+if(!usuarioAtual){mostrarAviso("Entre em uma conta primeiro.","erro");return;}
+senhaAtualInput.value="";
+senhaNovaInput.value="";
+senhaConfirmarInput.value="";
+mensagemSenha.textContent="";
+senhaModal.style.display="flex";
+setTimeout(()=>senhaAtualInput.focus(),80);
+}
+function fecharTrocaSenha(){
+senhaModal.style.display="none";
+senhaAtualInput.value="";
+senhaNovaInput.value="";
+senhaConfirmarInput.value="";
+}
+async function atualizarSenhaDaConta(){
+if(!usuarioAtual||!auth.currentUser){mensagemSenha.textContent="Nenhuma conta conectada.";return;}
+const atual=senhaAtualInput.value;
+const nova=senhaNovaInput.value;
+const confirmar=senhaConfirmarInput.value;
+if(!atual){mensagemSenha.textContent="Digite sua senha atual.";return;}
+if(nova.length<6){mensagemSenha.textContent="A nova senha precisa ter pelo menos 6 caracteres.";return;}
+if(nova!==confirmar){mensagemSenha.textContent="As novas senhas não coincidem.";return;}
+if(nova===atual){mensagemSenha.textContent="Escolha uma senha diferente da atual.";return;}
+botaoAtualizarSenha.disabled=true;
+botaoAtualizarSenha.textContent="ATUALIZANDO...";
+mensagemSenha.style.color="#bcd6ff";
+mensagemSenha.textContent="Verificando sua senha atual...";
+try{
+const credencial=firebase.auth.EmailAuthProvider.credential(
+auth.currentUser.email,atual
+);
+await comTempoLimite(auth.currentUser.reauthenticateWithCredential(credencial),20000,"confirmar a senha atual");
+await comTempoLimite(auth.currentUser.updatePassword(nova),20000,"atualizar a senha");
+mensagemSenha.style.color="#9dffb0";
+mensagemSenha.textContent="Senha atualizada com sucesso!";
+senhaAtualInput.value="";
+senhaNovaInput.value="";
+senhaConfirmarInput.value="";
+setTimeout(fecharTrocaSenha,1200);
+}catch(error){
+console.error("Erro ao trocar senha:",error);
+mensagemSenha.style.color="#ffb0b0";
+if(error.code==="auth/wrong-password"||error.code==="auth/invalid-credential"){
+mensagemSenha.textContent="A senha atual está incorreta.";
+}else if(error.code==="auth/weak-password"){
+mensagemSenha.textContent="A nova senha é fraca. Use pelo menos 6 caracteres.";
+}else if(error.code==="auth/requires-recent-login"){
+mensagemSenha.textContent="Por segurança, entre novamente na conta e tente trocar a senha.";
+}else{
+mensagemSenha.textContent="Não foi possível atualizar: "+(error.message||"erro desconhecido");
+}
+}finally{
+botaoAtualizarSenha.disabled=false;
+botaoAtualizarSenha.textContent="ATUALIZAR SENHA";
+}
+}
+botaoAtualizarSenha.addEventListener("click",atualizarSenhaDaConta);
+botaoCancelarSenha.addEventListener("click",fecharTrocaSenha);
+senhaModal.addEventListener("pointerdown",e=>{if(e.target===senhaModal)fecharTrocaSenha();});
+senhaConfirmarInput.addEventListener("keydown",e=>{if(e.key==="Enter")atualizarSenhaDaConta();});
 
 async function sairDaConta(){
 if(!usuarioAtual||saindoDaConta)return;
@@ -2024,47 +2172,52 @@ texto("X",449,61,19,"#fff","center");
 
 // VOLUME
 
-texto("VOLUME DOS EFEITOS",250,98,15,"#fff","center");
+texto("VOLUME DOS EFEITOS",250,91,15,"#fff","center");
 
-retangulo(90,111,320,10,"#414150",6);
-retangulo(90,111,320*volumeGeral,10,"#42a5ff",6);
-retangulo(82+320*volumeGeral,103,18,26,"#fff",7);
+retangulo(90,103,320,10,"#414150",6);
+retangulo(90,103,320*volumeGeral,10,"#42a5ff",6);
+retangulo(82+320*volumeGeral,95,18,26,"#fff",7);
 
-texto(Math.round(volumeGeral*100)+"%",250,146,15,"#ffdc00","center");
+texto(Math.round(volumeGeral*100)+"%",250,137,15,"#ffdc00","center");
 
 // AUTO CLICK NORMAL
 
 if(autoClickerComprado){
-retangulo(45,155,410,32,autoClickerAtivo?"#187d43":"#414150",7);
+retangulo(45,145,410,30,autoClickerAtivo?"#187d43":"#414150",7);
 
-texto("AUTO CLICKER",57,176,13,"#fff");
+texto("AUTO CLICKER",57,165,13,"#fff");
 
 texto(
 autoClickerAtivo?"ATIVADO":"DESATIVADO",
-437,176,12,autoClickerAtivo?"#75ff9a":"#bbb","right"
+437,165,12,autoClickerAtivo?"#75ff9a":"#bbb","right"
 );
 }
 
 // AUTO CLICK PRO
 
 if(autoClickerProComprado){
-retangulo(45,193,410,32,autoClickerProAtivo?"#7134bd":"#414150",7);
+retangulo(45,179,410,30,autoClickerProAtivo?"#7134bd":"#414150",7);
 
-texto("AUTO CLICKER PRO",57,214,13,"#fff");
+texto("AUTO CLICKER PRO",57,199,13,"#fff");
 
 texto(
 autoClickerProAtivo?"ATIVADO":"DESATIVADO",
-437,214,12,autoClickerProAtivo?"#e3baff":"#bbb","right"
+437,199,12,autoClickerProAtivo?"#e3baff":"#bbb","right"
 );
 }
 
+// TROCAR SENHA
+
+retangulo(45,214,410,27,"#2864a8",7);
+texto("🔐 TROCAR SENHA",250,233,13,"#fff","center");
+
 // CÓDIGOS E SAIR DA CONTA
 
-retangulo(45,238,190,32,"#7134bd",8);
-texto("🎁 CÓDIGOS",140,260,14,"#fff","center");
+retangulo(45,246,190,28,"#7134bd",7);
+texto("🎁 CÓDIGOS",140,265,13,"#fff","center");
 
-retangulo(255,238,200,32,"#a83232",8);
-texto("SAIR DA CONTA",355,260,14,"#fff","center");
+retangulo(255,246,200,28,"#a83232",7);
+texto("SAIR DA CONTA",355,265,13,"#fff","center");
 }
 
 // ENGRENAGEM
@@ -2257,7 +2410,7 @@ return;
 
 // VOLUME
 
-if(p.x>=80&&p.x<=430&&p.y>=100&&p.y<=145){
+if(p.x>=80&&p.x<=430&&p.y>=94&&p.y<=139){
 volumeArrastando=true;
 
 volumeGeral=Math.max(0,Math.min(1,(p.x-90)/320));
@@ -2273,28 +2426,35 @@ return;
 
 // AUTO CLICK NORMAL
 
-if(autoClickerComprado&&p.x>=45&&p.x<=455&&p.y>=155&&p.y<=187){
+if(autoClickerComprado&&p.x>=45&&p.x<=455&&p.y>=145&&p.y<=175){
 alternarAutoClicker();
 return;
 }
 
 // AUTO CLICK PRO
 
-if(autoClickerProComprado&&p.x>=45&&p.x<=455&&p.y>=193&&p.y<=225){
+if(autoClickerProComprado&&p.x>=45&&p.x<=455&&p.y>=179&&p.y<=209){
 alternarAutoClickerPro();
+return;
+}
+
+// TROCAR SENHA
+
+if(p.x>=45&&p.x<=455&&p.y>=214&&p.y<=241){
+abrirTrocaSenha();
 return;
 }
 
 // CÓDIGOS
 
-if(p.x>=45&&p.x<=235&&p.y>=238&&p.y<=270){
+if(p.x>=45&&p.x<=235&&p.y>=246&&p.y<=274){
 abrirResgate();
 return;
 }
 
 // SAIR DA CONTA
 
-if(p.x>=255&&p.x<=455&&p.y>=238&&p.y<=270){
+if(p.x>=255&&p.x<=455&&p.y>=246&&p.y<=274){
 sairDaConta();
 return;
 }
