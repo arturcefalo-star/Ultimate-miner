@@ -94,6 +94,9 @@ z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
 #aviso.ok{background:#12381f;color:#a4ffbb;border-color:#2c8a4a}
 #aviso.info{background:#1a2848;color:#bcd6ff;border-color:#4a6fb8}
 
+#eventoGlobalBadge{position:fixed;right:max(10px,calc((100vw - min(100vw,166.667vh))/2 + 8px));bottom:max(12px,calc((100vh - min(100vh,60vw))/2 + 43px));z-index:8;display:none;align-items:center;gap:7px;padding:7px 10px;border:1px solid #e8bd55;border-radius:12px;background:linear-gradient(135deg,#51370c,#21170a);color:#ffe08a;font: bold 12px Arial,sans-serif;box-shadow:0 0 14px #ffcf5544;pointer-events:none;white-space:nowrap}
+#eventoGlobalBadge strong{font-size:14px;color:#fff2b0}
+#eventoGlobalBadge .evento-relogio{color:#fff;font-variant-numeric:tabular-nums}
 #adminModal{
 display:none;position:fixed;inset:0;background:#000c;
 align-items:center;justify-content:center;z-index:12;padding:12px
@@ -202,6 +205,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div>
 
 <div id="aviso" role="status" aria-live="polite"></div>
+<div id="eventoGlobalBadge" aria-live="polite"><span>💰</span><strong id="eventoGlobalMultiplicador">2x</strong><span>EVENTO</span><span class="evento-relogio" id="eventoGlobalTempo">00:00</span></div>
 
 <div id="adminModal">
 <div id="adminBox" role="dialog" aria-modal="true" aria-label="Painel de administração">
@@ -216,6 +220,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <div class="adm-abas">
 <button type="button" class="ativa" data-aba="eu">Minha conta</button>
 <button type="button" data-aba="outro">Outro jogador</button>
+<button type="button" data-aba="evento">Evento</button>
 </div>
 
 <div id="abaEu" class="adm-aba">
@@ -281,6 +286,25 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div>
 
 <button id="admExecutar" type="button" class="adm-b azul grande" data-acao="remoto">Executar</button>
+</div>
+
+<div id="abaEvento" class="adm-aba" hidden>
+<h3>💰 Evento global de multiplicador</h3>
+<p class="adm-dica">O evento aumenta o dinheiro recebido por todos os jogadores enquanto estiver ativo.</p>
+<div class="adm-linha" id="admEventoPresets">
+<button type="button" class="adm-b azul" data-evento-mult="2">2x dinheiro</button>
+<button type="button" class="adm-b azul" data-evento-mult="4">4x dinheiro</button>
+<button type="button" class="adm-b azul" data-evento-mult="8">8x dinheiro</button>
+<button type="button" class="adm-b azul" data-evento-mult="16">16x dinheiro</button>
+<button type="button" class="adm-b azul" data-evento-mult="64">64x dinheiro</button>
+</div>
+<label for="admEventoMultiplicador" class="adm-dica" style="display:block;margin-top:10px">Multiplicador personalizado</label>
+<input id="admEventoMultiplicador" class="adm-in" type="number" min="2" max="1000000" step="1" value="2" placeholder="Ex.: 50">
+<label for="admEventoMinutos" class="adm-dica" style="display:block">Duração em minutos</label>
+<input id="admEventoMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Ex.: 10 minutos">
+<button id="admEventoAtivar" type="button" class="adm-b verde grande">Ativar evento global</button>
+<button id="admEventoEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento</button>
+<div id="admEventoStatus" class="adm-dica" style="margin-top:8px">Nenhum evento ativo.</div>
 </div>
 
 <h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">📜 Histórico da sessão</h3>
@@ -466,6 +490,12 @@ cancelarMonitoramentoJogador=ref.onSnapshot(snapshot=>{
 if(!usuarioAtual||usuarioAtual.uid!==uid||!dadosCarregados||!snapshot.exists)return;
 if(snapshot.metadata&&snapshot.metadata.hasPendingWrites)return;
 const registro=snapshot.data()||{};
+const avisoAdmin=registro.avisoAdmin;
+if(avisoAdmin&&avisoAdmin.id&&avisoAdmin.id!==ultimoAvisoAdminId){
+const idadeAviso=Date.now()-(Number(avisoAdmin.criadoEm)||0);
+if(ultimoAvisoAdminId!==""||(idadeAviso>=0&&idadeAviso<86400000))mostrarAviso(String(avisoAdmin.texto||"Admin Arthur fez uma alteração na sua conta."),"info");
+ultimoAvisoAdminId=String(avisoAdmin.id);
+}
 const dados=registro.dados;
 if(!dados||typeof dados!=="object"||Array.isArray(dados))return;
 // Cancela um salvamento antigo pendente para ele não sobrescrever a alteração remota.
@@ -780,6 +810,11 @@ mostrarAviso(mensagem,"info");
 let multiplicadorCompras=0;
 let precoMultiplicador=100;
 
+// Evento global de dinheiro sincronizado pelo Firestore.
+let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Arthur",id:""};
+let cancelarMonitoramentoEvento=null;
+let ultimoAvisoAdminId="";
+
 let autoClickerComprado=false;
 let autoClickerProComprado=false;
 
@@ -799,9 +834,47 @@ return 1+multiplicadorCompras;
 }
 
 function multiplicadorDinheiro(){
-// O ganho final combina os dois bônus, mas cada um continua sendo exibido separadamente.
+// Os bônus permanentes ficam separados do evento temporário global.
 return multiplicadorRenascimento()*multiplicadorMelhoria();
 }
+
+function multiplicadorEventoAtual(){
+if(!eventoGlobal.ativo)return 1;
+if(!eventoGlobal.expiraEm||Date.now()>=eventoGlobal.expiraEm){eventoGlobal.ativo=false;atualizarBadgeEvento();return 1;}
+return Math.max(1,Number(eventoGlobal.multiplicador)||1);
+}
+
+function atualizarBadgeEvento(){
+const badge=document.getElementById("eventoGlobalBadge");
+if(!badge)return;
+const restante=eventoGlobal.expiraEm-Date.now();
+if(!eventoGlobal.ativo||restante<=0){badge.style.display="none";return;}
+const segundos=Math.max(0,Math.ceil(restante/1000));
+const min=Math.floor(segundos/60),seg=segundos%60;
+document.getElementById("eventoGlobalMultiplicador").textContent=eventoGlobal.multiplicador+"x";
+document.getElementById("eventoGlobalTempo").textContent=String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
+badge.style.display="flex";
+}
+
+function iniciarMonitoramentoEventoGlobal(){
+if(cancelarMonitoramentoEvento){try{cancelarMonitoramentoEvento();}catch(e){}cancelarMonitoramentoEvento=null;}
+const ref=db.collection("eventos").doc("multiplicadorGlobal");
+cancelarMonitoramentoEvento=ref.onSnapshot(snapshot=>{
+if(!snapshot.exists){eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Arthur",id:""};atualizarBadgeEvento();return;}
+const ev=snapshot.data()||{};
+const expira=ev.expiraEm&&typeof ev.expiraEm.toMillis==="function"?ev.expiraEm.toMillis():Number(ev.expiraEm)||0;
+const ativo=ev.ativo===true&&expira>Date.now();
+eventoGlobal={ativo,multiplicador:Math.max(1,Number(ev.multiplicador)||1),expiraEm:expira,admin:String(ev.admin||"Arthur"),id:String(ev.id||"")};
+atualizarBadgeEvento();
+if(ativo&&eventoGlobal.id&&eventoGlobal.id!==ultimoEventoGlobalAvisado){
+ultimoEventoGlobalAvisado=eventoGlobal.id;
+mostrarAviso("Admin "+eventoGlobal.admin+" ativou o evento de "+eventoGlobal.multiplicador+"x de dinheiro! Aproveite enquanto durar.","ok");
+}
+if(!ativo&&ev.ativo===true&&expira<=Date.now())mostrarAviso("O evento global de dinheiro terminou.","info");
+},error=>console.error("Erro ao acompanhar evento global:",error));
+}
+let ultimoEventoGlobalAvisado="";
+setInterval(atualizarBadgeEvento,500);
 
 function precoRenascimento(){
 // Começa em 10 milhões e dobra a cada renascimento realizado.
@@ -1133,6 +1206,7 @@ uidEntradaEmAndamento=user.uid;
 entradaEmAndamento=(async()=>{
 dadosCarregados=false;
 usuarioAtual=user;
+ultimoAvisoAdminId="";
 try{
 mensagemDeLogin("Conectado! Consultando seus dados salvos...",false);
 const ref=db.collection("jogadores").doc(user.uid);
@@ -1140,6 +1214,7 @@ const snap=await comTempoLimite(ref.get(),15000,"consultar os dados da conta");
 let dadosConta={};
 if(snap.exists){
 dadosConta=snap.data().dados||{};
+ultimoAvisoAdminId="";
 }else{
 try{dadosConta=JSON.parse(localStorage.getItem("mining_game_save_"+user.uid)||"{}");}catch(e){dadosConta={};}
 await comTempoLimite(ref.set({
@@ -1156,6 +1231,7 @@ adminDesbloqueado=(user.uid===ADMIN_UID);
 codigoAdminSessao="";
 dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
+iniciarMonitoramentoEventoGlobal();
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
@@ -1394,7 +1470,7 @@ return Number(valor.toFixed(2)).toString();
 function minerar(){
 if(!jogoPronto())return;
 const recompensaBase=picaretas[picaretaAtual][2]*minerios[minerioAtual][2];
-const recompensa=recompensaBase*multiplicadorDinheiro();
+const recompensa=recompensaBase*multiplicadorDinheiro()*multiplicadorEventoAtual();
 
 moedas+=recompensa;
 
@@ -1475,6 +1551,7 @@ admLogEl.appendChild(linha);
 }
 
 function admResultado(texto,tipo){
+if(tipo==="ok"&&!String(texto).startsWith("Admin Arthur"))texto="Admin Arthur: "+texto;
 const hora=new Date().toLocaleTimeString("pt-BR",{hour12:false});
 admHistorico.unshift({hora,texto,tipo});
 if(admHistorico.length>40)admHistorico.pop();
@@ -1527,6 +1604,8 @@ adminModal.style.display="none";
 function trocarAbaAdmin(aba){
 document.getElementById("abaEu").hidden=aba!=="eu";
 document.getElementById("abaOutro").hidden=aba!=="outro";
+document.getElementById("abaEvento").hidden=aba!=="evento";
+if(aba==="evento")atualizarStatusEventoAdmin();
 for(const botao of adminBox.querySelectorAll(".adm-abas button"))botao.classList.toggle("ativa",botao.dataset.aba===aba);
 }
 
@@ -1813,9 +1892,21 @@ dados.precoMultiplicador=100*Math.pow(3,valor);
 if(dados.autoClickerAtivo&&dados.autoClickerProAtivo)dados.autoClickerAtivo=false;
 dados.picaretasCompradas.sort((a,b)=>a-b);
 dados.mineriosComprados.sort((a,b)=>a-b);
-await comTempoLimite(ref.set({dados,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
 const nome=String(registro.nome||jogador.nome);
 const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):"";
+let textoAviso="Admin Arthur alterou sua conta: "+def.rotulo.toLowerCase();
+if(acao==="addMoney")textoAviso="Admin Arthur te deu $"+formatarDinheiro(valor)+".";
+else if(acao==="removeMoney")textoAviso="Admin Arthur removeu $"+formatarDinheiro(valor)+" da sua conta.";
+else if(acao==="givePickaxe")textoAviso="Admin Arthur te deu a picareta "+itemNome+".";
+else if(acao==="removePickaxe")textoAviso="Admin Arthur removeu a picareta "+itemNome+" da sua conta.";
+else if(acao==="giveOre")textoAviso="Admin Arthur te deu o minério "+itemNome+".";
+else if(acao==="removeOre")textoAviso="Admin Arthur removeu o minério "+itemNome+" da sua conta.";
+else if(acao==="giveAuto")textoAviso="Admin Arthur liberou o Auto Clicker para você.";
+else if(acao==="removeAuto")textoAviso="Admin Arthur removeu o Auto Clicker da sua conta.";
+else if(acao==="givePro")textoAviso="Admin Arthur liberou o Auto Clicker Pro para você.";
+else if(acao==="removePro")textoAviso="Admin Arthur removeu o Auto Clicker Pro da sua conta.";
+else if(acao==="setMultiplier")textoAviso="Admin Arthur definiu sua melhoria de dinheiro no nível "+valor+".";
+await comTempoLimite(ref.set({dados,avisoAdmin:{id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
 aplicarDadosDoServidor(dados);
@@ -1829,6 +1920,43 @@ admResultado("Não foi possível alterar a conta: "+(error.message||"erro no Fir
 admExecutando=false;botao.disabled=false;botao.textContent="Executar";
 }
 }
+
+// EVENTOS GLOBAIS
+const admEventoMultiplicador=document.getElementById("admEventoMultiplicador");
+const admEventoMinutos=document.getElementById("admEventoMinutos");
+const admEventoStatus=document.getElementById("admEventoStatus");
+function atualizarStatusEventoAdmin(){
+if(!admEventoStatus)return;
+if(eventoGlobal.ativo&&eventoGlobal.expiraEm>Date.now()){
+const falta=Math.max(0,Math.ceil((eventoGlobal.expiraEm-Date.now())/60000));
+admEventoStatus.textContent="Evento ativo: "+eventoGlobal.multiplicador+"x de dinheiro. Restam aproximadamente "+falta+" minuto(s).";
+}else admEventoStatus.textContent="Nenhum evento ativo.";
+}
+async function ativarEventoGlobal(){
+if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+const mult=Number(admEventoMultiplicador.value),minutos=Number(admEventoMinutos.value);
+if(!Number.isInteger(mult)||mult<2||mult>1000000){admResultado("Digite um multiplicador inteiro entre 2x e 1.000.000x.","erro");return;}
+if(!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("A duração deve ser de 1 a 10.080 minutos.","erro");return;}
+const adminNome="Arthur";
+const expiraEm=new Date(Date.now()+minutos*60000);
+const id=String(Date.now())+"-"+usuarioAtual.uid;
+try{
+await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:minutos,admin:adminNome,id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global");
+admResultado("Evento global de "+mult+"x ativado por "+minutos+" minuto(s).","ok");
+}catch(error){admResultado("Não foi possível ativar o evento global: "+(error.message||"erro no Firestore"),"erro");}
+atualizarStatusEventoAdmin();
+}
+async function encerrarEventoGlobal(){
+if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+try{
+await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:1,expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:"Arthur",id:"encerrado-"+Date.now(),atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
+admResultado("Evento global encerrado.","ok");
+}catch(error){admResultado("Não foi possível encerrar o evento: "+(error.message||"erro no Firestore"),"erro");}
+atualizarStatusEventoAdmin();
+}
+document.getElementById("admEventoAtivar").addEventListener("click",ativarEventoGlobal);
+document.getElementById("admEventoEncerrar").addEventListener("click",encerrarEventoGlobal);
+document.getElementById("admEventoPresets").addEventListener("click",e=>{const b=e.target.closest("button[data-evento-mult]");if(b)admEventoMultiplicador.value=b.dataset.eventoMult;});
 
 // INICIALIZAÇÃO E EVENTOS
 
