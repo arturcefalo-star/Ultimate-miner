@@ -822,8 +822,8 @@ let autoClickerProAtivo=false;
 let ultimoAutoClick=Date.now();
 
 function multiplicadorRenascimento(){
-// Bônus exclusivo dos renascimentos: 0 = 1x, 1 = 2x, 2 = 4x, 3 = 8x.
-return Math.pow(2,renascimentos);
+// Bônus linear: 0 renascimentos = 1x; cada renascimento acrescenta +1x.
+return 1+renascimentos;
 }
 
 function multiplicadorMelhoria(){
@@ -858,29 +858,53 @@ document.getElementById("eventoGlobalMultiplicador").textContent=eventoGlobal.mu
 document.getElementById("eventoGlobalTempo").textContent=String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
 }
 
+let estadoEventoGlobalConhecido=false;
+let eventoGlobalEstavaAtivo=false;
 function iniciarMonitoramentoEventoGlobal(){
 if(cancelarMonitoramentoEvento){try{cancelarMonitoramentoEvento();}catch(e){}cancelarMonitoramentoEvento=null;}
 const ref=db.collection("eventos").doc("multiplicadorGlobal");
 cancelarMonitoramentoEvento=ref.onSnapshot(snapshot=>{
-if(!snapshot.exists){eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Artur",id:""};atualizarBadgeEvento();return;}
+const estavaAtivo=estadoEventoGlobalConhecido&&eventoGlobalEstavaAtivo;
+if(!snapshot.exists){
+eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Artur",id:""};
+atualizarBadgeEvento();
+if(estavaAtivo)mostrarAviso("O admin Artur desativou o evento global de dinheiro.","info");
+estadoEventoGlobalConhecido=true;
+eventoGlobalEstavaAtivo=false;
+if(typeof atualizarStatusEventoAdmin==="function")atualizarStatusEventoAdmin();
+return;
+}
 const ev=snapshot.data()||{};
 const expira=ev.expiraEm&&typeof ev.expiraEm.toMillis==="function"?ev.expiraEm.toMillis():Number(ev.expiraEm)||0;
 const ativo=ev.ativo===true&&expira>Date.now();
-eventoGlobal={ativo,multiplicador:Math.max(1,Number(ev.multiplicador)||1),expiraEm:expira,admin:String(ev.admin||"Artur"),id:String(ev.id||"")};
+const id=String(ev.id||"");
+const admin=String(ev.admin||"Artur");
+const multiplicador=Math.max(1,Number(ev.multiplicador)||1);
+eventoGlobal={ativo,multiplicador,expiraEm:expira,admin,id};
 atualizarBadgeEvento();
-if(ativo&&eventoGlobal.id&&eventoGlobal.id!==ultimoEventoGlobalAvisado){
-ultimoEventoGlobalAvisado=eventoGlobal.id;
-mostrarAviso("O admin "+eventoGlobal.admin+" ativou o evento de dinheiro de "+eventoGlobal.multiplicador+"x por "+(Number(ev.duracaoMinutos)||Math.max(1,Math.ceil((expira-Date.now())/60000)))+" minuto(s)!","ok");
+
+// Cada aparelho recebe esta atualização diretamente do mesmo documento do Firestore.
+if(ativo&&(!estadoEventoGlobalConhecido||!eventoGlobalEstavaAtivo||id!==ultimoEventoGlobalAvisado)){
+ultimoEventoGlobalAvisado=id;
+mostrarAviso("O admin "+admin+" ativou o evento de dinheiro de "+multiplicador+"x por "+(Number(ev.duracaoMinutos)||Math.max(1,Math.ceil((expira-Date.now())/60000)))+" minuto(s)!","ok");
+}else if(!ativo&&estavaAtivo){
+if(ev.ativo===true&&expira<=Date.now()){
+mostrarAviso("O evento global de dinheiro terminou.","info");
+}else{
+mostrarAviso("O admin "+admin+" desativou o evento global de dinheiro de "+multiplicador+"x.","info");
 }
-if(!ativo&&ev.ativo===true&&expira<=Date.now())mostrarAviso("O evento global de dinheiro terminou.","info");
+}
+estadoEventoGlobalConhecido=true;
+eventoGlobalEstavaAtivo=ativo;
+if(typeof atualizarStatusEventoAdmin==="function")atualizarStatusEventoAdmin();
 },error=>console.error("Erro ao acompanhar evento global:",error));
 }
 let ultimoEventoGlobalAvisado="";
 setInterval(atualizarBadgeEvento,500);
 
 function precoRenascimento(){
-// Começa em 10 milhões e dobra a cada renascimento realizado.
-return 10000000*Math.pow(2,renascimentos);
+// Começa em 10 milhões e triplica a cada renascimento realizado.
+return 10000000*Math.pow(3,renascimentos);
 }
 
 const renascimentoModal=document.getElementById("renascimentoModal");
@@ -891,7 +915,7 @@ const cancelarRenascimento=document.getElementById("cancelarRenascimento");
 function abrirRenascimento(){
 if(!jogoPronto())return;
 const custo=precoRenascimento();
-const proximo=Math.pow(2,renascimentos+1);
+const proximo=1+(renascimentos+1);
 renascimentoInfo.innerHTML="Custo: <strong>$ "+formatarDinheiro(custo)+"</strong><br>Seu dinheiro: <strong>$ "+formatarDinheiro(moedas)+"</strong><br>Bônus de renascimento atual: <strong>"+multiplicadorRenascimento().toFixed(1)+"x</strong><br>Melhoria de dinheiro atual: <strong>"+multiplicadorMelhoria().toFixed(1)+"x</strong><br>Bônus de renascimento após comprar: <strong>"+proximo.toFixed(1)+"x</strong><br>Renascimentos: <strong>"+renascimentos+" → "+(renascimentos+1)+"</strong>";
 confirmarRenascimento.disabled=moedas<custo;
 confirmarRenascimento.textContent=moedas>=custo?"FAZER RENASCIMENTO":"DINHEIRO INSUFICIENTE";
@@ -1951,7 +1975,7 @@ atualizarStatusEventoAdmin();
 async function encerrarEventoGlobal(){
 if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
 try{
-await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:1,expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:"Artur",id:"encerrado-"+Date.now(),atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
+await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoGlobal.multiplicador)||1),expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:"Artur",motivo:"desativado-pelo-admin",id:"desativado-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
 admResultado("Evento global encerrado.","ok");
 }catch(error){admResultado("Não foi possível encerrar o evento: "+(error.message||"erro no Firestore"),"erro");}
 atualizarStatusEventoAdmin();
@@ -2523,7 +2547,7 @@ retangulo(40,139,420,55,"#34394e",8);
 texto("AUTO CLICKER",52,159,14,"#80d9ff");
 
 texto(
-autoClickerComprado?"10 CLIQUES/SEG":"10 CLIQUES/SEG",
+autoClickerComprado?"5 CLIQUES/SEG":"5 CLIQUES/SEG",
 52,180,12,"#bbb"
 );
 
@@ -2688,14 +2712,14 @@ mostrarRecompensa=false;
 
 const eventoNaTela=multiplicadorEventoAtual()>1;
 if(eventoNaTela){
-  // Reserva espaço para mostrar o saldo e, imediatamente à direita, o evento ativo.
-  texto("$ "+formatarDinheiro(moedas),335,288,20,"#ffdc00","right");
+  // Indicador bem pequeno: somente multiplicador e tempo restante.
+  texto("$ "+formatarDinheiro(moedas),365,288,18,"#ffdc00","right");
   const restante=Math.max(0,Math.ceil((eventoGlobal.expiraEm-Date.now())/1000));
   const mm=String(Math.floor(restante/60)).padStart(2,"0");
   const ss=String(restante%60).padStart(2,"0");
-  retangulo(344,269,151,27,"#3d2a0b",6);
-  texto("💰 "+eventoGlobal.multiplicador+"x",382,288,15,"#ffe08a","left");
-  texto(mm+":"+ss,489,288,13,"#ffffff","right");
+  retangulo(373,275,119,17,"#3d2a0b",4);
+  texto(eventoGlobal.multiplicador+"x",402,287,10,"#ffe08a","center");
+  texto(mm+":"+ss,484,287,9,"#ffffff","right");
 }else{
   texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
 }
@@ -2779,12 +2803,12 @@ if(configuracoesAbertas)desenharConfiguracoes();
 if(adminAberto&&Date.now()-ultimaAtualizacaoAdmin>500)atualizarAdmin();
 }
 
-// Auto clicker por tempo decorrido: mantém 10/s (normal) e 25/s (Pro) mesmo com 30 ou 60 FPS.
+// Auto clicker por tempo decorrido: mantém 5/s (normal) e 25/s (Pro) mesmo com 30 ou 60 FPS.
 function processarAutoClick(){
 const agora=Date.now();
 const pro=autoClickerProAtivo&&autoClickerProComprado;
 const normal=!pro&&autoClickerAtivo&&autoClickerComprado;
-const intervalo=pro?40:(normal?100:0);
+const intervalo=pro?40:(normal?200:0);
 if(!intervalo||codigoModalAberto||adminAberto||!jogoPronto()){
 ultimoAutoClick=agora;
 return;
