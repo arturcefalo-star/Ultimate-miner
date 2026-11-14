@@ -2740,8 +2740,12 @@ mostrarRecompensa=false;
 }
 
 const eventoNaTela=multiplicadorEventoAtual()>1;
-// O dinheiro fica sempre no mesmo lugar, sem disputar espaço com o evento.
-texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
+// Dinheiro e multiplicador ficam lado a lado, mantendo o tamanho original.
+const textoDinheiro="$ "+formatarDinheiro(moedas);
+ctx.font="bold 23px Arial";
+const larguraDinheiro=ctx.measureText(textoDinheiro).width;
+texto(multiplicadorDinheiro().toFixed(1)+"x",420-larguraDinheiro-10,288,23,"#39e879","right");
+texto(textoDinheiro,420,288,23,"#ffdc00","right");
 
 if(eventoNaTela){
   // Indicador compacto em formato de quadrado: multiplicador em cima e tempo embaixo.
