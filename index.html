@@ -1374,11 +1374,11 @@ const unidades=[
 [1e24,"Sp"],[1e21,"Sx"],[1e18,"Qi"],
 [1e15,"Qa"],[1e12,"T"],[1e9,"B"],[1e6,"M"],[1e3,"K"]
 ];
-
 for(const [limite,sufixo] of unidades){
 if(valor>=limite)return(valor/limite).toFixed(1).replace(/\.0$/,"")+sufixo;
 }
-return Math.floor(valor).toString();
+// Exibe até duas casas decimais para o valor ganho bater com o saldo recebido.
+return Number(valor.toFixed(2)).toString();
 }
 
 function minerar(){
@@ -1734,7 +1734,7 @@ const snap=await comTempoLimite(ref.get(),15000,"consultar jogador selecionado")
 if(!snap.exists)throw new Error("Essa conta não existe mais.");
 const registro=snap.data()||{};
 const dados=Object.assign({
-moedas:0,picaretasCompradas:[0],mineriosComprados:[0],picaretaAtual:0,minerioAtual:0,
+moedas:0,renascimentos:0,picaretasCompradas:[0],mineriosComprados:[0],picaretaAtual:0,minerioAtual:0,
 volumeGeral:1,codigosUsados:[],multiplicadorCompras:0,precoMultiplicador:100,
 autoClickerComprado:false,autoClickerProComprado:false,autoClickerAtivo:false,autoClickerProAtivo:false
 },registro.dados||{});
@@ -1771,6 +1771,28 @@ if(valor===0)throw new Error("O minério inicial não pode ser removido.");
 dados.mineriosComprados=dados.mineriosComprados.filter(i=>i!==valor);
 if(dados.minerioAtual===valor)dados.minerioAtual=0;
 }
+// Concede ou remove os auto clickers na conta escolhida.
+if(acao==="giveAuto"){
+dados.autoClickerComprado=true;
+}
+if(acao==="removeAuto"){
+dados.autoClickerComprado=false;
+dados.autoClickerAtivo=false;
+}
+if(acao==="givePro"){
+dados.autoClickerProComprado=true;
+}
+if(acao==="removePro"){
+dados.autoClickerProComprado=false;
+dados.autoClickerProAtivo=false;
+}
+// Define a melhoria de multiplicador do jogador remoto sem apagar os renascimentos.
+if(acao==="setMultiplier"){
+dados.multiplicadorCompras=valor;
+dados.precoMultiplicador=100*Math.pow(3,valor);
+}
+// Impede que os dois auto clickers fiquem ativos ao mesmo tempo.
+if(dados.autoClickerAtivo&&dados.autoClickerProAtivo)dados.autoClickerAtivo=false;
 dados.picaretasCompradas.sort((a,b)=>a-b);
 dados.mineriosComprados.sort((a,b)=>a-b);
 await comTempoLimite(ref.set({dados,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
