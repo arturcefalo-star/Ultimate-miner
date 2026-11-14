@@ -2740,18 +2740,18 @@ mostrarRecompensa=false;
 }
 
 const eventoNaTela=multiplicadorEventoAtual()>1;
+// O dinheiro fica sempre no mesmo lugar, sem disputar espaço com o evento.
+texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
+
 if(eventoNaTela){
-  // Indicador de evento maior e mais legível, mantendo-se dentro do jogo.
-  texto("$ "+formatarDinheiro(moedas),365,258,17,"#ffdc00","right");
+  // Indicador compacto em formato de quadrado: multiplicador em cima e tempo embaixo.
   const restante=Math.max(0,Math.ceil((eventoGlobal.expiraEm-Date.now())/1000));
   const mm=String(Math.floor(restante/60)).padStart(2,"0");
   const ss=String(restante%60).padStart(2,"0");
-  retangulo(350,267,142,25,"#3d2a0b",6);
-  retangulo(352,269,138,21,"#624313",5);
-  texto(eventoGlobal.multiplicador+"x",389,284,13,"#ffe08a","center");
-  texto(mm+":"+ss,484,284,12,"#ffffff","right");
-}else{
-  texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
+  retangulo(447,42,46,42,"#3d2a0b",5);
+  retangulo(449,44,42,38,"#624313",4);
+  texto(eventoGlobal.multiplicador+"x",470,60,14,"#ffe08a","center");
+  texto(mm+":"+ss,470,75,10,"#ffffff","center");
 }
 
 // BOTÃO DE RENASCIMENTO (canto superior esquerdo)
