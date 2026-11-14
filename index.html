@@ -1103,7 +1103,8 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
 }catch(error){mostrarAviso("Não foi possível salvar seu progresso: "+error.message);return;}
 }
-try{await auth.signOut();}catch(error){mostrarAviso("Não foi possível sair da conta: "+error.message);return;}
+// Mantém a sessão autenticada no Firebase neste aparelho.
+// Assim, ao tocar novamente no nome salvo, a conta abre sem pedir a senha.
 dadosCarregados=false;
 usuarioAtual=null;
 codigoAdminSessao="";
@@ -1118,7 +1119,7 @@ carregandoDados=false;
 loginModal.style.display="flex";
 nomeLogin.value="";
 senhaLogin.value="";
-mensagemDeLogin("Você saiu da conta.",false);
+mensagemDeLogin("Conta desconectada do jogo, mas continua lembrada neste aparelho. Toque no nome para entrar direto.",false);
 }finally{
 saindoDaConta=false;
 }
@@ -2244,7 +2245,7 @@ retangulo(45,246,190,28,"#7134bd",7);
 texto("🎁 CÓDIGOS",140,265,13,"#fff","center");
 
 retangulo(255,246,200,28,"#a83232",7);
-texto("SAIR DA CONTA",355,265,13,"#fff","center");
+texto("VOLTAR ÀS CONTAS",355,265,13,"#fff","center");
 }
 
 // ENGRENAGEM
