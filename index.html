@@ -94,9 +94,7 @@ z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
 #aviso.ok{background:#12381f;color:#a4ffbb;border-color:#2c8a4a}
 #aviso.info{background:#1a2848;color:#bcd6ff;border-color:#4a6fb8}
 
-#eventoGlobalBadge{position:fixed;right:max(10px,calc((100vw - min(100vw,166.667vh))/2 + 8px));bottom:max(12px,calc((100vh - min(100vh,60vw))/2 + 43px));z-index:8;display:none;align-items:center;gap:7px;padding:7px 10px;border:1px solid #e8bd55;border-radius:12px;background:linear-gradient(135deg,#51370c,#21170a);color:#ffe08a;font: bold 12px Arial,sans-serif;box-shadow:0 0 14px #ffcf5544;pointer-events:none;white-space:nowrap}
-#eventoGlobalBadge strong{font-size:14px;color:#fff2b0}
-#eventoGlobalBadge .evento-relogio{color:#fff;font-variant-numeric:tabular-nums}
+#eventoGlobalBadge{display:none}
 #adminModal{
 display:none;position:fixed;inset:0;background:#000c;
 align-items:center;justify-content:center;z-index:12;padding:12px
@@ -205,7 +203,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div>
 
 <div id="aviso" role="status" aria-live="polite"></div>
-<div id="eventoGlobalBadge" aria-live="polite"><span>💰</span><strong id="eventoGlobalMultiplicador">2x</strong><span>EVENTO</span><span class="evento-relogio" id="eventoGlobalTempo">00:00</span></div>
+<div id="eventoGlobalBadge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">00:00</span></div>
 
 <div id="adminModal">
 <div id="adminBox" role="dialog" aria-modal="true" aria-label="Painel de administração">
@@ -493,7 +491,7 @@ const registro=snapshot.data()||{};
 const avisoAdmin=registro.avisoAdmin;
 if(avisoAdmin&&avisoAdmin.id&&avisoAdmin.id!==ultimoAvisoAdminId){
 const idadeAviso=Date.now()-(Number(avisoAdmin.criadoEm)||0);
-if(ultimoAvisoAdminId!==""||(idadeAviso>=0&&idadeAviso<86400000))mostrarAviso(String(avisoAdmin.texto||"Admin Arthur fez uma alteração na sua conta."),"info");
+if(ultimoAvisoAdminId!==""||(idadeAviso>=0&&idadeAviso<86400000))mostrarAviso(String(avisoAdmin.texto||"O admin Artur fez uma alteração na sua conta."),"info");
 ultimoAvisoAdminId=String(avisoAdmin.id);
 }
 const dados=registro.dados;
@@ -811,7 +809,7 @@ let multiplicadorCompras=0;
 let precoMultiplicador=100;
 
 // Evento global de dinheiro sincronizado pelo Firestore.
-let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Arthur",id:""};
+let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Artur",id:""};
 let cancelarMonitoramentoEvento=null;
 let ultimoAvisoAdminId="";
 
@@ -839,36 +837,40 @@ return multiplicadorRenascimento()*multiplicadorMelhoria();
 }
 
 function multiplicadorEventoAtual(){
-if(!eventoGlobal.ativo)return 1;
-if(!eventoGlobal.expiraEm||Date.now()>=eventoGlobal.expiraEm){eventoGlobal.ativo=false;atualizarBadgeEvento();return 1;}
+const restante=Number(eventoGlobal.expiraEm)||0;
+if(!eventoGlobal.ativo||restante<=Date.now()){
+if(eventoGlobal.ativo){eventoGlobal.ativo=false;atualizarBadgeEvento();}
+return 1;
+}
 return Math.max(1,Number(eventoGlobal.multiplicador)||1);
 }
 
 function atualizarBadgeEvento(){
 const badge=document.getElementById("eventoGlobalBadge");
 if(!badge)return;
-const restante=eventoGlobal.expiraEm-Date.now();
-if(!eventoGlobal.ativo||restante<=0){badge.style.display="none";return;}
+const restante=(Number(eventoGlobal.expiraEm)||0)-Date.now();
+const ativo=eventoGlobal.ativo&&restante>0;
+badge.style.display=ativo?"block":"none";
+if(!ativo)return;
 const segundos=Math.max(0,Math.ceil(restante/1000));
 const min=Math.floor(segundos/60),seg=segundos%60;
 document.getElementById("eventoGlobalMultiplicador").textContent=eventoGlobal.multiplicador+"x";
 document.getElementById("eventoGlobalTempo").textContent=String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
-badge.style.display="flex";
 }
 
 function iniciarMonitoramentoEventoGlobal(){
 if(cancelarMonitoramentoEvento){try{cancelarMonitoramentoEvento();}catch(e){}cancelarMonitoramentoEvento=null;}
 const ref=db.collection("eventos").doc("multiplicadorGlobal");
 cancelarMonitoramentoEvento=ref.onSnapshot(snapshot=>{
-if(!snapshot.exists){eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Arthur",id:""};atualizarBadgeEvento();return;}
+if(!snapshot.exists){eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Artur",id:""};atualizarBadgeEvento();return;}
 const ev=snapshot.data()||{};
 const expira=ev.expiraEm&&typeof ev.expiraEm.toMillis==="function"?ev.expiraEm.toMillis():Number(ev.expiraEm)||0;
 const ativo=ev.ativo===true&&expira>Date.now();
-eventoGlobal={ativo,multiplicador:Math.max(1,Number(ev.multiplicador)||1),expiraEm:expira,admin:String(ev.admin||"Arthur"),id:String(ev.id||"")};
+eventoGlobal={ativo,multiplicador:Math.max(1,Number(ev.multiplicador)||1),expiraEm:expira,admin:String(ev.admin||"Artur"),id:String(ev.id||"")};
 atualizarBadgeEvento();
 if(ativo&&eventoGlobal.id&&eventoGlobal.id!==ultimoEventoGlobalAvisado){
 ultimoEventoGlobalAvisado=eventoGlobal.id;
-mostrarAviso("Admin "+eventoGlobal.admin+" ativou o evento de "+eventoGlobal.multiplicador+"x de dinheiro! Aproveite enquanto durar.","ok");
+mostrarAviso("O admin "+eventoGlobal.admin+" ativou o evento de dinheiro de "+eventoGlobal.multiplicador+"x por "+(Number(ev.duracaoMinutos)||Math.max(1,Math.ceil((expira-Date.now())/60000)))+" minuto(s)!","ok");
 }
 if(!ativo&&ev.ativo===true&&expira<=Date.now())mostrarAviso("O evento global de dinheiro terminou.","info");
 },error=>console.error("Erro ao acompanhar evento global:",error));
@@ -1551,7 +1553,7 @@ admLogEl.appendChild(linha);
 }
 
 function admResultado(texto,tipo){
-if(tipo==="ok"&&!String(texto).startsWith("Admin Arthur"))texto="Admin Arthur: "+texto;
+if(tipo==="ok"&&!String(texto).startsWith("O admin Artur"))texto="O admin Artur: "+texto;
 const hora=new Date().toLocaleTimeString("pt-BR",{hour12:false});
 admHistorico.unshift({hora,texto,tipo});
 if(admHistorico.length>40)admHistorico.pop();
@@ -1894,18 +1896,18 @@ dados.picaretasCompradas.sort((a,b)=>a-b);
 dados.mineriosComprados.sort((a,b)=>a-b);
 const nome=String(registro.nome||jogador.nome);
 const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):"";
-let textoAviso="Admin Arthur alterou sua conta: "+def.rotulo.toLowerCase();
-if(acao==="addMoney")textoAviso="Admin Arthur te deu $"+formatarDinheiro(valor)+".";
-else if(acao==="removeMoney")textoAviso="Admin Arthur removeu $"+formatarDinheiro(valor)+" da sua conta.";
-else if(acao==="givePickaxe")textoAviso="Admin Arthur te deu a picareta "+itemNome+".";
-else if(acao==="removePickaxe")textoAviso="Admin Arthur removeu a picareta "+itemNome+" da sua conta.";
-else if(acao==="giveOre")textoAviso="Admin Arthur te deu o minério "+itemNome+".";
-else if(acao==="removeOre")textoAviso="Admin Arthur removeu o minério "+itemNome+" da sua conta.";
-else if(acao==="giveAuto")textoAviso="Admin Arthur liberou o Auto Clicker para você.";
-else if(acao==="removeAuto")textoAviso="Admin Arthur removeu o Auto Clicker da sua conta.";
-else if(acao==="givePro")textoAviso="Admin Arthur liberou o Auto Clicker Pro para você.";
-else if(acao==="removePro")textoAviso="Admin Arthur removeu o Auto Clicker Pro da sua conta.";
-else if(acao==="setMultiplier")textoAviso="Admin Arthur definiu sua melhoria de dinheiro no nível "+valor+".";
+let textoAviso="O admin Artur alterou sua conta: "+def.rotulo.toLowerCase();
+if(acao==="addMoney")textoAviso="O admin Artur te deu $"+formatarDinheiro(valor)+".";
+else if(acao==="removeMoney")textoAviso="O admin Artur removeu $"+formatarDinheiro(valor)+" da sua conta.";
+else if(acao==="givePickaxe")textoAviso="O admin Artur te deu a picareta "+itemNome+".";
+else if(acao==="removePickaxe")textoAviso="O admin Artur removeu a picareta "+itemNome+" da sua conta.";
+else if(acao==="giveOre")textoAviso="O admin Artur te deu o minério "+itemNome+".";
+else if(acao==="removeOre")textoAviso="O admin Artur removeu o minério "+itemNome+" da sua conta.";
+else if(acao==="giveAuto")textoAviso="O admin Artur liberou o Auto Clicker para você.";
+else if(acao==="removeAuto")textoAviso="O admin Artur removeu o Auto Clicker da sua conta.";
+else if(acao==="givePro")textoAviso="O admin Artur liberou o Auto Clicker Pro para você.";
+else if(acao==="removePro")textoAviso="O admin Artur removeu o Auto Clicker Pro da sua conta.";
+else if(acao==="setMultiplier")textoAviso="O admin Artur definiu sua melhoria de dinheiro no nível "+valor+".";
 await comTempoLimite(ref.set({dados,avisoAdmin:{id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
@@ -1937,7 +1939,7 @@ if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado
 const mult=Number(admEventoMultiplicador.value),minutos=Number(admEventoMinutos.value);
 if(!Number.isInteger(mult)||mult<2||mult>1000000){admResultado("Digite um multiplicador inteiro entre 2x e 1.000.000x.","erro");return;}
 if(!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("A duração deve ser de 1 a 10.080 minutos.","erro");return;}
-const adminNome="Arthur";
+const adminNome="Artur";
 const expiraEm=new Date(Date.now()+minutos*60000);
 const id=String(Date.now())+"-"+usuarioAtual.uid;
 try{
@@ -1949,7 +1951,7 @@ atualizarStatusEventoAdmin();
 async function encerrarEventoGlobal(){
 if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
 try{
-await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:1,expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:"Arthur",id:"encerrado-"+Date.now(),atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
+await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:1,expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:"Artur",id:"encerrado-"+Date.now(),atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
 admResultado("Evento global encerrado.","ok");
 }catch(error){admResultado("Não foi possível encerrar o evento: "+(error.message||"erro no Firestore"),"erro");}
 atualizarStatusEventoAdmin();
@@ -2684,7 +2686,19 @@ mostrarRecompensa=false;
 }
 }
 
-texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
+const eventoNaTela=multiplicadorEventoAtual()>1;
+if(eventoNaTela){
+  // Reserva espaço para mostrar o saldo e, imediatamente à direita, o evento ativo.
+  texto("$ "+formatarDinheiro(moedas),335,288,20,"#ffdc00","right");
+  const restante=Math.max(0,Math.ceil((eventoGlobal.expiraEm-Date.now())/1000));
+  const mm=String(Math.floor(restante/60)).padStart(2,"0");
+  const ss=String(restante%60).padStart(2,"0");
+  retangulo(344,269,151,27,"#3d2a0b",6);
+  texto("💰 "+eventoGlobal.multiplicador+"x",382,288,15,"#ffe08a","left");
+  texto(mm+":"+ss,489,288,13,"#ffffff","right");
+}else{
+  texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
+}
 
 // BOTÃO DE RENASCIMENTO (canto superior esquerdo)
 const gradRen=ctx.createLinearGradient(7,5,132,35);
