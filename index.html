@@ -789,8 +789,9 @@ let autoClickerProAtivo=false;
 let ultimoAutoClick=Date.now();
 
 function multiplicadorDinheiro(){
-// O bônus de renascimento é permanente; as melhorias compradas são separadas.
-return (1+(renascimentos*0.5))*(1+(multiplicadorCompras*0.5));
+// Começa em 1x. Cada renascimento acrescenta 0,5x e cada nível
+// da melhoria de dinheiro acrescenta exatamente 1x.
+return 1+(renascimentos*0.5)+multiplicadorCompras;
 }
 
 function precoRenascimento(){
@@ -2364,8 +2365,8 @@ texto("X",449,61,19,"#fff","center");
 
 retangulo(40,78,420,55,"#34394e",8);
 
-texto("MONEY MULTIPLIER",52,98,14,"#ffdc00");
-texto("Atual: "+multiplicadorDinheiro().toFixed(1)+"x",52,119,13,"#80d9ff");
+texto("MONEY MULTIPLIER (+1x POR NIVEL)",52,98,14,"#ffdc00");
+texto("Nivel: "+multiplicadorCompras+" | Total: "+multiplicadorDinheiro().toFixed(1)+"x",52,119,13,"#80d9ff");
 
 retangulo(340,89,110,34,moedas>=precoMultiplicador?"#218b4a":"#754044",7);
 
