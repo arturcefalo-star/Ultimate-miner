@@ -322,6 +322,8 @@ appId:"1:204675648250:web:da41d34510c910425d1743"
 };
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
+// Mantém a autenticação no armazenamento LOCAL do navegador, inclusive após reiniciar o computador.
+const persistenciaDaConta=auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 const db=firebase.firestore();
 const ADMIN_UID="fWMMFNbKxmYozmkwsAwPTJO2skI3";
 
@@ -1170,10 +1172,18 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },1000);
 }
 
+function salvarBackupLocal(dados,uid=usuarioAtual&&usuarioAtual.uid){
+if(!uid)return;
+try{
+localStorage.setItem("mining_game_save_"+uid,JSON.stringify(dados));
+localStorage.setItem("mining_game_save_time_"+uid,String(Date.now()));
+}catch(e){console.warn("Não foi possível atualizar o backup local:",e);}
+}
+
 function salvar(){
 const dados=dadosDoJogo();
 if(!jogoPronto()||carregandoDados)return;
-try{localStorage.setItem("mining_game_save_"+usuarioAtual.uid,JSON.stringify(dados));}catch(e){}
+salvarBackupLocal(dados);
 agendarSalvamentoNuvem(dados);
 }
 
@@ -1238,15 +1248,29 @@ mensagemDeLogin("Conectado! Consultando seus dados salvos...",false);
 const ref=db.collection("jogadores").doc(user.uid);
 const snap=await comTempoLimite(ref.get(),15000,"consultar os dados da conta");
 let dadosConta={};
+let dadosLocais={};
+let horarioLocal=0;
+try{
+dadosLocais=JSON.parse(localStorage.getItem("mining_game_save_"+user.uid)||"{}");
+horarioLocal=Number(localStorage.getItem("mining_game_save_time_"+user.uid))||0;
+}catch(e){dadosLocais={};horarioLocal=0;}
 if(snap.exists){
-dadosConta=snap.data().dados||{};
+const registro=snap.data()||{};
+const horarioNuvem=registro.atualizadoEm&&typeof registro.atualizadoEm.toMillis==="function"?registro.atualizadoEm.toMillis():0;
+dadosConta=(horarioLocal>horarioNuvem&&Object.keys(dadosLocais||{}).length)?dadosLocais:(registro.dados||{});
 ultimoAvisoAdminId="";
+// Se o backup local for mais recente (ex.: computador desligado antes do envio terminar),
+// recupera esse progresso e envia novamente para a nuvem.
+if(horarioLocal>horarioNuvem&&Object.keys(dadosLocais||{}).length){
+await comTempoLimite(ref.set({nome:nome||user.displayName||user.email.split("@")[0],dados:dadosConta,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),15000,"recuperar o progresso local");
+}
 }else{
-try{dadosConta=JSON.parse(localStorage.getItem("mining_game_save_"+user.uid)||"{}");}catch(e){dadosConta={};}
+dadosConta=dadosLocais;
 await comTempoLimite(ref.set({
 nome:nome||user.displayName||user.email.split("@")[0],
 dados:dadosConta,
-criadoEm:firebase.firestore.FieldValue.serverTimestamp()
+criadoEm:firebase.firestore.FieldValue.serverTimestamp(),
+atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true}),15000,"criar o registro do jogador");
 }
 carregandoDados=true;
@@ -1293,6 +1317,7 @@ operacaoManualDeConta=true;
 mensagemDeLogin("ETAPA 1/2: conectando à conta...",false);
 let avisoLogin=setTimeout(()=>{mensagemDeLogin("Ainda aguardando o Firebase. Se continuar assim, atualize a página e confira se publicou este arquivo novo.");},40000);
 try{
+await comTempoLimite(persistenciaDaConta,15000,"preparar o salvamento da sessão");
 const cred=await comTempoLimite(auth.signInWithEmailAndPassword(usuarioEmail(nome),senha),20000,"entrar na conta");
 mensagemDeLogin("ETAPA 2/2: conta reconhecida; carregando progresso...",false);
 const ok=await entrarNoJogo(cred.user,nome);
@@ -1319,6 +1344,7 @@ let dadosIniciais={};
 let legado=null;
 try{legado=localStorage.getItem("mining_game_save");if(legado)dadosIniciais=JSON.parse(legado);}catch(e){dadosIniciais={};}
 try{
+await comTempoLimite(persistenciaDaConta,15000,"preparar o salvamento da sessão");
 const cred=await comTempoLimite(auth.createUserWithEmailAndPassword(usuarioEmail(nome),senha),20000,"criar a conta no Firebase");
 await comTempoLimite(cred.user.updateProfile({displayName:nome}),15000,"salvar o nome da conta");
 await comTempoLimite(db.collection("jogadores").doc(cred.user.uid).set({
@@ -1454,6 +1480,7 @@ await entrarNoJogo(user,nome);
 }catch(error){mensagemDeLogin("Erro de conexão com o Firebase. Atualize a página.");}
 }
 auth.onAuthStateChanged(async user=>{
+try{await persistenciaDaConta;}catch(error){console.error("Não foi possível ativar a sessão persistente:",error);}
 if(user&&!usuarioAtual&&!operacaoManualDeConta){
 const nome=user.displayName||user.email.split("@")[0]||"Jogador";
 await entrarNoJogo(user,nome);
@@ -1464,11 +1491,13 @@ await entrarNoJogo(user,nome);
 // Nunca salva antes do progresso carregar, para não apagar o save com valores zerados.
 function salvarNuvemAgora(){
 if(!jogoPronto()||carregandoDados)return;
+const dadosAgora=dadosDoJogo();
+salvarBackupLocal(dadosAgora,usuarioAtual.uid);
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
 const id=usuarioAtual.uid;
 db.collection("jogadores").doc(id).set({
 nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
-dados:dadosDoJogo(),
+dados:dadosAgora,
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true}).catch(error=>console.error("Erro ao salvar:",error));
 }
@@ -2712,14 +2741,15 @@ mostrarRecompensa=false;
 
 const eventoNaTela=multiplicadorEventoAtual()>1;
 if(eventoNaTela){
-  // Indicador bem pequeno: somente multiplicador e tempo restante.
-  texto("$ "+formatarDinheiro(moedas),365,288,18,"#ffdc00","right");
+  // Indicador de evento maior e mais legível, mantendo-se dentro do jogo.
+  texto("$ "+formatarDinheiro(moedas),365,258,17,"#ffdc00","right");
   const restante=Math.max(0,Math.ceil((eventoGlobal.expiraEm-Date.now())/1000));
   const mm=String(Math.floor(restante/60)).padStart(2,"0");
   const ss=String(restante%60).padStart(2,"0");
-  retangulo(373,275,119,17,"#3d2a0b",4);
-  texto(eventoGlobal.multiplicador+"x",402,287,10,"#ffe08a","center");
-  texto(mm+":"+ss,484,287,9,"#ffffff","right");
+  retangulo(350,267,142,25,"#3d2a0b",6);
+  retangulo(352,269,138,21,"#624313",5);
+  texto(eventoGlobal.multiplicador+"x",389,284,13,"#ffe08a","center");
+  texto(mm+":"+ss,484,284,12,"#ffffff","right");
 }else{
   texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
 }
