@@ -1184,7 +1184,7 @@ programarEnvioNuvem();
 
 function programarEnvioNuvem(){
 if(timerSalvamentoNuvem||gravacaoNuvemEmAndamento||!dadosNuvemPendente)return;
-const espera=Math.max(0,300-(Date.now()-ultimaGravacaoNuvem));
+const espera=Math.max(0,120-(Date.now()-ultimaGravacaoNuvem));
 timerSalvamentoNuvem=setTimeout(enviarSalvamentoNuvem,espera);
 }
 
@@ -2026,9 +2026,10 @@ if(def.perigo&&!confirmarClique(botao))return;
 admExecutando=true;botao.disabled=true;botao.textContent="Salvando...";
 try{
 const ref=db.collection("jogadores").doc(uid);
-const snap=await comTempoLimite(ref.get(),15000,"consultar jogador selecionado");
-if(!snap.exists)throw new Error("Essa conta não existe mais.");
-const registro=snap.data()||{};
+// A lista Admin já é mantida por onSnapshot. Reutiliza o último estado recebido
+// em vez de fazer uma leitura extra (ref.get) antes de cada concessão.
+// Isso elimina uma ida e volta à nuvem e deixa a ação mais rápida.
+const registro={nome:jogador.nome||"Jogador",dados:jogador.dados||{}};
 const dados=Object.assign({
 moedas:0,renascimentos:0,picaretasCompradas:[0],mineriosComprados:[0],picaretaAtual:0,minerioAtual:0,
 volumeGeral:1,codigosUsados:[],multiplicadorCompras:0,precoMultiplicador:100,
