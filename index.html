@@ -1233,14 +1233,16 @@ salvarBackupLocal(dados);
 agendarSalvamentoNuvem(dados);
 }
 
-// SINCRONIZAÇÃO CONTÍNUA: envia o estado atual mesmo quando uma fonte de moedas
-// altera o saldo sem chamar salvar(). O painel Admin recebe os snapshots do Firestore.
+// SINCRONIZAÇÃO CONTÍNUA: atualiza o painel Admin com maior frequência,
+// inclusive quando auto clickers ou outras fontes alteram o saldo.
+// A mineração manual também chama salvar() imediatamente; este ciclo cobre
+// alterações que não disparam salvamento próprio.
 let timerSincronizacaoContinua=null;
 if(!timerSincronizacaoContinua){
 timerSincronizacaoContinua=setInterval(()=>{
 if(!jogoPronto()||carregandoDados||document.visibilityState==='hidden')return;
 salvar();
-},1000);
+},500);
 }
 
 function aplicarDados(dados){
