@@ -109,7 +109,7 @@ border:2px solid #b17be8;box-shadow:0 0 30px #8a45c555
 .adm-topo h2{margin:0;font-size:20px;color:#d8aaff}
 .adm-x{width:36px;height:36px;border:0;border-radius:8px;background:#b42828;color:#fff;font-size:18px;font-weight:bold;cursor:pointer}
 
-.adm-resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.adm-resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px;max-height:260px;overflow-y:auto;padding-right:2px}
 .adm-chip{background:#10101a;border:1px solid #4b3470;border-radius:8px;padding:6px 8px;min-width:0}
 .adm-chip span{display:block;font-size:11px;color:#a99bc4}
 .adm-chip strong{display:block;font-size:14px;color:#ffdc00;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1613,32 +1613,57 @@ renderizarLogAdmin();
 mostrarAviso(texto,tipo);
 }
 
-function atualizarAdmin(){
-ultimaAtualizacaoAdmin=Date.now();
-if(!adminAberto)return;
-const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
+function desenharResumoJogador(nome,dados){
+const d=dados&&typeof dados==="object"?dados:{};
+const ren=Math.max(0,Math.floor(Number(d.renascimentos)||0));
+const nivel=Math.max(0,Math.floor(Number(d.multiplicadorCompras)||0));
+const bonusRen=1+ren;
+const bonusMelhoria=1+nivel;
+const picCompradas=Array.isArray(d.picaretasCompradas)?d.picaretasCompradas: [0];
+const minComprados=Array.isArray(d.mineriosComprados)?d.mineriosComprados: [0];
+const picAtual=picaretas[Number(d.picaretaAtual)||0];
+const minAtual=minerios[Number(d.minerioAtual)||0];
+const autoPro=!!d.autoClickerProComprado;
+const autoNormal=!!d.autoClickerComprado;
+const autoAtivo=autoPro?!!d.autoClickerProAtivo:(autoNormal?!!d.autoClickerAtivo:false);
+const tipoAuto=autoPro?"Auto Clicker Pro":(autoNormal?"Auto Clicker":"Nenhum");
 const itens=[
-["Jogador",nome],
-["Dinheiro","$ "+formatarDinheiro(moedas)],
-["Bônus de renascimento",multiplicadorRenascimento().toFixed(1)+"x"],
-["Melhoria de dinheiro",multiplicadorMelhoria().toFixed(1)+"x"],
-["Multiplicador final",multiplicadorDinheiro().toFixed(1)+"x"],
-["Picaretas",picaretasCompradas.length+"/"+picaretas.length],
-["Minérios",mineriosComprados.length+"/"+minerios.length],
-["Auto clicker",autoClickerProComprado?"Pro":(autoClickerComprado?"Normal":"Nenhum")]
+["Jogador",nome||"Jogador"],
+["Dinheiro","$ "+formatarDinheiro(Math.max(0,Number(d.moedas)||0))],
+["Renascimentos",String(ren)],
+["Bônus de renascimento",bonusRen.toFixed(1)+"x"],
+["Nível da melhoria",String(nivel)],
+["Melhoria de dinheiro",bonusMelhoria.toFixed(1)+"x"],
+["Multiplicador final",(bonusRen*bonusMelhoria).toFixed(1)+"x"],
+["Picareta atual",picAtual?picAtual[0]:"Inicial"],
+["Picaretas liberadas",picCompradas.length+"/"+picaretas.length],
+["Minério atual",minAtual?minAtual[0]:"Inicial"],
+["Minérios liberados",minComprados.length+"/"+minerios.length],
+["Auto clicker",tipoAuto+(autoAtivo?" (Ativo)":" (Inativo)")]
 ];
 admResumo.textContent="";
 for(const [rotulo,valor] of itens){
 const chip=document.createElement("div");
 chip.className="adm-chip";
-const r=document.createElement("span");
-r.textContent=rotulo;
-const v=document.createElement("strong");
-v.textContent=valor;
-chip.appendChild(r);
-chip.appendChild(v);
-admResumo.appendChild(chip);
+const r=document.createElement("span");r.textContent=rotulo;
+const v=document.createElement("strong");v.textContent=valor;
+chip.appendChild(r);chip.appendChild(v);admResumo.appendChild(chip);
 }
+}
+
+function atualizarAdmin(){
+ultimaAtualizacaoAdmin=Date.now();
+if(!adminAberto)return;
+// Na aba Outro jogador, o resumo superior passa a mostrar a conta selecionada.
+if(!document.getElementById("abaOutro").hidden){
+const selecionado=jogadoresAdmin.find(j=>j.uid===admJogador.value);
+if(selecionado){desenharResumoJogador(selecionado.nome,selecionado.dados);return;}
+}
+const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
+desenharResumoJogador(nome,{
+moedas,renascimentos,multiplicadorCompras,picaretasCompradas,mineriosComprados,picaretaAtual,minerioAtual,
+autoClickerComprado,autoClickerProComprado,autoClickerAtivo,autoClickerProAtivo
+});
 }
 
 function abrirAdmin(){
@@ -1661,6 +1686,7 @@ document.getElementById("abaOutro").hidden=aba!=="outro";
 document.getElementById("abaEvento").hidden=aba!=="evento";
 if(aba==="evento")atualizarStatusEventoAdmin();
 for(const botao of adminBox.querySelectorAll(".adm-abas button"))botao.classList.toggle("ativa",botao.dataset.aba===aba);
+atualizarAdmin();
 }
 
 // Botão que pede um segundo clique para ações destrutivas
@@ -1829,6 +1855,8 @@ select.appendChild(op);
 }
 if(!jogadoresAdmin.length){const op=document.createElement("option");op.value="";op.textContent="Nenhum jogador encontrado";select.appendChild(op);}
 if(jogadoresAdmin.some(j=>j.uid===valorAnterior))select.value=valorAnterior;
+if(!select.value&&jogadoresAdmin.length)select.value=jogadoresAdmin[0].uid;
+atualizarAdmin();
 admResultado("Lista carregada: "+jogadoresAdmin.length+" conta(s).","ok");
 }catch(error){
 console.error("Erro ao listar jogadores:",error);
@@ -1962,11 +1990,9 @@ else if(acao==="removePro")textoAviso="O admin Artur removeu o Auto Clicker Pro 
 else if(acao==="setMultiplier")textoAviso="O admin Artur definiu sua melhoria de dinheiro no nível "+valor+".";
 await comTempoLimite(ref.set({dados,avisoAdmin:{id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
-if(uid===usuarioAtual.uid){
-aplicarDadosDoServidor(dados);
-atualizarAdmin();
-}
 jogador.dados=dados;
+if(uid===usuarioAtual.uid)aplicarDadosDoServidor(dados);
+atualizarAdmin();
 }catch(error){
 console.error("Erro ao gerenciar jogador:",error);
 admResultado("Não foi possível alterar a conta: "+(error.message||"erro no Firestore"),"erro");
@@ -2024,6 +2050,7 @@ admAcao.appendChild(opcao);
 }
 admAcao.addEventListener("change",atualizarCamposRemotos);
 document.getElementById("admAtualizarJogadores").addEventListener("click",carregarJogadoresAdmin);
+admJogador.addEventListener("change",atualizarAdmin);
 atualizarCamposRemotos();
 
 adminBox.addEventListener("click",evento=>{
