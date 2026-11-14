@@ -73,6 +73,13 @@ font-size:15px;font-weight:bold;color:white;background:#286bd2
 #senhaBox button.cancel{background:#454556}
 #mensagemSenha{min-height:18px;color:#ffb0b0;font-size:12px}
 
+#renascimentoModal{display:none;position:fixed;inset:0;background:#000d;align-items:center;justify-content:center;z-index:30000;padding:18px;color:#fff;font-family:Arial,sans-serif}
+#renascimentoBox{width:min(360px,92vw);padding:22px;border-radius:16px;text-align:center;background:linear-gradient(145deg,#302044,#151522);border:2px solid #d6a33b;box-shadow:0 0 30px #d6a33b55}
+#renascimentoBox h2{margin:0 0 10px;color:#ffd66b;font-size:22px}
+#renascimentoBox p{font-size:14px;line-height:1.5;color:#ddd;margin:8px 0}
+#renascimentoBox strong{color:#ffe08a}
+#renascimentoBox button{width:100%;padding:12px;margin-top:9px;border:0;border-radius:9px;font-size:14px;font-weight:bold;color:white;background:#a87520}
+#renascimentoBox button.cancel{background:#454556}
 [hidden]{display:none!important}
 
 #aviso{
@@ -147,6 +154,16 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <body>
 
 <canvas id="game" width="500" height="300"></canvas>
+
+<div id="renascimentoModal">
+  <div id="renascimentoBox">
+    <h2>♻ RENASCIMENTO</h2>
+    <p id="renascimentoInfo"></p>
+    <p>Ao renascer, você perde seu dinheiro, picaretas, minérios e melhorias. Seus renascimentos e o multiplicador permanente serão mantidos.</p>
+    <button id="confirmarRenascimento" type="button">FAZER RENASCIMENTO</button>
+    <button id="cancelarRenascimento" class="cancel" type="button">CANCELAR</button>
+  </div>
+</div>
 
 <div id="loginModal">
   <div id="loginBox">
@@ -716,6 +733,7 @@ const minerios=[
 ];
 
 let moedas=0;
+let renascimentos=0;
 let picaretasCompradas=[0],mineriosComprados=[0];
 let picaretaAtual=0,minerioAtual=0;
 
@@ -771,8 +789,66 @@ let autoClickerProAtivo=false;
 let ultimoAutoClick=Date.now();
 
 function multiplicadorDinheiro(){
-return 1+(multiplicadorCompras*0.5);
+// O bônus de renascimento é permanente; as melhorias compradas são separadas.
+return (1+(renascimentos*0.5))*(1+(multiplicadorCompras*0.5));
 }
+
+function precoRenascimento(){
+// Começa em 10 milhões e dobra a cada renascimento realizado.
+return 10000000*Math.pow(2,renascimentos);
+}
+
+const renascimentoModal=document.getElementById("renascimentoModal");
+const renascimentoInfo=document.getElementById("renascimentoInfo");
+const confirmarRenascimento=document.getElementById("confirmarRenascimento");
+const cancelarRenascimento=document.getElementById("cancelarRenascimento");
+
+function abrirRenascimento(){
+if(!jogoPronto())return;
+const custo=precoRenascimento();
+const proximo=1+((renascimentos+1)*0.5);
+renascimentoInfo.innerHTML="Custo: <strong>$ "+formatarDinheiro(custo)+"</strong><br>Seu dinheiro: <strong>$ "+formatarDinheiro(moedas)+"</strong><br>Multiplicador após renascer: <strong>"+proximo.toFixed(1)+"x</strong><br>Renascimentos: <strong>"+renascimentos+" → "+(renascimentos+1)+"</strong>";
+confirmarRenascimento.disabled=moedas<custo;
+confirmarRenascimento.textContent=moedas>=custo?"FAZER RENASCIMENTO":"DINHEIRO INSUFICIENTE";
+confirmarRenascimento.style.opacity=moedas>=custo?"1":".55";
+renascimentoModal.style.display="flex";
+}
+
+function fecharRenascimento(){
+renascimentoModal.style.display="none";
+}
+
+function fazerRenascimento(){
+if(!jogoPronto())return;
+const custo=precoRenascimento();
+if(moedas<custo){
+mostrarAviso("Você precisa de $ "+formatarDinheiro(custo)+" para renascer.","erro");
+fecharRenascimento();
+return;
+}
+renascimentos++;
+moedas=0;
+picaretasCompradas=[0];
+mineriosComprados=[0];
+picaretaAtual=0;
+minerioAtual=0;
+// Todas as melhorias compradas são resetadas.
+multiplicadorCompras=0;
+precoMultiplicador=100;
+autoClickerComprado=false;
+autoClickerProComprado=false;
+autoClickerAtivo=false;
+autoClickerProAtivo=false;
+ultimoAutoClick=Date.now();
+salvar();
+somRaro();
+fecharRenascimento();
+mostrarAviso("RENASCIMENTO "+renascimentos+"! Multiplicador permanente: "+multiplicadorDinheiro().toFixed(1)+"x","ok");
+}
+
+confirmarRenascimento.addEventListener("click",fazerRenascimento);
+cancelarRenascimento.addEventListener("click",fecharRenascimento);
+renascimentoModal.addEventListener("pointerdown",evento=>{if(evento.target===renascimentoModal)fecharRenascimento();});
 
 function comprarMultiplicador(){
 if(moedas<precoMultiplicador){
@@ -951,6 +1027,7 @@ function somFecharLoja(){tom(650,0.10,0.20,"sine",400)}
 function dadosDoJogo(){
 return{
 moedas,
+renascimentos,
 picaretasCompradas,
 mineriosComprados,
 picaretaAtual,
@@ -993,6 +1070,7 @@ agendarSalvamentoNuvem(dados);
 
 function aplicarDados(dados){
 moedas=0;
+renascimentos=0;
 picaretasCompradas=[0];
 mineriosComprados=[0];
 picaretaAtual=0;
@@ -1009,6 +1087,7 @@ autoClickerProAtivo=false;
 
 if(!dados||typeof dados!=="object")return;
 moedas=Math.max(0,Number(dados.moedas)||0);
+renascimentos=Math.max(0,Math.min(1000,Math.floor(Number(dados.renascimentos)||0)));
 picaretasCompradas=Array.isArray(dados.picaretasCompradas)?dados.picaretasCompradas.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<picaretas.length):[0];
 mineriosComprados=Array.isArray(dados.mineriosComprados)?dados.mineriosComprados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<minerios.length):[0];
 picaretasCompradas=[...new Set(picaretasCompradas)];
@@ -2439,6 +2518,15 @@ mostrarRecompensa=false;
 
 texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
 
+// BOTÃO DE RENASCIMENTO (canto superior esquerdo)
+const gradRen=ctx.createLinearGradient(7,5,132,35);
+gradRen.addColorStop(0,"#e7b94f");
+gradRen.addColorStop(0.5,"#b77a22");
+gradRen.addColorStop(1,"#754313");
+retangulo(7,5,126,31,"#3b260c",7);
+retangulo(9,7,122,27,gradRen,5);
+texto("♻ RENASCIMENTO",70,25,12,"#fff","center");
+
 retangulo(450,5,42,30,"#343b55",6);
 desenharEngrenagem(471,20);
 
@@ -2690,7 +2778,11 @@ canvas.setPointerCapture(evento.pointerId);
 
 }else{
 
-if(p.x>=450&&p.x<=492&&p.y>=5&&p.y<=35){
+if(p.x>=7&&p.x<=133&&p.y>=5&&p.y<=36){
+abrirRenascimento();
+return;
+
+}else if(p.x>=450&&p.x<=492&&p.y>=5&&p.y<=35){
 configuracoesAbertas=true;
 somAbrirLoja();
 
