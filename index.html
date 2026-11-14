@@ -329,6 +329,9 @@ const ADMIN_UID="fWMMFNbKxmYozmkwsAwPTJO2skI3";
 
 let usuarioAtual=null;
 let timerSalvamentoNuvem=null;
+let dadosNuvemPendente=null;
+let gravacaoNuvemEmAndamento=false;
+let ultimaGravacaoNuvem=0;
 let carregandoDados=false;
 let dadosCarregados=false;
 let saindoDaConta=false;
@@ -1158,21 +1161,42 @@ autoClickerProAtivo
 };
 }
 
+// SALVAMENTO EM TEMPO REAL: limita a frequência, mas nunca reinicia o prazo
+// a cada moeda ganha. Assim, a mineração contínua também chega ao painel Admin.
 function agendarSalvamentoNuvem(dados){
 if(!jogoPronto()||carregandoDados)return;
-if(timerSalvamentoNuvem)clearTimeout(timerSalvamentoNuvem);
-const id=usuarioAtual.uid;
-const copia=JSON.parse(JSON.stringify(dados));
-timerSalvamentoNuvem=setTimeout(async()=>{
-if(!usuarioAtual||usuarioAtual.uid!==id)return;
+dadosNuvemPendente={uid:usuarioAtual.uid,dados:JSON.parse(JSON.stringify(dados))};
+programarEnvioNuvem();
+}
+
+function programarEnvioNuvem(){
+if(timerSalvamentoNuvem||gravacaoNuvemEmAndamento||!dadosNuvemPendente)return;
+const espera=Math.max(0,300-(Date.now()-ultimaGravacaoNuvem));
+timerSalvamentoNuvem=setTimeout(enviarSalvamentoNuvem,espera);
+}
+
+async function enviarSalvamentoNuvem(){
+timerSalvamentoNuvem=null;
+if(gravacaoNuvemEmAndamento||!dadosNuvemPendente)return;
+const pendente=dadosNuvemPendente;
+dadosNuvemPendente=null;
+if(!usuarioAtual||usuarioAtual.uid!==pendente.uid||!dadosCarregados)return;
+gravacaoNuvemEmAndamento=true;
 try{
-await db.collection("jogadores").doc(id).set({
+await db.collection("jogadores").doc(pendente.uid).set({
 nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
-dados:copia,
+dados:pendente.dados,
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
-}catch(error){console.error("Erro ao salvar no Firebase:",error);}
-},150);
+ultimaGravacaoNuvem=Date.now();
+}catch(error){
+console.error("Erro ao salvar no Firebase:",error);
+// Se falhar, mantém a versão mais recente para uma nova tentativa.
+if(!dadosNuvemPendente)dadosNuvemPendente=pendente;
+}finally{
+gravacaoNuvemEmAndamento=false;
+if(dadosNuvemPendente)programarEnvioNuvem();
+}
 }
 
 function salvarBackupLocal(dados,uid=usuarioAtual&&usuarioAtual.uid){
@@ -1522,7 +1546,9 @@ if(!jogoPronto()||carregandoDados)return;
 const dadosAgora=dadosDoJogo();
 salvarBackupLocal(dadosAgora,usuarioAtual.uid);
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
+dadosNuvemPendente=null;
 const id=usuarioAtual.uid;
+ultimaGravacaoNuvem=Date.now();
 db.collection("jogadores").doc(id).set({
 nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados:dadosAgora,
@@ -1710,6 +1736,8 @@ function fecharAdmin(){
 adminAberto=false;
 adminModal.style.display="none";
 if(cancelarMonitoramentoAdminJogadores){cancelarMonitoramentoAdminJogadores();cancelarMonitoramentoAdminJogadores=null;}
+if(cancelarMonitoramentoAdminSelecionado){cancelarMonitoramentoAdminSelecionado();cancelarMonitoramentoAdminSelecionado=null;}
+uidMonitoradoAdminSelecionado="";
 if(timerAtualizacaoStatusAdmin){clearInterval(timerAtualizacaoStatusAdmin);timerAtualizacaoStatusAdmin=null;}
 }
 
@@ -1862,6 +1890,38 @@ atualizarAdmin();
 
 // OUTRO JOGADOR (Firestore, autorizado pelas regras do projeto)
 let jogadoresAdmin=[];
+let cancelarMonitoramentoAdminSelecionado=null;
+let uidMonitoradoAdminSelecionado="";
+
+// Escuta diretamente o documento escolhido. Assim o resumo não depende apenas
+// da atualização da lista geral de jogadores.
+function monitorarJogadorSelecionado(uid){
+if(uid===uidMonitoradoAdminSelecionado)return;
+if(cancelarMonitoramentoAdminSelecionado){
+try{cancelarMonitoramentoAdminSelecionado();}catch(e){}
+cancelarMonitoramentoAdminSelecionado=null;
+}
+uidMonitoradoAdminSelecionado=uid||"";
+if(!uidMonitoradoAdminSelecionado)return;
+const uidEscutado=uidMonitoradoAdminSelecionado;
+cancelarMonitoramentoAdminSelecionado=db.collection("jogadores").doc(uidEscutado).onSnapshot(snapshot=>{
+if(!snapshot.exists)return;
+const registro=snapshot.data()||{};
+let jogador=jogadoresAdmin.find(j=>j.uid===uidEscutado);
+if(!jogador){
+jogador={uid:uidEscutado,nome:String(registro.nome||"Jogador"),dados:registro.dados||{},presencaOnline:registro.presencaOnline===true,presencaAtualizadaEm:registro.presencaAtualizadaEm||null};
+jogadoresAdmin.push(jogador);
+}else{
+jogador.nome=String(registro.nome||jogador.nome||"Jogador");
+if(registro.dados&&typeof registro.dados==="object")jogador.dados=registro.dados;
+jogador.presencaOnline=registro.presencaOnline===true;
+jogador.presencaAtualizadaEm=registro.presencaAtualizadaEm||null;
+}
+if(adminAberto&&!document.getElementById("abaOutro").hidden&&admJogador.value===uidEscutado){
+desenharResumoJogador(jogador.nome,jogador.dados,jogadorEstaOnline(jogador));
+}
+},error=>console.error("Erro ao sincronizar o jogador selecionado em tempo real:",error));
+}
 
 function renderizarListaAdmin(){
 const select=admJogador;
@@ -1876,12 +1936,15 @@ select.appendChild(op);
 if(!jogadoresAdmin.length){const op=document.createElement("option");op.value="";op.textContent="Nenhum jogador encontrado";select.appendChild(op);}
 if(jogadoresAdmin.some(j=>j.uid===valorAnterior))select.value=valorAnterior;
 if(!select.value&&jogadoresAdmin.length)select.value=jogadoresAdmin[0].uid;
+monitorarJogadorSelecionado(select.value);
 atualizarAdmin();
 }
 
 function carregarJogadoresAdmin(){
 if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
 if(cancelarMonitoramentoAdminJogadores){cancelarMonitoramentoAdminJogadores();cancelarMonitoramentoAdminJogadores=null;}
+if(cancelarMonitoramentoAdminSelecionado){cancelarMonitoramentoAdminSelecionado();cancelarMonitoramentoAdminSelecionado=null;}
+uidMonitoradoAdminSelecionado="";
 if(timerAtualizacaoStatusAdmin){clearInterval(timerAtualizacaoStatusAdmin);timerAtualizacaoStatusAdmin=null;}
 admJogador.disabled=true;
 admJogador.textContent="";
@@ -2083,7 +2146,7 @@ admAcao.appendChild(opcao);
 }
 admAcao.addEventListener("change",atualizarCamposRemotos);
 document.getElementById("admAtualizarJogadores").addEventListener("click",carregarJogadoresAdmin);
-admJogador.addEventListener("change",atualizarAdmin);
+admJogador.addEventListener("change",()=>{monitorarJogadorSelecionado(admJogador.value);atualizarAdmin();});
 atualizarCamposRemotos();
 
 adminBox.addEventListener("click",evento=>{
