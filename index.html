@@ -2740,22 +2740,18 @@ mostrarRecompensa=false;
 }
 
 const eventoNaTela=multiplicadorEventoAtual()>1;
-// Dinheiro e multiplicador ficam lado a lado, mantendo o tamanho original.
-const textoDinheiro="$ "+formatarDinheiro(moedas);
-ctx.font="bold 23px Arial";
-const larguraDinheiro=ctx.measureText(textoDinheiro).width;
-texto(multiplicadorDinheiro().toFixed(1)+"x",420-larguraDinheiro-10,288,23,"#39e879","right");
-texto(textoDinheiro,420,288,23,"#ffdc00","right");
+// O dinheiro fica sempre no mesmo lugar, sem disputar espaço com o evento.
+texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
 
 if(eventoNaTela){
-  // Indicador compacto em formato de quadrado: multiplicador em cima e tempo embaixo.
+  // Indicador do evento: canto inferior direito, em verde, junto ao contador de dinheiro.
   const restante=Math.max(0,Math.ceil((eventoGlobal.expiraEm-Date.now())/1000));
   const mm=String(Math.floor(restante/60)).padStart(2,"0");
   const ss=String(restante%60).padStart(2,"0");
-  retangulo(447,42,46,42,"#3d2a0b",5);
-  retangulo(449,44,42,38,"#624313",4);
-  texto(eventoGlobal.multiplicador+"x",470,60,14,"#ffe08a","center");
-  texto(mm+":"+ss,470,75,10,"#ffffff","center");
+  retangulo(447,235,46,42,"#123d25",5);
+  retangulo(449,237,42,38,"#176b3a",4);
+  texto(eventoGlobal.multiplicador+"x",470,253,14,"#8dffad","center");
+  texto(mm+":"+ss,470,268,10,"#ffffff","center");
 }
 
 // BOTÃO DE RENASCIMENTO (canto superior esquerdo)
