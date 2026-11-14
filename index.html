@@ -494,33 +494,36 @@ if(cancelarMonitoramentoJogador){
 try{cancelarMonitoramentoJogador();}catch(e){}
 cancelarMonitoramentoJogador=null;
 }
+// O primeiro snapshot apenas registra o último aviso já existente. Ele não
+// pode sobrescrever o saldo local com uma cópia antiga do Firestore.
+let primeiroSnapshotJogador=true;
 const ref=db.collection("jogadores").doc(uid);
 cancelarMonitoramentoJogador=ref.onSnapshot(snapshot=>{
 if(!usuarioAtual||usuarioAtual.uid!==uid||!dadosCarregados||!snapshot.exists)return;
 if(snapshot.metadata&&snapshot.metadata.hasPendingWrites)return;
 const registro=snapshot.data()||{};
 const avisoAdmin=registro.avisoAdmin;
-if(avisoAdmin&&avisoAdmin.id&&avisoAdmin.id!==ultimoAvisoAdminId){
+const idAviso=avisoAdmin&&avisoAdmin.id?String(avisoAdmin.id):"";
+if(primeiroSnapshotJogador){
+primeiroSnapshotJogador=false;
+ultimoAvisoAdminId=idAviso;
+return;
+}
+// Só reaplica dados recebidos quando existe uma nova ação explícita do Admin.
+// Snapshots normais/atrasados de salvamento não devem fazer o saldo piscar,
+// voltar para um valor antigo ou interromper o dinheiro ganho na mineração.
+if(!idAviso||idAviso===ultimoAvisoAdminId)return;
+ultimoAvisoAdminId=idAviso;
 const idadeAviso=Date.now()-(Number(avisoAdmin.criadoEm)||0);
-if(ultimoAvisoAdminId!==""||(idadeAviso>=0&&idadeAviso<86400000))mostrarAviso(String(avisoAdmin.texto||"O admin Artur fez uma alteração na sua conta."),"info");
-ultimoAvisoAdminId=String(avisoAdmin.id);
+if(idadeAviso>=0&&idadeAviso<86400000){
+mostrarAviso(String(avisoAdmin.texto||"O admin Artur fez uma alteração na sua conta."),"info");
 }
 const dados=registro.dados;
 if(!dados||typeof dados!=="object"||Array.isArray(dados))return;
-// Ignora confirmações dos próprios salvamentos e snapshots atrasados da mesma
-// sessão. Reaplicar esses dados a cada segundo reiniciava variáveis do jogo,
-// provocando atraso e exigindo dois toques para comprar.
-let assinaturaRecebida="";
-try{assinaturaRecebida=JSON.stringify(dados);}catch(e){}
-if(assinaturaRecebida&&estadosEnviadosRecentemente.includes(assinaturaRecebida))return;
-let assinaturaLocal="";
-try{assinaturaLocal=JSON.stringify(dadosDoJogo());}catch(e){}
-if(assinaturaRecebida&&assinaturaRecebida===assinaturaLocal)return;
-// Cancela um salvamento antigo pendente somente quando chegou uma alteração
-// realmente externa (por exemplo, uma mudança feita pelo painel Admin).
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
+dadosNuvemPendente=null;
 aplicarDadosDoServidor(dados);
-try{localStorage.setItem("mining_game_save_"+uid,JSON.stringify(dados));}catch(e){}
+salvarBackupLocal(dados,uid);
 atualizarAdmin();
 },error=>{
 console.error("Erro ao sincronizar os dados do jogador em tempo real:",error);
