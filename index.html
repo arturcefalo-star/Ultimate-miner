@@ -1773,14 +1773,20 @@ if(dados.minerioAtual===valor)dados.minerioAtual=0;
 }
 // Concede ou remove os auto clickers na conta escolhida.
 if(acao==="giveAuto"){
+// Libera e ativa imediatamente o Auto Clicker normal no jogador online.
 dados.autoClickerComprado=true;
+dados.autoClickerAtivo=true;
+dados.autoClickerProAtivo=false;
 }
 if(acao==="removeAuto"){
 dados.autoClickerComprado=false;
 dados.autoClickerAtivo=false;
 }
 if(acao==="givePro"){
+// Libera e ativa imediatamente o Auto Clicker Pro no jogador online.
 dados.autoClickerProComprado=true;
+dados.autoClickerProAtivo=true;
+dados.autoClickerAtivo=false;
 }
 if(acao==="removePro"){
 dados.autoClickerProComprado=false;
