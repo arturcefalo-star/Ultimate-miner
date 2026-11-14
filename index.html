@@ -1214,6 +1214,16 @@ salvarBackupLocal(dados);
 agendarSalvamentoNuvem(dados);
 }
 
+// SINCRONIZAÇÃO CONTÍNUA: envia o estado atual mesmo quando uma fonte de moedas
+// altera o saldo sem chamar salvar(). O painel Admin recebe os snapshots do Firestore.
+let timerSincronizacaoContinua=null;
+if(!timerSincronizacaoContinua){
+timerSincronizacaoContinua=setInterval(()=>{
+if(!jogoPronto()||carregandoDados||document.visibilityState==='hidden')return;
+salvar();
+},1000);
+}
+
 function aplicarDados(dados){
 moedas=0;
 renascimentos=0;
