@@ -788,11 +788,19 @@ let autoClickerProAtivo=false;
 
 let ultimoAutoClick=Date.now();
 
+function multiplicadorRenascimento(){
+// Bônus exclusivo dos renascimentos: 0 = 1x, 1 = 2x, 2 = 4x, 3 = 8x.
+return Math.pow(2,renascimentos);
+}
+
+function multiplicadorMelhoria(){
+// Bônus exclusivo da melhoria de dinheiro: nível 0 = 1x, nível 1 = 2x, nível 2 = 3x.
+return 1+multiplicadorCompras;
+}
+
 function multiplicadorDinheiro(){
-// Cada renascimento dobra o ganho: 0 = 1x, 1 = 2x, 2 = 4x, 3 = 8x.
-// Cada nível da melhoria de dinheiro soma +1x à parte de melhorias,
-// e essa melhoria é multiplicada pelo bônus de renascimento.
-return Math.pow(2,renascimentos)*(1+multiplicadorCompras);
+// O ganho final combina os dois bônus, mas cada um continua sendo exibido separadamente.
+return multiplicadorRenascimento()*multiplicadorMelhoria();
 }
 
 function precoRenascimento(){
@@ -809,7 +817,7 @@ function abrirRenascimento(){
 if(!jogoPronto())return;
 const custo=precoRenascimento();
 const proximo=Math.pow(2,renascimentos+1);
-renascimentoInfo.innerHTML="Custo: <strong>$ "+formatarDinheiro(custo)+"</strong><br>Seu dinheiro: <strong>$ "+formatarDinheiro(moedas)+"</strong><br>Multiplicador após renascer: <strong>"+proximo.toFixed(1)+"x</strong><br>Renascimentos: <strong>"+renascimentos+" → "+(renascimentos+1)+"</strong>";
+renascimentoInfo.innerHTML="Custo: <strong>$ "+formatarDinheiro(custo)+"</strong><br>Seu dinheiro: <strong>$ "+formatarDinheiro(moedas)+"</strong><br>Bônus de renascimento atual: <strong>"+multiplicadorRenascimento().toFixed(1)+"x</strong><br>Melhoria de dinheiro atual: <strong>"+multiplicadorMelhoria().toFixed(1)+"x</strong><br>Bônus de renascimento após comprar: <strong>"+proximo.toFixed(1)+"x</strong><br>Renascimentos: <strong>"+renascimentos+" → "+(renascimentos+1)+"</strong>";
 confirmarRenascimento.disabled=moedas<custo;
 confirmarRenascimento.textContent=moedas>=custo?"FAZER RENASCIMENTO":"DINHEIRO INSUFICIENTE";
 confirmarRenascimento.style.opacity=moedas>=custo?"1":".55";
@@ -845,7 +853,7 @@ ultimoAutoClick=Date.now();
 salvar();
 somRaro();
 fecharRenascimento();
-mostrarAviso("RENASCIMENTO "+renascimentos+"! Multiplicador permanente: "+multiplicadorDinheiro().toFixed(1)+"x","ok");
+mostrarAviso("RENASCIMENTO "+renascimentos+"! Bônus de renascimento: "+multiplicadorRenascimento().toFixed(1)+"x. Melhoria de dinheiro: "+multiplicadorMelhoria().toFixed(1)+"x.","ok");
 }
 
 confirmarRenascimento.addEventListener("click",fazerRenascimento);
@@ -1481,7 +1489,9 @@ const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")
 const itens=[
 ["Jogador",nome],
 ["Dinheiro","$ "+formatarDinheiro(moedas)],
-["Multiplicador",multiplicadorDinheiro().toFixed(1)+"x"],
+["Bônus de renascimento",multiplicadorRenascimento().toFixed(1)+"x"],
+["Melhoria de dinheiro",multiplicadorMelhoria().toFixed(1)+"x"],
+["Multiplicador final",multiplicadorDinheiro().toFixed(1)+"x"],
 ["Picaretas",picaretasCompradas.length+"/"+picaretas.length],
 ["Minérios",mineriosComprados.length+"/"+minerios.length],
 ["Auto clicker",autoClickerProComprado?"Pro":(autoClickerComprado?"Normal":"Nenhum")]
@@ -1654,7 +1664,7 @@ multiplicadorCompras=n;
 precoMultiplicador=100*Math.pow(3,n);
 salvar();
 somClique();
-admResultado("Multiplicador no nível "+n+" ("+multiplicadorDinheiro().toFixed(1)+"x).","ok");
+admResultado("Melhoria de dinheiro no nível "+n+" ("+multiplicadorMelhoria().toFixed(1)+"x). Bônus de renascimento: "+multiplicadorRenascimento().toFixed(1)+"x.","ok");
 atualizarAdmin();
 }
 
@@ -2367,7 +2377,7 @@ texto("X",449,61,19,"#fff","center");
 retangulo(40,78,420,55,"#34394e",8);
 
 texto("MONEY MULTIPLIER (+1x POR NIVEL)",52,98,14,"#ffdc00");
-texto("Nivel: "+multiplicadorCompras+" | Total: "+multiplicadorDinheiro().toFixed(1)+"x",52,119,13,"#80d9ff");
+texto("Nivel: "+multiplicadorCompras+" | Melhoria: "+multiplicadorMelhoria().toFixed(1)+"x",52,119,13,"#80d9ff");
 
 retangulo(340,89,110,34,moedas>=precoMultiplicador?"#218b4a":"#754044",7);
 
