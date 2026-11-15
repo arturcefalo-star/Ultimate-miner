@@ -240,6 +240,10 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .novo-topo h2{margin:0;font-size:20px;color:#b8dcff}
 .novo-fechar{width:34px;height:34px;border:0;border-radius:8px;background:#a83232;color:white;font-size:18px;font-weight:bold}
 .novo-desc{font-size:12px;color:#b8c4d7;line-height:1.4;margin:0 0 12px}
+.ranking-relogio{display:flex;align-items:center;justify-content:center;gap:7px;margin:0 0 11px;padding:8px 10px;border:1px solid #5476a4;border-radius:9px;background:#101c2d;color:#c7d9f2;font-size:11px;font-weight:800;letter-spacing:.4px}
+.ranking-relogio strong{color:#ffe17b;font-size:15px;font-variant-numeric:tabular-nums}
+#listaRanking{max-height:52vh;overflow-y:auto;padding-right:3px;overscroll-behavior:contain}
+
 .novo-card{display:flex;align-items:center;gap:10px;padding:10px;margin:7px 0;border:1px solid #405777;border-radius:12px;background:linear-gradient(135deg,#17263b,#0d1421);box-shadow:0 3px 10px #0005}
 .novo-emoji{width:42px;height:42px;display:grid;place-items:center;border-radius:9px;background:#243653;font-size:25px;flex:0 0 42px}
 .novo-info{flex:1;min-width:0}
@@ -363,7 +367,8 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div></div>
 <div id="rankingModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Ranking global">
  <div class="novo-topo"><h2>RANKING GLOBAL</h2><button class="novo-fechar" data-fechar-novo="ranking">X</button></div>
- <p class="novo-desc">Os 10 melhores jogadores do Ultimate Miner.</p>
+ <p class="novo-desc">Todos os jogadores que já entraram no Ultimate Miner.</p>
+ <div class="ranking-relogio">PRÓXIMA ATUALIZAÇÃO EM <strong id="rankingContagem">01:00</strong></div>
  <div class="novo-tabs"><button id="rankDinheiro" class="ativa">DINHEIRO</button><button id="rankRenascimentos">RENASCIMENTOS</button></div>
  <div id="listaRanking" class="novo-vazio">Carregando ranking...</div>
 </div></div>
@@ -1066,6 +1071,7 @@ let painelAFKAberto=false;
 let ovosAbertos=0;
 let rankingTipo="dinheiro";
 let rankingCarregando=false;
+let rankingProximaAtualizacao=Date.now()+60000;
 const catalogoPets=[
  {nome:"Slime",sigla:"SL",raridade:"Comum",peso:45,mult:1.10,cor:"#d1d5db"},
  {nome:"Coelhinho",sigla:"CO",raridade:"Incomum",peso:25,mult:1.15,cor:"#45d36b"},
@@ -1103,7 +1109,7 @@ function abrirNovoModal(tipo){
  if(tipo==="mundos"){atualizarMundosDesbloqueados();renderizarMundos();document.getElementById("mundosModal").style.display="flex";}
  if(tipo==="ovos"){renderizarChancesOvo();renderizarResumoPets();document.getElementById("ovosPetsModal").style.display="flex";}
  if(tipo==="inventario"){renderizarPets();document.getElementById("inventarioPetsModal").style.display="flex";}
- if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";carregarRanking();}
+ if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";iniciarContagemRanking();carregarRanking();}
  somAbrirLoja();
 }
 function fecharNovosModais(){
@@ -1344,20 +1350,23 @@ async function carregarRanking(){
  const el=document.getElementById("listaRanking");
  el.className="novo-vazio";el.textContent="Atualizando ranking...";
  try{
-  let snap;
-  const campo=rankingTipo==="dinheiro"?"moedas":"renascimentos";
-  try{snap=await db.collection("jogadores").orderBy("ranking."+campo,"desc").limit(10).get();}
-  catch(e){snap=await db.collection("jogadores").limit(100).get();}
+  // Lê a coleção inteira. Não usa orderBy/limit, pois isso escondia jogadores antigos
+  // que ainda não tinham o campo ranking preenchido. Esta rotina nunca grava nem apaga dados.
+  const snap=await db.collection("jogadores").get();
   const lista=[];
   snap.forEach(doc=>{
    const d=doc.data()||{},g=d.dados||{},r=d.ranking||{};
-   // O ranking é somente leitura: usa o retrato salvo do progresso e nunca altera o saldo do jogador.
-   lista.push({nome:String(d.nome||"Jogador"),moedas:Number(r.moedas??g.moedas)||0,renascimentos:Number(r.renascimentos??g.renascimentos)||0,uid:doc.id});
+   const moedas=Number(r.moedas??g.moedas??d.moedas)||0;
+   const renascimentos=Number(r.renascimentos??g.renascimentos??d.renascimentos)||0;
+   lista.push({nome:String(d.nome||d.displayName||g.nome||("Jogador "+doc.id.slice(0,6))),moedas,renascimentos,uid:doc.id});
   });
-  lista.sort((a,b)=>rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos);
+  lista.sort((a,b)=>{
+   const diferenca=rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos;
+   return diferenca||a.nome.localeCompare(b.nome,"pt-BR");
+  });
   el.innerHTML="";el.className="";
-  if(!lista.length){el.className="novo-vazio";el.textContent="Ainda não há jogadores no ranking.";return;}
-  lista.slice(0,10).forEach((j,i)=>{
+  if(!lista.length){el.className="novo-vazio";el.textContent="Ainda não há jogadores cadastrados.";return;}
+  lista.forEach((j,i)=>{
    const card=document.createElement("div");card.className="novo-card";
    const n=document.createElement("div");n.className="novo-rank-num";n.textContent=(i+1)+"º";
    const info=document.createElement("div");info.className="novo-info";
@@ -1367,6 +1376,22 @@ async function carregarRanking(){
   });
  }catch(e){console.error("Falha no ranking:",e);el.className="novo-vazio";el.textContent="Não foi possível carregar o ranking. Verifique a conexão e as permissões de leitura.";}
  finally{rankingCarregando=false;}
+}
+
+function iniciarContagemRanking(){
+ rankingProximaAtualizacao=Date.now()+60000;
+ atualizarContagemRanking();
+}
+function atualizarContagemRanking(){
+ const texto=document.getElementById("rankingContagem");
+ const modal=document.getElementById("rankingModal");
+ if(!texto)return;
+ let restante=Math.max(0,Math.ceil((rankingProximaAtualizacao-Date.now())/1000));
+ texto.textContent=String(Math.floor(restante/60)).padStart(2,"0")+":"+String(restante%60).padStart(2,"0");
+ if(restante===0&&modal&&modal.style.display==="flex"){
+  rankingProximaAtualizacao=Date.now()+60000;
+  carregarRanking();
+ }
 }
 
 
@@ -3973,7 +3998,7 @@ somClique();
  document.getElementById("venderPetsSelecionados").addEventListener("click",venderPetsSelecionados);
  document.getElementById("rankDinheiro").addEventListener("click",()=>{rankingTipo="dinheiro";document.getElementById("rankDinheiro").classList.add("ativa");document.getElementById("rankRenascimentos").classList.remove("ativa");carregarRanking();});
  document.getElementById("rankRenascimentos").addEventListener("click",()=>{rankingTipo="renascimentos";document.getElementById("rankRenascimentos").classList.add("ativa");document.getElementById("rankDinheiro").classList.remove("ativa");carregarRanking();});
- setInterval(()=>{const modal=document.getElementById("rankingModal");if(modal&&modal.style.display==="flex")carregarRanking();},60000);
+ setInterval(atualizarContagemRanking,1000);
 
 // INICIAR JOGO
 
