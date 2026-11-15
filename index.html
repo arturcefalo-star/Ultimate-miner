@@ -3204,4 +3204,374 @@ if(autoClickerAtivo||autoClickerProAtivo){
 retangulo(350,5,90,25,"#183c2b",6);
 
 texto(
-autoClicke
+autoClickerProAtivo?"⚡ PRO ON":"⚡ AUTO ON",
+395,22,11,"#7dffac","center"
+);
+}
+
+// AUTO CLICK FUNCIONANDO
+
+processarAutoClick();
+
+// PAINÉIS
+
+if(lojaAberta)desenharLoja();
+if(melhoriasAbertas)desenharMelhorias();
+if(configuracoesAbertas)desenharConfiguracoes();
+if(adminAberto&&Date.now()-ultimaAtualizacaoAdmin>500)atualizarAdmin();
+}
+
+// Auto clicker por tempo decorrido: mantém 5/s (normal) e 25/s (Pro) mesmo com 30 ou 60 FPS.
+function processarAutoClick(){
+const agora=Date.now();
+const pro=autoClickerProAtivo&&autoClickerProComprado;
+const normal=!pro&&autoClickerAtivo&&autoClickerComprado;
+const intervalo=pro?40:(normal?200:0);
+if(!intervalo||codigoModalAberto||!jogoPronto()){
+ultimoAutoClick=agora;
+return;
+}
+let repeticoes=0;
+while(agora-ultimoAutoClick>=intervalo&&repeticoes<4){
+ultimoAutoClick+=intervalo;
+minerar();
+repeticoes++;
+}
+if(agora-ultimoAutoClick>=intervalo)ultimoAutoClick=agora;
+}
+
+// Se um quadro falhar, o jogo continua rodando em vez de congelar
+function desenhar(){
+try{desenharQuadro();}catch(erro){console.error("Erro ao desenhar:",erro);}
+requestAnimationFrame(desenhar);
+}
+
+// POSIÇÃO
+
+function posicao(evento){
+const r=canvas.getBoundingClientRect();
+
+return{
+x:(evento.clientX-r.left)*500/r.width,
+y:(evento.clientY-r.top)*300/r.height
+};
+}
+
+// CLIQUES
+
+canvas.addEventListener("pointerdown",evento=>{
+iniciarAudio();
+
+const p=posicao(evento);
+
+if(!jogoPronto()||adminAberto)return;
+
+// Atalhos dos novos sistemas (área superior direita).
+if(!lojaAberta&&!melhoriasAbertas&&!configuracoesAbertas){
+ if(p.y>=75&&p.y<=103&&p.x>=326&&p.x<=378){abrirNovoModal("mundos");return;}
+ if(p.y>=75&&p.y<=103&&p.x>=382&&p.x<=434){abrirNovoModal("pets");return;}
+ if(p.y>=75&&p.y<=103&&p.x>=438&&p.x<=490){abrirNovoModal("ranking");return;}
+}
+
+// CONFIGURAÇÕES
+
+if(configuracoesAbertas){
+
+if(p.x>=435&&p.x<=463&&p.y>=40&&p.y<=68){
+configuracoesAbertas=false;
+somFecharLoja();
+return;
+}
+
+// VOLUME
+
+if(p.x>=80&&p.x<=430&&p.y>=94&&p.y<=139){
+volumeArrastando=true;
+
+volumeGeral=Math.max(0,Math.min(1,(p.x-90)/320));
+
+if(masterGain){
+masterGain.gain.setTargetAtTime(volumeGeral*1.8,audio.currentTime,0.03);
+}
+
+salvar();
+canvas.setPointerCapture(evento.pointerId);
+return;
+}
+
+// AUTO CLICK NORMAL
+
+if(autoClickerComprado&&p.x>=45&&p.x<=455&&p.y>=145&&p.y<=175){
+alternarAutoClicker();
+return;
+}
+
+// AUTO CLICK PRO
+
+if(autoClickerProComprado&&p.x>=45&&p.x<=455&&p.y>=179&&p.y<=209){
+alternarAutoClickerPro();
+return;
+}
+
+// TROCAR SENHA
+
+if(p.x>=45&&p.x<=455&&p.y>=214&&p.y<=241){
+abrirTrocaSenha();
+return;
+}
+
+// CÓDIGOS
+
+if(p.x>=45&&p.x<=235&&p.y>=246&&p.y<=274){
+abrirResgate();
+return;
+}
+
+// SAIR DA CONTA
+
+if(p.x>=255&&p.x<=455&&p.y>=246&&p.y<=274){
+sairDaConta();
+return;
+}
+
+return;
+}
+
+// ADMIN: o painel agora é em HTML e cobre o canvas enquanto está aberto
+
+// UPGRADES
+
+if(melhoriasAbertas){
+
+if(p.x>=435&&p.x<=463&&p.y>=40&&p.y<=68){
+melhoriasAbertas=false;
+somFecharLoja();
+return;
+}
+
+// MULTIPLICADOR
+
+if(p.x>=340&&p.x<=450&&p.y>=89&&p.y<=123){
+comprarMultiplicador();
+return;
+}
+
+// AUTO CLICKER
+
+if(p.x>=340&&p.x<=450&&p.y>=150&&p.y<=184){
+comprarAutoClicker();
+return;
+}
+
+// AUTO CLICKER PRO
+
+if(p.x>=340&&p.x<=450&&p.y>=211&&p.y<=245){
+comprarAutoClickerPro();
+return;
+}
+
+return;
+}
+
+// LOJA
+
+if(lojaAberta){
+
+if(p.x>=435&&p.x<=463&&p.y>=40&&p.y<=68){
+lojaAberta=false;
+somFecharLoja();
+return;
+}
+
+if(p.y>=72&&p.y<=100){
+if(p.x>=45&&p.x<=220){
+categoria="picaretas";
+scroll=0;
+somClique();
+return;
+}
+
+if(p.x>=230&&p.x<=405){
+categoria="minerios";
+scroll=0;
+somClique();
+return;
+}
+}
+
+if(p.x>=40&&p.x<=465&&p.y>=102&&p.y<=270){
+arrastando=true;
+moveuLista=false;
+inicioY=p.y;
+scrollInicial=scroll;
+canvas.setPointerCapture(evento.pointerId);
+}
+
+}else{
+
+if(p.x>=7&&p.x<=133&&p.y>=5&&p.y<=36){
+abrirRenascimento();
+return;
+
+}else if(p.x>=450&&p.x<=492&&p.y>=5&&p.y<=35){
+configuracoesAbertas=true;
+somAbrirLoja();
+
+}else if(adminDesbloqueado&&usuarioAtual&&usuarioAtual.uid===ADMIN_UID&&p.x>=15&&p.x<=145&&p.y>=125&&p.y<=160){
+abrirAdmin();
+
+}else if(p.x>=16&&p.x<=144&&p.y>=170&&p.y<=205){
+melhoriasAbertas=true;
+somAbrirLoja();
+
+}else if(p.x>=20&&p.x<=140&&p.y>=220&&p.y<=275){
+lojaAberta=true;
+scroll=0;
+somAbrirLoja();
+
+}else{
+minerar();
+}
+}
+
+});
+
+// ARRASTAR
+
+canvas.addEventListener("pointermove",evento=>{
+
+if(volumeArrastando){
+const p=posicao(evento);
+
+volumeGeral=Math.max(0,Math.min(1,(p.x-90)/320));
+
+if(masterGain&&audio){
+masterGain.gain.setTargetAtTime(volumeGeral*1.8,audio.currentTime,0.03);
+}
+
+salvar();
+return;
+}
+
+if(!arrastando)return;
+
+const p=posicao(evento);
+const movimento=inicioY-p.y;
+
+if(Math.abs(movimento)>5)moveuLista=true;
+
+const total=categoria==="picaretas"?picaretas.length-1:minerios.length-1;
+
+scroll=Math.max(
+0,
+Math.min(scrollInicial+Math.round(movimento/55),total-3)
+);
+
+});
+
+// SOLTAR
+
+canvas.addEventListener("pointerup",evento=>{
+
+if(volumeArrastando){
+volumeArrastando=false;
+salvar();
+return;
+}
+
+if(!arrastando)return;
+
+const p=posicao(evento);
+
+const linhaClicada=Math.floor((p.y-105)/55);
+const dentroDaLinha=p.y>=105&&(p.y-105)-linhaClicada*55<=45;
+if(!moveuLista&&dentroDaLinha&&p.x>=40&&p.x<=465&&p.y<=270){
+selecionarItem(linhaClicada);
+}
+
+arrastando=false;
+
+});
+
+canvas.addEventListener("pointercancel",()=>{
+arrastando=false;
+volumeArrastando=false;
+});
+
+// ROLAGEM
+
+canvas.addEventListener("wheel",evento=>{
+if(!lojaAberta)return;
+
+const p=posicao(evento);
+
+if(p.x>=40&&p.x<=465&&p.y>=102&&p.y<=270){
+scroll+=evento.deltaY>0?1:-1;
+limitarScroll();
+}
+
+evento.preventDefault();
+
+},{passive:false});
+
+// TECLADO
+
+document.addEventListener("keydown",evento=>{
+
+const alvo=evento.target;
+const digitando=alvo&&(alvo.tagName==="INPUT"||alvo.tagName==="TEXTAREA"||alvo.tagName==="SELECT"||alvo.isContentEditable);
+if(digitando||codigoModalAberto||adminAberto||!jogoPronto())return;
+
+if(evento.code==="Space"&&!lojaAberta&&!adminAberto&&!configuracoesAbertas&&!melhoriasAbertas){
+evento.preventDefault();
+iniciarAudio();
+minerar();
+return;
+}
+
+if(!lojaAberta)return;
+
+if(evento.key==="ArrowDown"){
+evento.preventDefault();
+scroll++;
+limitarScroll();
+}
+
+if(evento.key==="ArrowUp"){
+evento.preventDefault();
+scroll--;
+limitarScroll();
+}
+
+if(evento.key==="ArrowRight"){
+evento.preventDefault();
+categoria="minerios";
+scroll=0;
+somClique();
+}
+
+if(evento.key==="ArrowLeft"){
+evento.preventDefault();
+categoria="picaretas";
+scroll=0;
+somClique();
+}
+
+});
+
+// CONTROLES DOS NOVOS SISTEMAS
+ document.querySelectorAll("[data-fechar-novo]").forEach(b=>b.addEventListener("click",fecharNovosModais));
+ ["mundosModal","petsModal","rankingModal"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target.id===id)fecharNovosModais();}));
+ document.getElementById("comprarOvoPet").addEventListener("click",abrirOvoPet);
+ document.getElementById("rankDinheiro").addEventListener("click",()=>{rankingTipo="dinheiro";document.getElementById("rankDinheiro").classList.add("ativa");document.getElementById("rankRenascimentos").classList.remove("ativa");carregarRanking();});
+ document.getElementById("rankRenascimentos").addEventListener("click",()=>{rankingTipo="renascimentos";document.getElementById("rankRenascimentos").classList.add("ativa");document.getElementById("rankDinheiro").classList.remove("ativa");carregarRanking();});
+ document.getElementById("atualizarRanking").addEventListener("click",carregarRanking);
+
+// INICIAR JOGO
+
+iniciarSistemaLogin();
+desenhar();
+
+</script>
+</body>
+  </html>
