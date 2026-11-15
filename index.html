@@ -223,6 +223,9 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .pet-chance-card small{display:block;color:#c4d0e1;font-size:10px;margin-top:4px}
 .pet-raridade{display:inline-block;margin-top:4px;padding:2px 7px;border:1px solid currentColor;border-radius:20px;font-size:10px;font-weight:900;letter-spacing:.3px}
 .pet-chance{display:block;color:#e6edf7;font-size:10px;margin-top:3px}
+.pet-chance-card.venda-auto{border:2px solid #ff4545!important;background:linear-gradient(145deg,#351719,#171b29);box-shadow:0 0 10px #ff454555}
+.pet-auto-status{display:block;color:#ff7777;font-size:9px;font-weight:900;margin-top:6px;line-height:1.3}
+.pet-chance-card:focus-visible{outline:2px solid #fff;outline-offset:2px}
 @media(max-width:620px){#inventarioPetsModal .novo-box{height:90vh;width:96vw;padding:12px}.inventario-layout{grid-template-columns:1fr;grid-template-rows:minmax(105px,.7fr) minmax(0,2fr);gap:8px}.pet-status{padding:8px}.pet-status h3{font-size:13px;margin-bottom:4px}.pet-status p{display:inline-block;margin:3px 8px 3px 0}.pet-status .pet-status-nome{display:block;font-size:16px}.pet-grade{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:380px){.novo-box{padding:13px}.novo-card{gap:7px;padding:8px}.novo-card button{padding:8px;font-size:11px}.pet-grade{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .novo-topo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
@@ -314,7 +317,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div></div>
 <div id="ovosPetsModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Ovos de mascotes">
  <div class="novo-topo"><h2>OVOS</h2><button class="novo-fechar" data-fechar-novo="ovos">X</button></div>
- <p class="novo-desc">Abra ovos para conseguir mascotes. As chances e os multiplicadores de cada mascote aparecem abaixo.</p>
+ <p class="novo-desc">Abra ovos para conseguir mascotes. Toque em um pet para marcar ou desmarcar a venda automática: quando ele sair, será vendido na hora.</p>
  <div id="ovosResumo" class="novo-desc"></div>
  <button id="comprarOvoPet" class="novo-acao">ABRIR OVO - $ 100K</button>
  <h3 class="pets-subtitulo">CHANCES E MULTIPLICADORES</h3><div id="listaChancesPets"></div>
@@ -981,6 +984,12 @@ mostrarAviso(mensagem,"info");
 
 let multiplicadorCompras=0;
 let precoMultiplicador=100;
+// Melhorias dos ovos e dos mascotes.
+let autoOvoComprado=false,autoOvoAtivo=false,ultimoAutoOvo=Date.now();
+let sorteOvoNivel=0,precoSorteOvo=200;
+let impulsoPetsNivel=0,precoImpulsoPets=500000;
+let petsVendaAutomatica=[];
+const CUSTO_OVO_PET=100000,INTERVALO_AUTO_OVO=5000;
 
 // Evento global de dinheiro sincronizado pelo Firestore.
 let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
@@ -1021,7 +1030,16 @@ const catalogoPets=[
 const ORDEM_RARIDADE_PETS={"Comum":0,"Incomum":1,"Raro":2,"Épico":3,"Lendário":4,"Mítico":5,"Secreto":6};
 const CORES_RARIDADE_PETS={"Comum":"#d1d5db","Incomum":"#45d36b","Raro":"#4295ff","Épico":"#b66cff","Lendário":"#ffd43b","Mítico":"#ff4545","Secreto":"#ffffff"};
 let petsOrdenacao="melhores";
-function multiplicadorPets(){return petsEquipados.reduce((total,id)=>{const pet=petsInventario.find(p=>p.id===id);return total*(pet?Number(pet.mult)||1:1);},1);}
+function multiplicadorPets(){
+ const base=petsEquipados.reduce((total,id)=>{const pet=petsInventario.find(p=>p.id===id);return total*(pet?Number(pet.mult)||1:1);},1);
+ if(!petsEquipados.length)return 1;
+ return base*(1+Math.max(0,impulsoPetsNivel)*0.15);
+}
+function pesoPetComSorte(p){
+ const nivel=Math.max(0,Math.min(20,Number(sorteOvoNivel)||0));
+ const raridade=ORDEM_RARIDADE_PETS[p.raridade]||0;
+ return p.peso*(1+raridade*0.35*nivel);
+}
 function multiplicadorMundo(){return mundosJogo[mundoAtual]?.mult||1;}
 function atualizarMundosDesbloqueados(){
  const maior=mineriosComprados.length?Math.max(...mineriosComprados):0;
@@ -1055,19 +1073,40 @@ function renderizarMundos(){
  });
 }
 function escolherPetAleatorio(){
- const total=catalogoPets.reduce((a,p)=>a+p.peso,0);let n=Math.random()*total;
- for(const p of catalogoPets){n-=p.peso;if(n<=0)return p;}return catalogoPets[0];
+ const total=catalogoPets.reduce((a,p)=>a+pesoPetComSorte(p),0);let n=Math.random()*total;
+ for(const p of catalogoPets){n-=pesoPetComSorte(p);if(n<=0)return p;}return catalogoPets[0];
 }
-function abrirOvoPet(){
- if(!jogoPronto())return;
- const custo=100000;
- if(moedas<custo){mostrarAviso("Você precisa de $ 100K para abrir um ovo.","erro");return;}
- if(petsInventario.length>=50){mostrarAviso("Seu inventário de mascotes está cheio (50/50).","erro");return;}
- moedas-=custo;const base=escolherPetAleatorio();
+function abrirOvoPet(automatico=false){
+ if(!jogoPronto())return false;
+ if(moedas<CUSTO_OVO_PET){
+  if(automatico){autoOvoAtivo=false;salvar();mostrarAviso("Ovos automáticos pausados: saldo insuficiente.","erro");}
+  else mostrarAviso("Você precisa de $ 100K para abrir um ovo.","erro");
+  return false;
+ }
+ const base=escolherPetAleatorio(),venderAutomaticamente=petsVendaAutomatica.includes(base.nome);
+ if(petsInventario.length>=50&&!venderAutomaticamente){
+  if(automatico){autoOvoAtivo=false;salvar();mostrarAviso("Ovos automáticos pausados: inventário cheio.","erro");}
+  else mostrarAviso("Seu inventário de mascotes está cheio (50/50).","erro");
+  return false;
+ }
+ moedas-=CUSTO_OVO_PET;
  const pet={id:"pet_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:base.mult,cor:base.cor,borda:base.borda||""};
- petsInventario.push(pet);ovosAbertos++;salvar();renderizarChancesOvo();renderizarResumoPets();
- mostrarAviso("Você encontrou: "+pet.nome+" ("+pet.raridade+")! Bônus "+pet.mult+"x.",pet.raridade==="Lendário"||pet.raridade==="Mítico"||pet.raridade==="Secreto"?"ok":"info");
- if(pet.raridade==="Lendário"||pet.raridade==="Mítico"||pet.raridade==="Secreto")somRaro();
+ ovosAbertos++;
+ if(venderAutomaticamente){
+  const valor=VALOR_VENDA_PET[pet.raridade]||0;moedas+=valor;
+  if(!automatico)mostrarAviso(pet.nome+" foi vendido automaticamente por $ "+formatarDinheiro(valor)+".","ok");
+ }else{
+  petsInventario.push(pet);
+  if(!automatico)mostrarAviso("Você encontrou: "+pet.nome+" ("+pet.raridade+")! Bônus "+pet.mult.toFixed(2)+"x.",pet.raridade==="Lendário"||pet.raridade==="Mítico"||pet.raridade==="Secreto"?"ok":"info");
+ }
+ salvar();renderizarChancesOvo();renderizarResumoPets();
+ if(!venderAutomaticamente&&(pet.raridade==="Lendário"||pet.raridade==="Mítico"||pet.raridade==="Secreto"))somRaro();
+ return true;
+}
+function processarOvosAutomaticos(){
+ if(!autoOvoComprado||!autoOvoAtivo||!jogoPronto())return;
+ const agora=Date.now();if(agora-ultimoAutoOvo<INTERVALO_AUTO_OVO)return;
+ ultimoAutoOvo=agora;abrirOvoPet(true);
 }
 function alternarPet(id){
  const i=petsEquipados.indexOf(id);
@@ -1079,21 +1118,22 @@ function alternarPet(id){
 let petSelecionadoId=null;
 const VALOR_VENDA_PET={"Comum":10000,"Incomum":15000,"Raro":25000,"Épico":50000,"Lendário":100000,"Mítico":250000,"Secreto":500000};
 function renderizarResumoPets(){
- const texto="Mascotes: "+petsInventario.length+"/50 | Equipados: "+petsEquipados.length+"/3 | Bônus equipado: "+multiplicadorPets().toFixed(2)+"x | Ovos abertos: "+ovosAbertos;
+ const texto="Mascotes: "+petsInventario.length+"/50 | Equipados: "+petsEquipados.length+"/3 | Bônus equipado: "+multiplicadorPets().toFixed(2)+"x | Ovos abertos: "+ovosAbertos+" | Sorte: nível "+sorteOvoNivel;
  const resumo=document.getElementById("petsResumo");if(resumo)resumo.textContent=texto;
  const ovos=document.getElementById("ovosResumo");if(ovos)ovos.textContent="Saldo: $ "+formatarDinheiro(moedas)+" | "+texto;
 }
 function renderizarChancesOvo(){
  const el=document.getElementById("listaChancesPets");if(!el)return;el.innerHTML="";
- const total=catalogoPets.reduce((a,p)=>a+p.peso,0);
+ const total=catalogoPets.reduce((a,p)=>a+pesoPetComSorte(p),0);
  const lista=catalogoPets.slice().sort((a,b)=>(ORDEM_RARIDADE_PETS[b.raridade]??-1)-(ORDEM_RARIDADE_PETS[a.raridade]??-1));
  lista.forEach(p=>{
-  const cor=CORES_RARIDADE_PETS[p.raridade]||"#d1d5db";
-  const card=document.createElement("div");card.className="pet-chance-card";card.style.borderColor=p.raridade==="Secreto"?"#fff":cor;
+  const cor=CORES_RARIDADE_PETS[p.raridade]||"#d1d5db",autoVenda=petsVendaAutomatica.includes(p.nome);
+  const card=document.createElement("div");card.className="pet-chance-card"+(autoVenda?" venda-auto":"");card.style.borderColor=autoVenda?"#ff4545":(p.raridade==="Secreto"?"#fff":cor);card.style.cursor="pointer";card.setAttribute("role","button");card.setAttribute("aria-pressed",String(autoVenda));card.title="Clique para "+(autoVenda?"desativar":"ativar")+" a venda automática";
   const nome=document.createElement("strong");nome.textContent=p.nome;
   const rar=document.createElement("span");rar.className="pet-raridade";rar.textContent=p.raridade.toUpperCase();rar.style.color=cor;rar.style.borderColor=cor;rar.style.background=p.raridade==="Secreto"?"#050505":"#ffffff0b";
-  const info=document.createElement("small");info.textContent="Chance: "+(p.peso/total*100).toFixed(p.peso<1?2:1)+"% | Multiplicador: "+p.mult.toFixed(2)+"x";
-  card.append(nome,rar,info);el.appendChild(card);
+  const info=document.createElement("small");info.textContent="Chance: "+(pesoPetComSorte(p)/total*100).toFixed(pesoPetComSorte(p)/total<0.01?3:2)+"% | Multiplicador: "+p.mult.toFixed(2)+"x";
+  const status=document.createElement("small");status.className="pet-auto-status";status.textContent=autoVenda?"VENDA AUTOMÁTICA ATIVA — CLIQUE PARA DESATIVAR":"CLIQUE PARA MARCAR VENDA AUTOMÁTICA";
+  card.append(nome,rar,info,status);card.addEventListener("click",()=>{if(petsVendaAutomatica.includes(p.nome))petsVendaAutomatica=petsVendaAutomatica.filter(n=>n!==p.nome);else petsVendaAutomatica.push(p.nome);salvar();renderizarChancesOvo();});el.appendChild(card);
  });
  const botao=document.getElementById("comprarOvoPet");if(botao)botao.textContent="ABRIR OVO - $ 100K (SALDO: $ "+formatarDinheiro(moedas)+")";
 }
@@ -1301,6 +1341,8 @@ autoClickerComprado=false;
 autoClickerProComprado=false;
 autoClickerAtivo=false;
 autoClickerProAtivo=false;
+autoOvoComprado=false;autoOvoAtivo=false;ultimoAutoOvo=Date.now();
+sorteOvoNivel=0;precoSorteOvo=200;impulsoPetsNivel=0;precoImpulsoPets=500000;
 ultimoAutoClick=Date.now();
 salvar();
 somRaro();
@@ -1503,6 +1545,13 @@ autoClickerComprado,
 autoClickerProComprado,
 autoClickerAtivo,
 autoClickerProAtivo,
+autoOvoComprado,
+autoOvoAtivo,
+sorteOvoNivel,
+precoSorteOvo,
+impulsoPetsNivel,
+precoImpulsoPets,
+petsVendaAutomatica,
 mundoAtual,
 mundosDesbloqueados,
 petsInventario,
@@ -1553,6 +1602,8 @@ autoClickerComprado=false;
 autoClickerProComprado=false;
 autoClickerAtivo=false;
 autoClickerProAtivo=false;
+autoOvoComprado=false;autoOvoAtivo=false;ultimoAutoOvo=Date.now();
+sorteOvoNivel=0;precoSorteOvo=200;impulsoPetsNivel=0;precoImpulsoPets=500000;petsVendaAutomatica=[];
 mundoAtual=0;mundosDesbloqueados=[0];petsInventario=[];petsEquipados=[];ovosAbertos=0;
 
 if(!dados||typeof dados!=="object")return;
@@ -1579,6 +1630,12 @@ autoClickerComprado=!!dados.autoClickerComprado;
 autoClickerProComprado=!!dados.autoClickerProComprado;
 autoClickerAtivo=!!dados.autoClickerAtivo&&autoClickerComprado;
 autoClickerProAtivo=!!dados.autoClickerProAtivo&&autoClickerProComprado;
+autoOvoComprado=!!dados.autoOvoComprado;autoOvoAtivo=!!dados.autoOvoAtivo&&autoOvoComprado;ultimoAutoOvo=Date.now();
+sorteOvoNivel=Math.max(0,Math.min(20,Math.floor(Number(dados.sorteOvoNivel)||0)));
+precoSorteOvo=Number(dados.precoSorteOvo);if(!Number.isFinite(precoSorteOvo)||precoSorteOvo<200)precoSorteOvo=200*Math.pow(3,sorteOvoNivel);
+impulsoPetsNivel=Math.max(0,Math.min(20,Math.floor(Number(dados.impulsoPetsNivel)||0)));
+precoImpulsoPets=Number(dados.precoImpulsoPets);if(!Number.isFinite(precoImpulsoPets)||precoImpulsoPets<500000)precoImpulsoPets=500000*Math.pow(2,impulsoPetsNivel);
+petsVendaAutomatica=Array.isArray(dados.petsVendaAutomatica)?dados.petsVendaAutomatica.filter(n=>catalogoPets.some(p=>p.nome===n)):[];
 if(autoClickerAtivo&&autoClickerProAtivo)autoClickerAtivo=false;
 mundoAtual=Math.max(0,Math.min(mundosJogo.length-1,Math.floor(Number(dados.mundoAtual)||0)));
 mundosDesbloqueados=Array.isArray(dados.mundosDesbloqueados)?dados.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
@@ -3072,74 +3129,35 @@ categoria==="picaretas"
 // PAINEL UPGRADES
 
 function desenharMelhorias(){
-retangulo(25,30,450,250,"#171722",12);
-
-const fundo=ctx.createLinearGradient(25,30,475,280);
-fundo.addColorStop(0,"#263d55");
-fundo.addColorStop(1,"#171722");
-
-retangulo(27,32,446,246,fundo,10);
-
-ctx.strokeStyle="#64b4ff";
-ctx.lineWidth=2;
-ctx.beginPath();
-ctx.roundRect(25,30,450,250,12);
-ctx.stroke();
-
-texto("UPGRADES",45,62,25,"#64b4ff");
-
-retangulo(435,40,28,28,"#b42828",6);
-texto("X",449,61,19,"#fff","center");
-
-// MULTIPLICADOR
-
-retangulo(40,78,420,55,"#34394e",8);
-
-texto("MONEY MULTIPLIER (+1x POR NIVEL)",52,98,14,"#ffdc00");
-texto("Nivel: "+multiplicadorCompras+" | Melhoria: "+multiplicadorMelhoria().toFixed(1)+"x",52,119,13,"#80d9ff");
-
-retangulo(340,89,110,34,moedas>=precoMultiplicador?"#218b4a":"#754044",7);
-
-texto(
-multiplicadorCompras===0?"$ 100": "$ "+formatarDinheiro(precoMultiplicador),
-395,111,12,"#fff","center"
-);
-
-// AUTO CLICKER NORMAL
-
-retangulo(40,139,420,55,"#34394e",8);
-
-texto("AUTO CLICKER",52,159,14,"#80d9ff");
-
-texto(
-autoClickerComprado?"5 CLIQUES/SEG":"5 CLIQUES/SEG",
-52,180,12,"#bbb"
-);
-
-retangulo(340,150,110,34,autoClickerComprado?"#238c57":(moedas>=100000?"#218b4a":"#754044"),7);
-
-texto(
-autoClickerComprado?"COMPRADO":"$ 100K",
-395,172,12,"#fff","center"
-);
-
-// AUTO CLICKER PRO
-
-retangulo(40,200,420,55,"#34394e",8);
-
-texto("AUTO CLICKER PRO",52,220,14,"#d5a1ff");
-
-texto(
-autoClickerProComprado?"25 CLIQUES/SEG":"25 CLIQUES/SEG",
-52,241,12,"#bbb"
-);
-
-retangulo(340,211,110,34,autoClickerProComprado?"#238c57":(moedas>=10000000?"#218b4a":"#754044"),7);
-
-texto(
-autoClickerProComprado?"COMPRADO":"$ 10M",
-395,233,12,"#fff","center"
-);
+ retangulo(25,25,450,265,"#171722",12);
+ const fundo=ctx.createLinearGradient(25,25,475,290);fundo.addColorStop(0,"#263d55");fundo.addColorStop(1,"#171722");
+ retangulo(27,27,446,261,fundo,10);
+ ctx.strokeStyle="#64b4ff";ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(25,25,450,265,12);ctx.stroke();
+ texto("UPGRADES",45,57,23,"#64b4ff");retangulo(435,32,28,28,"#b42828",6);texto("X",449,53,19,"#fff","center");
+ const linhas=[
+  {y:66,t:"MELHORIA DE DINHEIRO",d:"Nível "+multiplicadorCompras+" | Bônus "+multiplicadorMelhoria().toFixed(1)+"x",b:"$ "+formatarDinheiro(precoMultiplicador),c:moedas>=precoMultiplicador?"#218b4a":"#754044"},
+  {y:102,t:"AUTO CLICKER",d:autoClickerComprado?"5 cliques por segundo":"Desbloqueia 5 cliques por segundo",b:autoClickerComprado?"COMPRADO":"$ 100K",c:autoClickerComprado?"#238c57":(moedas>=100000?"#218b4a":"#754044")},
+  {y:138,t:"AUTO CLICKER PRO",d:autoClickerProComprado?"25 cliques por segundo":"Desbloqueia 25 cliques por segundo",b:autoClickerProComprado?"COMPRADO":"$ 10M",c:autoClickerProComprado?"#238c57":(moedas>=10000000?"#218b4a":"#754044")},
+  {y:174,t:"OVOS AUTOMÁTICOS",d:autoOvoComprado?(autoOvoAtivo?"Abre 1 ovo a cada 5 segundos":"Desbloqueado — ativação manual"):"Desbloqueia abertura automática",b:autoOvoComprado?(autoOvoAtivo?"ATIVADO":"DESATIVADO"):"$ 5M",c:autoOvoComprado?(autoOvoAtivo?"#238c57":"#52647c"):(moedas>=5000000?"#218b4a":"#754044")},
+  {y:210,t:"SORTE DE OVO",d:"Nível "+sorteOvoNivel+" | Mais chance de raridades altas",b:"$ "+formatarDinheiro(precoSorteOvo),c:moedas>=precoSorteOvo?"#218b4a":"#754044"},
+  {y:246,t:"IMPULSO DE PETS",d:"Nível "+impulsoPetsNivel+" | +"+(impulsoPetsNivel*15)+"% no bônus dos pets",b:"$ "+formatarDinheiro(precoImpulsoPets),c:moedas>=precoImpulsoPets?"#218b4a":"#754044"}
+ ];
+ linhas.forEach((l,i)=>{retangulo(38,l.y,424,32,"#34394e",6);texto(l.t,48,l.y+13,11,i===4?"#ffe08a":(i===5?"#a8efb5":"#ffffff"));texto(l.d,48,l.y+26,8.5,"#bdc9da");retangulo(357,l.y+4,96,24,l.c,6);texto(l.b,405,l.y+20,9.5,"#fff","center");});
+}
+function comprarSorteOvo(){
+ if(sorteOvoNivel>=20){mostrarAviso("A sorte de ovo já está no nível máximo.","info");return;}
+ if(moedas<precoSorteOvo){mostrarAviso("Saldo insuficiente para melhorar a sorte de ovo.","erro");return;}
+ moedas-=precoSorteOvo;sorteOvoNivel++;precoSorteOvo*=3;salvar();renderizarChancesOvo();somRaro();mostrarAviso("Sorte de ovo aumentada para o nível "+sorteOvoNivel+"!","ok");
+}
+function comprarImpulsoPets(){
+ if(impulsoPetsNivel>=20){mostrarAviso("O impulso de pets já está no nível máximo.","info");return;}
+ if(moedas<precoImpulsoPets){mostrarAviso("Saldo insuficiente para melhorar o impulso de pets.","erro");return;}
+ moedas-=precoImpulsoPets;impulsoPetsNivel++;precoImpulsoPets*=2;salvar();renderizarResumoPets();somRaro();mostrarAviso("Impulso de pets aumentado! Bônus adicional: +"+(impulsoPetsNivel*15)+"%.","ok");
+}
+function comprarOuAlternarAutoOvo(){
+ if(!autoOvoComprado){if(moedas<5000000){mostrarAviso("Você precisa de $ 5M para desbloquear ovos automáticos.","erro");return;}moedas-=5000000;autoOvoComprado=true;autoOvoAtivo=false;mostrarAviso("Ovos automáticos desbloqueados! Toque novamente para ativar.","ok");}
+ else{autoOvoAtivo=!autoOvoAtivo;ultimoAutoOvo=Date.now();mostrarAviso(autoOvoAtivo?"Abertura automática de ovos ativada.":"Abertura automática de ovos desativada.","info");}
+ salvar();
 }
 
 // CONFIGURAÇÕES
@@ -3269,7 +3287,7 @@ desenharMinerio();
 
 // Atalhos compactos para os três sistemas novos, sem ocupar os botões existentes.
 const atalhos=[{x:306,nome:"MUNDO",cor:"#174d78",borda:"#78c8ff"},{x:352,nome:"OVOS",cor:"#66501b",borda:"#ffe08a"},{x:398,nome:"PETS",cor:"#28643a",borda:"#a8ef9b"},{x:444,nome:"RANK",cor:"#4b3b78",borda:"#c4a8ff"}];
-atalhos.forEach(a=>{retangulo(a.x,75,44,28,a.cor,6);ctx.strokeStyle=a.borda;ctx.lineWidth=1;ctx.strokeRect(a.x+0.5,75.5,43,27);texto(a.nome,a.x+22,93,7.5,"#fff","center");});
+atalhos.forEach(a=>{retangulo(a.x,64,44,28,a.cor,6);ctx.strokeStyle=a.borda;ctx.lineWidth=1;ctx.strokeRect(a.x+0.5,64.5,43,27);texto(a.nome,a.x+22,82,7.5,"#fff","center");});
 
 if(mostrarRecompensa){
 texto(recompensaTexto,350,85,25,"#ffdc00");
@@ -3360,9 +3378,10 @@ autoClickerProAtivo?"PRO ON":"AUTO ON",
 );
 }
 
-// AUTO CLICK FUNCIONANDO
+// AUTO CLICK E ABERTURA AUTOMÁTICA DE OVOS
 
 processarAutoClick();
+processarOvosAutomaticos();
 
 // PAINÉIS
 
@@ -3419,10 +3438,10 @@ if(!jogoPronto()||adminAberto)return;
 
 // Atalhos dos novos sistemas (área superior direita).
 if(!lojaAberta&&!melhoriasAbertas&&!configuracoesAbertas){
- if(p.y>=75&&p.y<=103&&p.x>=306&&p.x<350){abrirNovoModal("mundos");return;}
- if(p.y>=75&&p.y<=103&&p.x>=352&&p.x<396){abrirNovoModal("ovos");return;}
- if(p.y>=75&&p.y<=103&&p.x>=398&&p.x<442){abrirNovoModal("inventario");return;}
- if(p.y>=75&&p.y<=103&&p.x>=444&&p.x<=488){abrirNovoModal("ranking");return;}
+ if(p.y>=64&&p.y<=92&&p.x>=306&&p.x<350){abrirNovoModal("mundos");return;}
+ if(p.y>=64&&p.y<=92&&p.x>=352&&p.x<396){abrirNovoModal("ovos");return;}
+ if(p.y>=64&&p.y<=92&&p.x>=398&&p.x<442){abrirNovoModal("inventario");return;}
+ if(p.y>=64&&p.y<=92&&p.x>=444&&p.x<=488){abrirNovoModal("ranking");return;}
 }
 
 // CONFIGURAÇÕES
@@ -3501,25 +3520,14 @@ somFecharLoja();
 return;
 }
 
-// MULTIPLICADOR
-
-if(p.x>=340&&p.x<=450&&p.y>=89&&p.y<=123){
-comprarMultiplicador();
-return;
-}
-
-// AUTO CLICKER
-
-if(p.x>=340&&p.x<=450&&p.y>=150&&p.y<=184){
-comprarAutoClicker();
-return;
-}
-
-// AUTO CLICKER PRO
-
-if(p.x>=340&&p.x<=450&&p.y>=211&&p.y<=245){
-comprarAutoClickerPro();
-return;
+// Seis melhorias em linhas compactas.
+if(p.x>=355&&p.x<=455){
+ if(p.y>=70&&p.y<=99){comprarMultiplicador();return;}
+ if(p.y>=106&&p.y<=135){comprarAutoClicker();return;}
+ if(p.y>=142&&p.y<=171){comprarAutoClickerPro();return;}
+ if(p.y>=178&&p.y<=207){comprarOuAlternarAutoOvo();return;}
+ if(p.y>=214&&p.y<=243){comprarSorteOvo();return;}
+ if(p.y>=250&&p.y<=279){comprarImpulsoPets();return;}
 }
 
 return;
