@@ -171,11 +171,23 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 
 #adminBox button:focus-visible,#adminBox select:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
-/* Seletor único de jogadores: mesmo controle no computador e no celular. */
+/* Seletor visual de jogadores: nome + etiqueta ON/OFF igual ao Top Global. */
 .adm-seletor-linha{grid-template-columns:minmax(0,1fr) 112px;align-items:center}
-#admJogador{position:relative!important;display:block!important;width:100%!important;height:auto!important;min-height:44px;opacity:1!important;pointer-events:auto!important;left:auto;bottom:auto;padding:11px!important;margin:0!important;appearance:auto;-webkit-appearance:menulist}
-#admJogadorAbrir,#admJogadorLista{display:none!important}
-@media (max-width:420px){.adm-resumo,.adm-linha{grid-template-columns:repeat(2,1fr)}}
+.adm-seletor-wrap{position:relative;min-width:0;width:100%}
+#admJogador{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;opacity:0!important;pointer-events:none!important;left:-9999px!important;top:auto!important;padding:0!important;margin:0!important}
+#admJogadorAbrir.adm-seletor-botao{display:flex!important;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:46px;padding:9px 11px;border:1px solid #657acb;border-radius:9px;background:#10101c;color:#fff;font-size:14px;text-align:left;cursor:pointer}
+#admJogadorAbrir:disabled{opacity:.6;cursor:wait}
+.adm-seletor-botao>span:first-child{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0}
+.adm-seta{flex:0 0 auto;color:#b9c7ff;font-size:17px}
+#admJogadorLista.adm-seletor-lista{display:block;position:absolute;z-index:25000;top:calc(100% + 5px);left:0;right:0;max-height: min(300px,48vh);overflow-y:auto;padding:5px;border:1px solid #526cae;border-radius:10px;background:#111827;box-shadow:0 10px 28px #000b}
+#admJogadorLista[hidden]{display:none!important}
+.adm-seletor-opcao{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:10px 9px;border:0;border-radius:7px;background:transparent;color:#fff;text-align:left;font-size:14px;cursor:pointer}
+.adm-seletor-opcao+.adm-seletor-opcao{border-top:1px solid #ffffff12}
+.adm-seletor-opcao:hover,.adm-seletor-opcao.selecionada{background:#293957}
+.adm-seletor-opcao:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+.adm-seletor-vazio{padding:12px;color:#b9c1d3;text-align:center;font-size:13px}
+@media (max-width:420px){.adm-resumo,.adm-linha{grid-template-columns:repeat(2,1fr)}.adm-seletor-linha{grid-template-columns:minmax(0,1fr) 104px}}
+
 
 /* Inventário remoto do painel administrativo */
 .admin-inventario-modal{z-index:22000}
