@@ -213,6 +213,10 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .pet-venda-opcoes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
 .pet-venda-opcoes label{font-size:11px;color:#d8e2f0;display:flex;align-items:center;gap:5px}
 .pet-venda-opcoes input{accent-color:#45c47b}
+#venderPetsModal{z-index:18020}
+#venderPetsModal .novo-box{width:min(430px,94vw);max-height:85vh}
+.pet-slot.equipado{border:3px solid #35e879!important;box-shadow:0 0 0 1px #35e87966,0 0 13px #35e87955}
+.pet-slot.equipado .pet-iniciais{border-color:#35e879!important}
 #listaChancesPets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .pet-chance-card{padding:9px;border:1px solid #526985;border-radius:9px;background:#111b2b;min-width:0}
 .pet-chance-card strong{display:block;font-size:12px}
@@ -321,19 +325,23 @@ background:#10101c;color:#fff;font-size:16px;outline:none
  <div class="inventario-layout">
   <aside class="pet-status" id="petStatusPainel"><h3>STATUS DO PET</h3><p>Selecione um mascote para ver os detalhes.</p></aside>
   <section class="pet-grade-area">
-   <div class="pet-ferramentas"><button id="equiparMelhoresPets" class="novo-acao" type="button">EQUIPAR MELHORES</button><button id="desequiparPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#68778d,#39465a)">DESEQUIPAR TODOS</button></div>
+   <div class="pet-ferramentas"><button id="equiparMelhoresPets" class="novo-acao" type="button">EQUIPAR MELHORES</button><button id="desequiparPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#68778d,#39465a)">DESEQUIPAR TODOS</button><button id="abrirVendaPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS</button></div>
    <div class="pets-ordenacao" aria-label="Ordenar inventario"><button type="button" data-pets-ordem="melhores" class="ativa">MELHORES</button><button type="button" data-pets-ordem="nome">NOME A-Z</button><button type="button" data-pets-ordem="raridade">RARIDADE</button></div>
    <div id="listaPets" class="pet-grade"></div>
-   <div class="pet-venda"><div class="pet-venda-titulo">VENDER PETS POR RARIDADE</div><div style="font-size:10px;color:#bdc9da;margin-bottom:7px">Valores: Comum $10K | Incomum $15K | Raro $25K | Épico $50K | Lendário $100K | Mítico $250K | Secreto $500K</div>
-    <div class="pet-venda-opcoes">
-     <label><input type="checkbox" data-vender-raridade="Comum"> Comum</label><label><input type="checkbox" data-vender-raridade="Incomum"> Incomum</label>
-     <label><input type="checkbox" data-vender-raridade="Raro"> Raro</label><label><input type="checkbox" data-vender-raridade="Épico"> Épico</label>
-     <label><input type="checkbox" data-vender-raridade="Lendário"> Lendário</label><label><input type="checkbox" data-vender-raridade="Mítico"> Mítico</label>
-     <label><input type="checkbox" data-vender-raridade="Secreto"> Secreto</label>
-    </div>
-    <button id="venderPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS DAS RARIDADES MARCADAS</button>
-   </div>
   </section>
+ </div>
+</div></div>
+<div id="venderPetsModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Vender pets">
+ <div class="novo-topo"><h2>VENDER PETS</h2><button id="fecharVendaPets" class="novo-fechar" type="button">X</button></div>
+ <p class="novo-desc">Marque as raridades que deseja vender. Todos os pets dessas raridades serão vendidos, inclusive os equipados.</p>
+ <div class="pet-venda"><div class="pet-venda-titulo">SELECIONE AS RARIDADES</div><div style="font-size:10px;color:#bdc9da;margin-bottom:7px">Valores: Comum $10K | Incomum $15K | Raro $25K | Épico $50K | Lendário $100K | Mítico $250K | Secreto $500K</div>
+  <div class="pet-venda-opcoes">
+   <label><input type="checkbox" data-vender-raridade="Comum"> Comum</label><label><input type="checkbox" data-vender-raridade="Incomum"> Incomum</label>
+   <label><input type="checkbox" data-vender-raridade="Raro"> Raro</label><label><input type="checkbox" data-vender-raridade="Épico"> Épico</label>
+   <label><input type="checkbox" data-vender-raridade="Lendário"> Lendário</label><label><input type="checkbox" data-vender-raridade="Mítico"> Mítico</label>
+   <label><input type="checkbox" data-vender-raridade="Secreto"> Secreto</label>
+  </div>
+  <button id="venderPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS DAS RARIDADES MARCADAS</button>
  </div>
 </div></div>
 <div id="rankingModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Ranking global">
@@ -1030,7 +1038,7 @@ function abrirNovoModal(tipo){
  if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";carregarRanking();}
  somAbrirLoja();
 }
-function fecharNovosModais(){["mundosModal","ovosPetsModal","inventarioPetsModal","rankingModal"].forEach(id=>document.getElementById(id).style.display="none");}
+function fecharNovosModais(){["mundosModal","ovosPetsModal","inventarioPetsModal","venderPetsModal","rankingModal"].forEach(id=>document.getElementById(id).style.display="none");}
 function renderizarMundos(){
  const el=document.getElementById("listaMundos");el.innerHTML="";
  mundosJogo.forEach((m,i)=>{
@@ -1118,7 +1126,7 @@ function renderizarPets(){
  if(!petsInventario.length){const v=document.createElement("div");v.className="novo-vazio";v.textContent="INVENTARIO VAZIO - ABRA UM OVO PARA CONSEGUIR PETS";el.appendChild(v);petSelecionadoId=null;renderizarStatusPet();return;}
  if(!petsInventario.some(p=>p.id===petSelecionadoId))petSelecionadoId=petsInventario[0].id;
  petsInventario.slice().sort(ordenar).forEach(p=>{
-  const cor=petCor(p);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"");card.style.borderColor=cor;card.addEventListener("click",()=>selecionarPetInventario(p.id));
+  const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":cor;card.addEventListener("click",()=>selecionarPetInventario(p.id));
   const sigla=document.createElement("span");sigla.className="pet-iniciais";sigla.textContent=p.sigla||p.nome.slice(0,2).toUpperCase();sigla.style.color=cor;sigla.style.borderColor=cor;sigla.style.background=p.raridade==="Secreto"?"#050505":"#202d40";
   const nome=document.createElement("strong");nome.textContent=p.nome;
   const rar=document.createElement("small");rar.textContent=p.raridade+(petsEquipados.includes(p.id)?" | EQUIPADO":"");
@@ -1141,7 +1149,7 @@ function venderPetsSelecionados(){
  const ids=new Set(vender.map(p=>p.id));petsInventario=petsInventario.filter(p=>!ids.has(p.id));petsEquipados=petsEquipados.filter(id=>!ids.has(id));
  moedas+=total;petSelecionadoId=petsInventario[0]?.id||null;
  document.querySelectorAll("[data-vender-raridade]").forEach(x=>x.checked=false);
- salvar();renderizarPets();mostrarAviso(vender.length+" pet(s) vendidos. Você recebeu $ "+formatarDinheiro(total)+".","ok");
+ salvar();renderizarPets();document.getElementById("venderPetsModal").style.display="none";mostrarAviso(vender.length+" pet(s) vendidos. Você recebeu $ "+formatarDinheiro(total)+".","ok");
 }
 
 async function carregarRanking(){
@@ -3706,6 +3714,9 @@ somClique();
 // CONTROLES DOS NOVOS SISTEMAS
  document.querySelectorAll("[data-fechar-novo]").forEach(b=>b.addEventListener("click",fecharNovosModais));
  ["mundosModal","ovosPetsModal","inventarioPetsModal","rankingModal"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target.id===id)fecharNovosModais();}));
+ document.getElementById("venderPetsModal").addEventListener("click",e=>{if(e.target.id==="venderPetsModal")document.getElementById("venderPetsModal").style.display="none";});
+ document.getElementById("abrirVendaPets").addEventListener("click",()=>{document.querySelectorAll("[data-vender-raridade]").forEach(x=>x.checked=false);document.getElementById("venderPetsModal").style.display="flex";});
+ document.getElementById("fecharVendaPets").addEventListener("click",()=>{document.getElementById("venderPetsModal").style.display="none";});
  document.getElementById("comprarOvoPet").addEventListener("click",abrirOvoPet);
  document.querySelectorAll("[data-pets-ordem]").forEach(b=>b.addEventListener("click",()=>{petsOrdenacao=b.dataset.petsOrdem;renderizarPets();}));
  document.getElementById("equiparMelhoresPets").addEventListener("click",equiparMelhoresPets);
