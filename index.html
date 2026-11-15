@@ -303,7 +303,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .mundo-cenario:before{inset:0;z-index:0;background:linear-gradient(180deg,#ffffff18,transparent 48%,#0005)}
 .mundo-cenario:after{z-index:1;left:-5%;right:-5%;bottom:-25%;height:58%;border-radius:50% 50% 0 0;background:#0003;box-shadow:0 -9px 18px #ffffff18}
 .mundo-decor{position:absolute;z-index:2;inset:0;display:block}
-.mundo-selo{position:absolute;z-index:3;right:6px;top:6px;padding:4px 6px;border-radius:20px;background:#0009;color:#fff;font-size:8px;font-weight:900;letter-spacing:.6px}
+.mundo-selo{display:none}
 /* Superfície: céu, colinas e vegetação */
 .mundo-card[data-mundo="0"] .mundo-cenario{background:linear-gradient(180deg,#74c9ed 0 48%,#8bd15b 49% 64%,#397d32 65% 100%)}
 .mundo-card[data-mundo="0"] .mundo-decor{background:radial-gradient(ellipse at 18% 80%,#28652d 0 18%,transparent 19%),radial-gradient(ellipse at 78% 85%,#347b31 0 23%,transparent 24%),radial-gradient(circle at 72% 22%,#fff5b5 0 7%,transparent 7.5%)}
@@ -320,9 +320,10 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .mundo-card[data-mundo="3"] .mundo-decor{background:linear-gradient(135deg,transparent 0 35%,#f0fcff 36% 44%,#6eacc7 45% 59%,transparent 60%),linear-gradient(45deg,transparent 0 40%,#dffaff 41% 50%,#4d8eae 51% 65%,transparent 66%)}
 .mundo-card[data-mundo="3"] .mundo-decor:before{content:"";position:absolute;right:15%;bottom:8%;width:15px;height:44px;background:linear-gradient(180deg,#e7ffff,#4dd8f4);clip-path:polygon(50% 0,100% 100%,0 100%);filter:drop-shadow(0 0 6px #bafaff)}
 /* Galáxia: nebulosa, estrelas e planetas */
-.mundo-card[data-mundo="4"] .mundo-cenario{background:radial-gradient(ellipse at 70% 40%,#7946a8 0,transparent 38%),radial-gradient(ellipse at 25% 70%,#126c9b 0,transparent 35%),linear-gradient(135deg,#080d2c,#25164b 58%,#080b20)}
-.mundo-card[data-mundo="4"] .mundo-decor{background:radial-gradient(circle at 14% 22%,#fff 0 1px,transparent 2px),radial-gradient(circle at 32% 37%,#b9edff 0 1px,transparent 2px),radial-gradient(circle at 84% 20%,#fff 0 1px,transparent 2px),radial-gradient(circle at 58% 72%,#fff 0 1px,transparent 2px),radial-gradient(circle at 40% 78%,#d8b7ff 0 1px,transparent 2px)}
-.mundo-card[data-mundo="4"] .mundo-decor:before{content:"";position:absolute;right:18%;top:22%;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#ffe2a5,#d77bff 55%,#593f9f);box-shadow:0 0 17px #bd7bff}
+.mundo-card[data-mundo="4"] .mundo-cenario{background:radial-gradient(ellipse at 52% 48%,#9b50dc 0 8%,transparent 42%),radial-gradient(ellipse at 78% 20%,#6e32b5 0 12%,transparent 38%),radial-gradient(ellipse at 20% 82%,#452080 0 18%,transparent 48%),linear-gradient(135deg,#09051f,#30105f 48%,#100727)}
+.mundo-card[data-mundo="4"] .mundo-decor{background:radial-gradient(circle at 8% 18%,#fff 0 1px,transparent 2px),radial-gradient(circle at 19% 66%,#f2d9ff 0 1px,transparent 2px),radial-gradient(circle at 84% 16%,#fff 0 1px,transparent 2px),radial-gradient(circle at 90% 76%,#dcbcff 0 1px,transparent 2px),radial-gradient(circle at 48% 14%,#fff 0 1px,transparent 2px),radial-gradient(circle at 63% 83%,#fff 0 1px,transparent 2px),radial-gradient(ellipse at 48% 52%,#b66bff55 0 12%,transparent 44%)}
+.mundo-card[data-mundo="4"] .mundo-decor:before{content:"";position:absolute;right:24%;top:20%;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#f2d5ff,#b76bff 38%,#6731a6 72%,#24104e);box-shadow:0 0 16px #bd7bff,0 0 32px #7e36cf}
+.mundo-card[data-mundo="4"] .mundo-decor:after{content:"";position:absolute;right:15%;top:28%;width:68px;height:28px;border:5px solid #d6a4ffb8;border-left-color:#8d48d8;border-bottom-color:#a96be8;border-radius:50%;transform:rotate(-24deg);box-shadow:0 0 12px #b56bff;filter:drop-shadow(0 0 5px #a54dff)}
 .mundo-card .mundo-info{display:flex;flex-direction:column;gap:4px;min-width:0;min-height:0}
 .mundo-card .mundo-info strong{font-size:14px;color:#fff;line-height:1.2}
 .mundo-card .mundo-info small{font-size:10px;color:#c8d4e5;line-height:1.35}
@@ -1143,11 +1144,11 @@ let ultimoAutoClick=Date.now();
 
 // MUNDOS: desbloqueio permanente por progresso de minérios.
 const mundosJogo=[
- {nome:"Superfície",sigla:"SUP",requisito:0,mult:1,descricao:"O começo da sua jornada."},
- {nome:"Cavernas Profundas",sigla:"CAV",requisito:10,mult:1.5,descricao:"Minere minérios mais valiosos."},
- {nome:"Vulcão",sigla:"VOL",requisito:25,mult:2,descricao:"Calor extremo e recompensas maiores."},
- {nome:"Glacial",sigla:"GLA",requisito:45,mult:3,descricao:"Uma dimensão congelada e rara."},
- {nome:"Galáxia",sigla:"GAL",requisito:70,mult:5,descricao:"O mundo final, com bônus máximo."}
+ {nome:"Superfície",sigla:"SUP",custo:0,mult:1,descricao:"O começo da sua jornada."},
+ {nome:"Cavernas Profundas",sigla:"CAV",custo:50000,mult:1.5,descricao:"Minere minérios mais valiosos."},
+ {nome:"Vulcão",sigla:"VOL",custo:750000,mult:2,descricao:"Calor extremo e recompensas maiores."},
+ {nome:"Glacial",sigla:"GLA",custo:10000000,mult:3,descricao:"Uma dimensão congelada e rara."},
+ {nome:"Galáxia",sigla:"GAL",custo:150000000,mult:5,descricao:"O mundo final, com bônus máximo."}
 ];
 let mundoAtual=0;
 let mundosDesbloqueados=[0];
@@ -1190,9 +1191,9 @@ function pesoPetComSorte(p){
 }
 function multiplicadorMundo(){return mundosJogo[mundoAtual]?.mult||1;}
 function atualizarMundosDesbloqueados(){
- const maior=mineriosComprados.length?Math.max(...mineriosComprados):0;
- mundosJogo.forEach((m,i)=>{if(maior>=m.requisito&&!mundosDesbloqueados.includes(i))mundosDesbloqueados.push(i);});
- mundosDesbloqueados=[...new Set([0,...mundosDesbloqueados])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length);
+ // Mundos são liberados por compra ou pelo painel Admin, nunca automaticamente por minérios.
+ mundosDesbloqueados=[...new Set([0,...(Array.isArray(mundosDesbloqueados)?mundosDesbloqueados:[])])]
+  .map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length);
  if(!mundosDesbloqueados.includes(mundoAtual))mundoAtual=0;
 }
 function abrirNovoModal(tipo){
@@ -1215,11 +1216,11 @@ function fecharNovosModais(){
 function renderizarMundos(){
  const el=document.getElementById("listaMundos");el.innerHTML="";
  const cenarios=[
-  {selo:"MUNDO INICIAL",tema:"Campos verdes, grama e vegetação"},
-  {selo:"SUBTERRÂNEO",tema:"Estalactites, pedras e minérios brilhantes"},
-  {selo:"ZONA DE CALOR",tema:"Rochas vulcânicas e rios de lava"},
-  {selo:"TERRA CONGELADA",tema:"Montanhas de gelo e cristais congelados"},
-  {selo:"OUTRA DIMENSÃO",tema:"Planetas, estrelas e nebulosas"}
+  {tema:"Campos verdes, grama e vegetação"},
+  {tema:"Estalactites, pedras e minérios brilhantes"},
+  {tema:"Rochas vulcânicas e rios de lava"},
+  {tema:"Montanhas de gelo e cristais congelados"},
+  {tema:"Planetas, estrelas e nebulosas roxas"}
  ];
  mundosJogo.forEach((m,i)=>{
   const aberto=mundosDesbloqueados.includes(i),selecionado=mundoAtual===i,visual=cenarios[i];
@@ -1227,17 +1228,30 @@ function renderizarMundos(){
   card.className="novo-card mundo-card"+(aberto?"":" mundo-bloqueado")+(selecionado?" mundo-atual":"");
   card.dataset.mundo=String(i);
   const cena=document.createElement("div");cena.className="mundo-cenario";
-  const selo=document.createElement("span");selo.className="mundo-selo";selo.textContent=visual.selo;
-  const arte=document.createElement("span");arte.className="mundo-decor";
-  cena.append(selo,arte);
+  const arte=document.createElement("span");arte.className="mundo-decor";cena.append(arte);
   const info=document.createElement("div");info.className="mundo-info";
   const nome=document.createElement("strong");nome.textContent=m.nome;
-  const desc=document.createElement("small");desc.textContent=aberto?visual.tema:("Desbloqueia ao comprar o minério nº "+(m.requisito+1));
+  const desc=document.createElement("small");
+  desc.textContent=aberto?visual.tema:("Custo para desbloquear: $ "+formatarDinheiro(m.custo));
   info.append(nome,desc);
   const rodape=document.createElement("div");rodape.className="mundo-rodape";
   const bonus=document.createElement("span");bonus.className="mundo-bonus";bonus.textContent="BÔNUS "+m.mult+"x";
-  const b=document.createElement("button");b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":"BLOQUEADO");b.disabled=!aberto||selecionado;
-  b.addEventListener("click",()=>{mundoAtual=i;salvar();renderizarMundos();mostrarAviso("Mundo alterado: "+m.nome+" (bônus "+m.mult+"x).","ok");});
+  const b=document.createElement("button");
+  const mundoAnteriorLiberado=i===0||mundosDesbloqueados.includes(i-1);
+  b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":(mundoAnteriorLiberado?"DESBLOQUEAR":"BLOQUEADO"));
+  b.disabled=selecionado||(!aberto&&(!mundoAnteriorLiberado||moedas<m.custo));
+  if(!aberto&&!mundoAnteriorLiberado)b.title="Desbloqueie primeiro o mundo anterior.";
+  else if(!aberto&&moedas<m.custo)b.title="Faltam $ "+formatarDinheiro(m.custo-moedas);
+  b.addEventListener("click",()=>{
+   if(!mundosDesbloqueados.includes(i)){
+    if(!mundoAnteriorLiberado){mostrarAviso("Desbloqueie primeiro o mundo anterior.","erro");return;}
+    if(moedas<m.custo){mostrarAviso("Você precisa de $ "+formatarDinheiro(m.custo-moedas)+" a mais para desbloquear este mundo.","erro");return;}
+    moedas=Math.max(0,moedas-m.custo);mundosDesbloqueados.push(i);
+    mostrarAviso("Mundo "+(i+1)+" desbloqueado: "+m.nome+"!","ok");
+   }
+   mundoAtual=i;salvar();renderizarMundos();
+   if(m.custo===0)mostrarAviso("Mundo alterado: "+m.nome+" (bônus "+m.mult+"x).","ok");
+  });
   rodape.append(bonus,b);card.append(cena,info,rodape);el.appendChild(card);
  });
 }
@@ -2420,6 +2434,8 @@ givePickaxe:{rotulo:"Dar uma picareta",campo:"picareta"},
 removePickaxe:{rotulo:"Remover uma picareta",campo:"picareta",perigo:true},
 giveOre:{rotulo:"Dar um minério",campo:"minerio"},
 removeOre:{rotulo:"Remover um minério",campo:"minerio",perigo:true},
+giveWorld:{rotulo:"Desbloquear mundo para jogador",campo:"mundo"},
+removeWorld:{rotulo:"Remover mundo de jogador",campo:"mundo",perigo:true},
 giveAuto:{rotulo:"Liberar Auto Clicker",campo:"nenhum"},
 removeAuto:{rotulo:"Remover Auto Clicker",campo:"nenhum",perigo:true},
 givePro:{rotulo:"Liberar Auto Clicker Pro",campo:"nenhum"},
@@ -2495,6 +2511,9 @@ return [
 ["Picaretas liberadas",pcs.length+"/"+picaretas.length],
 ["Minério atual",minerios[mi][0]],
 ["Minérios liberados",mrs.length+"/"+minerios.length],
+["Mundo atual","Mundo "+(Math.max(0,Math.min(mundosJogo.length-1,Number(d.mundoAtual)||0))+1)+" — "+(mundosJogo[Math.max(0,Math.min(mundosJogo.length-1,Number(d.mundoAtual)||0))]?.nome||"Superfície")],
+["Mundos desbloqueados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).length:1)+"/"+mundosJogo.length],
+["Mundos liberados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b):[0]).map(i=>"Mundo "+(i+1)).join(", ")],
 ["Auto clicker",d.autoClickerProComprado?"Pro":(d.autoClickerComprado?"Normal":"Nenhum")]
 ];
 }
@@ -2864,13 +2883,17 @@ function atualizarCamposRemotos(){
 const def=ACOES_REMOTAS[admAcao.value];
 if(!def)return;
 admCampoValor.hidden=def.campo!=="valor";
-admCampoItem.hidden=!(def.campo==="picareta"||def.campo==="minerio");
+admCampoItem.hidden=!(def.campo==="picareta"||def.campo==="minerio"||def.campo==="mundo");
 admCampoNivel.hidden=def.campo!=="nivel";
 admCampoDest.hidden=true;
 admCampoPet.hidden=def.campo!=="pet";
 const botaoExecutar=document.getElementById("admExecutar");if(botaoExecutar)botaoExecutar.textContent=def.campo==="inventario"?"VER INVENTÁRIO":"Executar";
 if(def.campo==="picareta")preencherLista(admRemotoItem,picaretas,0);
 else if(def.campo==="minerio")preencherLista(admRemotoItem,minerios,0);
+else if(def.campo==="mundo"){
+ admRemotoItem.textContent="";
+ mundosJogo.forEach((m,i)=>{if(i===0)return;const op=document.createElement("option");op.value=String(i);op.textContent="Mundo "+(i+1)+" — "+m.nome;admRemotoItem.appendChild(op);});
+}
 else if(def.campo==="pet"){
  admPetEscolhido.textContent="";
  catalogoPets.forEach((pet,i)=>{const op=document.createElement("option");op.value=String(i);op.textContent=pet.nome+" — "+pet.raridade;admPetEscolhido.appendChild(op);});
@@ -2892,10 +2915,10 @@ if(def.campo==="valor"){
 valor=lerNumero(admRemotoValor.value);
 if(!Number.isFinite(valor)||valor<=0){admResultado("Digite uma quantidade válida, como 5000, 2,5M ou 10K.","erro");return;}
 valor=Math.min(valor,MAX_MOEDAS);
-}else if(def.campo==="picareta"||def.campo==="minerio"){
+}else if(def.campo==="picareta"||def.campo==="minerio"||def.campo==="mundo"){
 valor=Number(admRemotoItem.value);
-const total=def.campo==="picareta"?picaretas.length:minerios.length;
-if(!Number.isInteger(valor)||valor<0||valor>=total){admResultado("Escolha um item da lista.","erro");return;}
+const total=def.campo==="picareta"?picaretas.length:(def.campo==="minerio"?minerios.length:mundosJogo.length);
+if(!Number.isInteger(valor)||valor<0||valor>=total||(def.campo==="mundo"&&valor===0)){admResultado("Escolha um item válido da lista.","erro");return;}
 }else if(def.campo==="pet"){
 valor=Number(admPetEscolhido.value);
 if(!Number.isInteger(valor)||!catalogoPets[valor]){admResultado("Escolha um pet válido.","erro");return;}
@@ -2913,6 +2936,7 @@ const registro=snap.data()||{};
 const dados=Object.assign({
 moedas:0,renascimentos:0,picaretasCompradas:[0],mineriosComprados:[0],picaretaAtual:0,minerioAtual:0,
 volumeGeral:1,codigosUsados:[],multiplicadorCompras:0,precoMultiplicador:100,
+mundoAtual:0,mundosDesbloqueados:[0],
 autoClickerComprado:false,autoClickerProComprado:false,autoClickerAtivo:false,autoClickerProAtivo:false,petsInventario:[],petsEquipados:[]
 },registro.dados||{});
 dados.moedas=Math.max(0,Number(dados.moedas)||0);
@@ -2920,6 +2944,10 @@ dados.picaretasCompradas=Array.isArray(dados.picaretasCompradas)?dados.picaretas
 dados.mineriosComprados=Array.isArray(dados.mineriosComprados)?dados.mineriosComprados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<minerios.length):[0];
 dados.picaretasCompradas=[...new Set(dados.picaretasCompradas)];
 dados.mineriosComprados=[...new Set(dados.mineriosComprados)];
+dados.mundosDesbloqueados=Array.isArray(dados.mundosDesbloqueados)?dados.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
+dados.mundosDesbloqueados=[...new Set([0,...dados.mundosDesbloqueados])];
+dados.mundoAtual=Math.max(0,Math.min(mundosJogo.length-1,Math.floor(Number(dados.mundoAtual)||0)));
+if(!dados.mundosDesbloqueados.includes(dados.mundoAtual))dados.mundoAtual=0;
 if(!dados.picaretasCompradas.includes(0))dados.picaretasCompradas.push(0);
 if(!dados.mineriosComprados.includes(0))dados.mineriosComprados.push(0);
 dados.picaretaAtual=Number(dados.picaretaAtual)||0;
@@ -2965,6 +2993,16 @@ if(valor===0)throw new Error("O minério inicial não pode ser removido.");
 dados.mineriosComprados=dados.mineriosComprados.filter(i=>i!==valor);
 if(dados.minerioAtual===valor)dados.minerioAtual=0;
 }
+if(acao==="giveWorld"||acao==="removeWorld"){
+ dados.mundosDesbloqueados=Array.isArray(dados.mundosDesbloqueados)?dados.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
+ dados.mundosDesbloqueados=[...new Set([0,...dados.mundosDesbloqueados])];
+ if(acao==="giveWorld"&&!dados.mundosDesbloqueados.includes(valor))dados.mundosDesbloqueados.push(valor);
+ if(acao==="removeWorld"){
+  if(valor===0)throw new Error("O mundo inicial não pode ser removido.");
+  dados.mundosDesbloqueados=dados.mundosDesbloqueados.filter(i=>i!==valor);
+  if(Number(dados.mundoAtual)===valor)dados.mundoAtual=0;
+ }
+}
 // Concede ou remove os auto clickers na conta escolhida.
 if(acao==="giveAuto"){
 // Libera e ativa imediatamente o Auto Clicker normal no jogador online.
@@ -3005,7 +3043,7 @@ if(dados.autoClickerAtivo&&dados.autoClickerProAtivo)dados.autoClickerAtivo=fals
 dados.picaretasCompradas.sort((a,b)=>a-b);
 dados.mineriosComprados.sort((a,b)=>a-b);
 const nome=String(registro.nome||jogador.nome);
-const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="pet"?(catalogoPets[valor].nome+" ("+["Normal","Dourado","Diamante","Rainbow","Void"][Number(admPetMutacao.value)||0]+")"):def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):"";
+const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="pet"?(catalogoPets[valor].nome+" ("+["Normal","Dourado","Diamante","Rainbow","Void"][Number(admPetMutacao.value)||0]+")"):def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):def.campo==="mundo"?("Mundo "+(valor+1)+" — "+mundosJogo[valor].nome):"";
 let textoAviso="O admin "+nomeDoAdminAtual()+" alterou sua conta: "+def.rotulo.toLowerCase();
 if(acao==="addMoney")textoAviso="O admin "+nomeDoAdminAtual()+" te deu $"+formatarDinheiro(valor)+".";
 else if(acao==="removeMoney")textoAviso="O admin "+nomeDoAdminAtual()+" removeu $"+formatarDinheiro(valor)+" da sua conta.";
@@ -3018,6 +3056,8 @@ else if(acao==="givePickaxe")textoAviso="O admin "+nomeDoAdminAtual()+" te deu a
 else if(acao==="removePickaxe")textoAviso="O admin "+nomeDoAdminAtual()+" removeu a picareta "+itemNome+" da sua conta.";
 else if(acao==="giveOre")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o minério "+itemNome+".";
 else if(acao==="removeOre")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o minério "+itemNome+" da sua conta.";
+else if(acao==="giveWorld")textoAviso="O admin "+nomeDoAdminAtual()+" desbloqueou o Mundo "+(valor+1)+" — "+mundosJogo[valor].nome+" para você.";
+else if(acao==="removeWorld")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o Mundo "+(valor+1)+" — "+mundosJogo[valor].nome+" da sua conta.";
 else if(acao==="giveAuto")textoAviso="O admin "+nomeDoAdminAtual()+" liberou o Auto Clicker para você.";
 else if(acao==="removeAuto")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o Auto Clicker da sua conta.";
 else if(acao==="givePro")textoAviso="O admin "+nomeDoAdminAtual()+" liberou o Auto Clicker Pro para você.";
