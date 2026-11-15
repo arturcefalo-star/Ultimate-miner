@@ -134,6 +134,7 @@ border:2px solid #b17be8;box-shadow:0 0 30px #8a45c555
 .adm-chip span{display:block;font-size:11px;color:#a99bc4}
 .adm-chip strong{display:block;font-size:14px;color:#ffdc00;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+#abaEu{display:none!important}
 .adm-abas{display:flex;gap:6px;margin-bottom:12px}
 .adm-abas button{flex:1;padding:10px;border:0;border-radius:8px;background:#3a3050;color:#ddd;font-weight:bold;font-size:14px;cursor:pointer}
 .adm-abas button.ativa{background:#8a45c5;color:#fff}
@@ -401,8 +402,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <div id="adminResumo" class="adm-resumo"></div>
 
 <div class="adm-abas">
-<button type="button" class="ativa" data-aba="eu">Minha conta</button>
-<button type="button" data-aba="outro">Outro jogador</button>
+<button type="button" class="ativa" data-aba="outro">Gerenciar jogadores</button>
 <button type="button" data-aba="evento">Evento</button>
 </div>
 
@@ -1747,6 +1747,9 @@ function salvar(){
 atualizarMundosDesbloqueados();
 const dados=dadosDoJogo();
 if(!jogoPronto()||carregandoDados)return;
+// Marca a versão local para recuperar alterações recentes caso a página seja atualizada
+// antes do envio com atraso ao Firestore terminar.
+dados._saveUpdatedAt=Date.now();
 try{localStorage.setItem("mining_game_save_"+usuarioAtual.uid,JSON.stringify(dados));}catch(e){}
 agendarSalvamentoNuvem(dados);
 }
@@ -1867,8 +1870,14 @@ if(user.displayName!==nomeCanonico){
 try{await comTempoLimite(user.updateProfile({displayName:nomeCanonico}),10000,"atualizar o nome de exibição");}catch(e){console.warn("Não foi possível atualizar displayName:",e);}
 }
 let dadosConta={};
+let dadosLocais={};
+try{dadosLocais=JSON.parse(localStorage.getItem("mining_game_save_"+user.uid)||"{}");}catch(e){dadosLocais={};}
 if(snap.exists){
-dadosConta=snap.data().dados||{};
+const dadosNuvem=(snap.data()||{}).dados||{};
+const versaoLocal=Number(dadosLocais&&dadosLocais._saveUpdatedAt)||0;
+const versaoNuvem=Number(dadosNuvem&&dadosNuvem._saveUpdatedAt)||0;
+// Recupera inventário, pets equipados e preferências de venda mais recentes do aparelho.
+dadosConta=versaoLocal>versaoNuvem?dadosLocais:dadosNuvem;
 ultimoAvisoAdminId="";
 // Corrige também o nome antigo salvo no registro do jogador.
 if(String((snap.data()||{}).nome||"")!==nomeCanonico){
@@ -1886,6 +1895,9 @@ carregandoDados=true;
 aplicarDados(dadosConta);
 try{localStorage.setItem("mining_game_save_"+user.uid,JSON.stringify(dadosConta));}catch(e){}
 carregandoDados=false;
+if(snap.exists&&Number(dadosConta&&dadosConta._saveUpdatedAt)>Number(((snap.data()||{}).dados||{})._saveUpdatedAt||0)){
+try{await comTempoLimite(ref.set({dados:dadosConta,ranking:{moedas:Number(dadosConta.moedas)||0,renascimentos:Number(dadosConta.renascimentos)||0},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),10000,"recuperar o salvamento mais recente");}catch(e){console.warn("Não foi possível sincronizar imediatamente o salvamento recuperado:",e);}
+}
 adminDesbloqueado=(user.uid===ADMIN_UID);
 codigoAdminSessao="";
 dadosCarregados=true;
@@ -2301,6 +2313,7 @@ function abrirAdmin(){
 if(!adminDesbloqueado||!jogoPronto()||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
 adminAberto=true;
 adminModal.style.display="flex";
+trocarAbaAdmin("outro");
 atualizarAdmin();
 carregarJogadoresAdmin();
 if(timerListaJogadoresAdmin)clearInterval(timerListaJogadoresAdmin);
@@ -2315,7 +2328,8 @@ adminModal.style.display="none";
 }
 
 function trocarAbaAdmin(aba){
-document.getElementById("abaEu").hidden=aba!=="eu";
+if(aba==="eu")aba="outro";
+const abaEu=document.getElementById("abaEu");if(abaEu)abaEu.hidden=true;
 document.getElementById("abaOutro").hidden=aba!=="outro";
 document.getElementById("abaEvento").hidden=aba!=="evento";
 if(aba==="evento"){atualizarStatusEventoAdmin();if(admEventoSorteStatus)admEventoSorteStatus.textContent=eventoSorteGlobal.ativo?"Evento de sorte ativo: "+eventoSorteGlobal.multiplicador+"x.":"Nenhum evento de sorte ativo.";}
