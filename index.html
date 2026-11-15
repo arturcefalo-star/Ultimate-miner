@@ -1703,7 +1703,7 @@ else criarResumoAdmin(admResumo,[]);
 criarResumoAdmin(admResumoJogador,[]);
 return;
 }
-const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
+const nome=usuarioAtual?(usuarioAtual.uid===ADMIN_UID?"Arthur":(usuarioAtual.displayName||usuarioAtual.email.split("@")[0])):"-";
 criarResumoAdmin(admResumo,estatisticasDadosAdmin(nome,dadosDoJogo(),"ONLINE"));
 criarResumoAdmin(admResumoJogador,[]);
 }
@@ -1881,7 +1881,7 @@ admJogadorAbrir.setAttribute("aria-expanded","false");
 }
 function atualizarSeletorVisualJogadores(){
 const atual=jogadoresAdmin.find(j=>j.uid===admJogador.value);
-admJogadorSelecionado.textContent=atual?atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":""):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
+admJogadorSelecionado.textContent=atual?(atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" • "+(atual.online?"ONLINE":"OFFLINE")):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
 if(atual)atualizarAdmin();
 else criarResumoAdmin(admResumo,[]);
 admJogadorLista.textContent="";
@@ -1893,7 +1893,7 @@ const opcao=document.createElement("button");
 opcao.type="button";opcao.className="adm-seletor-opcao"+(jogador.uid===admJogador.value?" selecionada":"");
 opcao.setAttribute("role","option");opcao.setAttribute("aria-selected",jogador.uid===admJogador.value?"true":"false");
 opcao.dataset.uid=jogador.uid;
-opcao.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"");
+opcao.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"ONLINE":"OFFLINE");
 admJogadorLista.appendChild(opcao);
 }
 }
@@ -1937,7 +1937,7 @@ const registro=doc.data()||{};const pres=registro.presenca||{};
 let atualizado=0;
 try{atualizado=pres.atualizadoEm&&pres.atualizadoEm.toMillis?pres.atualizadoEm.toMillis():0;}catch(e){}
 const online=pres.online===true&&atualizado>0&&(Date.now()-atualizado)<65000;
-return {uid:doc.id,nome:String(registro.nome||"Jogador"),dados:registro.dados||{},online};
+return {uid:doc.id,nome:doc.id===ADMIN_UID?"Arthur":String(registro.nome||"Jogador"),dados:registro.dados||{},online};
 }).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
 select.textContent="";
 for(const jogador of jogadoresAdmin){
