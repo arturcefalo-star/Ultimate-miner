@@ -94,7 +94,24 @@ z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
 #aviso.ok{background:#12381f;color:#a4ffbb;border-color:#2c8a4a}
 #aviso.info{background:#1a2848;color:#bcd6ff;border-color:#4a6fb8}
 
-#eventoGlobalBadge{display:none}
+#eventoGlobalBadge{
+display:none;position:fixed;top:12px;right:12px;z-index:8;
+width:48px;height:46px;padding:4px 3px;
+background:linear-gradient(145deg,#35d96b,#159b45);
+border:2px solid #8affaa;border-radius:5px;
+box-shadow:0 2px 8px #0009,0 0 10px #27d85b66;
+color:#fff;text-align:center;font-family:Arial,sans-serif;
+flex-direction:column;align-items:center;justify-content:center;
+line-height:1.05;pointer-events:none;
+}
+#eventoGlobalBadge strong{
+display:block;font-size:15px;font-weight:900;color:#fff;
+text-shadow:0 1px 2px #075b27;
+}
+#eventoGlobalBadge span{
+display:block;margin-top:3px;font-size:10px;font-weight:800;
+color:#eaffef;text-shadow:0 1px 2px #075b27;
+}
 #adminModal{
 display:none;position:fixed;inset:0;background:#000c;
 align-items:center;justify-content:center;z-index:12;padding:12px
@@ -302,7 +319,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
   </div>
   <button id="admAtualizarJogadores" type="button" class="adm-b roxo" style="max-width:112px">Atualizar lista</button>
 </div>
-<div id="admResumoJogador" class="adm-resumo" aria-live="polite" hidden></div>
+<div id="admResumoJogador" class="adm-resumo" aria-live="polite"></div>
 <select id="admAcao" class="adm-in" aria-label="Ação"></select>
 
 <div id="admCampoValor">
@@ -528,7 +545,7 @@ const registro=snapshot.data()||{};
 const avisoAdmin=registro.avisoAdmin;
 if(avisoAdmin&&avisoAdmin.id&&avisoAdmin.id!==ultimoAvisoAdminId){
 const idadeAviso=Date.now()-(Number(avisoAdmin.criadoEm)||0);
-if(ultimoAvisoAdminId!==""||(idadeAviso>=0&&idadeAviso<86400000))mostrarAviso(String(avisoAdmin.texto||"O admin Artur fez uma alteração na sua conta."),"info");
+if(ultimoAvisoAdminId!==""||(idadeAviso>=0&&idadeAviso<86400000))mostrarAviso(String(avisoAdmin.texto||"O admin "+nomeDoAdminAtual()+" fez uma alteração na sua conta."),"info");
 ultimoAvisoAdminId=String(avisoAdmin.id);
 }
 const dados=registro.dados;
@@ -846,7 +863,7 @@ let multiplicadorCompras=0;
 let precoMultiplicador=100;
 
 // Evento global de dinheiro sincronizado pelo Firestore.
-let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Artur",id:""};
+let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
 let cancelarMonitoramentoEvento=null;
 let ultimoAvisoAdminId="";
 
@@ -887,7 +904,7 @@ const badge=document.getElementById("eventoGlobalBadge");
 if(!badge)return;
 const restante=(Number(eventoGlobal.expiraEm)||0)-Date.now();
 const ativo=eventoGlobal.ativo&&restante>0;
-badge.style.display=ativo?"block":"none";
+badge.style.display=ativo?"flex":"none";
 if(!ativo)return;
 const segundos=Math.max(0,Math.ceil(restante/1000));
 const min=Math.floor(segundos/60),seg=segundos%60;
@@ -903,9 +920,9 @@ const ref=db.collection("eventos").doc("multiplicadorGlobal");
 cancelarMonitoramentoEvento=ref.onSnapshot(snapshot=>{
 const estavaAtivo=estadoEventoGlobalConhecido&&eventoGlobalEstavaAtivo;
 if(!snapshot.exists){
-eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Artur",id:""};
+eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
 atualizarBadgeEvento();
-if(estavaAtivo)mostrarAviso("O admin Artur desativou o evento global de dinheiro.","info");
+if(estavaAtivo)mostrarAviso("O admin "+nomeDoAdminAtual()+" desativou o evento global de dinheiro.","info");
 estadoEventoGlobalConhecido=true;
 eventoGlobalEstavaAtivo=false;
 if(typeof atualizarStatusEventoAdmin==="function")atualizarStatusEventoAdmin();
@@ -915,7 +932,7 @@ const ev=snapshot.data()||{};
 const expira=ev.expiraEm&&typeof ev.expiraEm.toMillis==="function"?ev.expiraEm.toMillis():Number(ev.expiraEm)||0;
 const ativo=ev.ativo===true&&expira>Date.now();
 const id=String(ev.id||"");
-const admin=String(ev.admin||"Artur");
+const admin=String(ev.admin||"Admin");
 const multiplicador=Math.max(1,Number(ev.multiplicador)||1);
 eventoGlobal={ativo,multiplicador,expiraEm:expira,admin,id};
 atualizarBadgeEvento();
@@ -1289,6 +1306,12 @@ if(document.visibilityState==="hidden")atualizarPresenca(false,usuarioAtual.uid)
 else atualizarPresenca(true,usuarioAtual.uid);
 });
 
+function nomeDoAdminAtual(){
+if(!usuarioAtual)return "Admin";
+const nome=String(usuarioAtual.displayName||usuarioAtual.email||"").trim();
+return nome.includes("@")?nome.split("@")[0]:(nome||"Admin");
+}
+
 function entrarNoJogo(user,nome){
 mensagemDeLogin("Conta reconhecida. Carregando seu progresso...",false);
 if(entradaEmAndamento&&uidEntradaEmAndamento===user.uid)return entradaEmAndamento;
@@ -1649,7 +1672,7 @@ admLogEl.appendChild(linha);
 }
 
 function admResultado(texto,tipo){
-if(tipo==="ok"&&!String(texto).startsWith("O admin Artur"))texto="O admin Artur: "+texto;
+if(tipo==="ok"&&!String(texto).startsWith("O admin "))texto="O admin "+nomeDoAdminAtual()+": "+texto;
 const hora=new Date().toLocaleTimeString("pt-BR",{hour12:false});
 admHistorico.unshift({hora,texto,tipo});
 if(admHistorico.length>40)admHistorico.pop();
@@ -1695,17 +1718,15 @@ return [
 }
 function atualizarAdmin(){
 ultimaAtualizacaoAdmin=Date.now();if(!adminAberto)return;
+const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
+const itens=estatisticasDadosAdmin(nome,dadosDoJogo(),"ONLINE");
+criarResumoAdmin(admResumo,itens);
 const abaOutroVisivel=!document.getElementById("abaOutro").hidden;
 if(abaOutroVisivel){
 const jogador=jogadoresAdmin.find(j=>j.uid===admJogador.value);
-if(jogador)criarResumoAdmin(admResumo,estatisticasDadosAdmin(jogador.nome,jogador.dados,jogador.online?"ONLINE":"OFFLINE"));
-else criarResumoAdmin(admResumo,[]);
-criarResumoAdmin(admResumoJogador,[]);
-return;
+if(jogador)criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(jogador.nome,jogador.dados,jogador.online?"ONLINE":"OFFLINE"));
+else criarResumoAdmin(admResumoJogador,[]);
 }
-const nome=usuarioAtual?(usuarioAtual.uid===ADMIN_UID?"Arthur":(usuarioAtual.displayName||usuarioAtual.email.split("@")[0])):"-";
-criarResumoAdmin(admResumo,estatisticasDadosAdmin(nome,dadosDoJogo(),"ONLINE"));
-criarResumoAdmin(admResumoJogador,[]);
 }
 
 function abrirAdmin(){
@@ -1881,9 +1902,8 @@ admJogadorAbrir.setAttribute("aria-expanded","false");
 }
 function atualizarSeletorVisualJogadores(){
 const atual=jogadoresAdmin.find(j=>j.uid===admJogador.value);
-admJogadorSelecionado.textContent=atual?(atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" • "+(atual.online?"ONLINE":"OFFLINE")):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
-if(atual)atualizarAdmin();
-else criarResumoAdmin(admResumo,[]);
+admJogadorSelecionado.textContent=atual?atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" • "+(atual.online?"ONLINE":"OFFLINE"):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
+if(atual)criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(atual.nome,atual.dados,atual.online?"ONLINE":"OFFLINE"));
 admJogadorLista.textContent="";
 if(!jogadoresAdmin.length){
 const vazio=document.createElement("div");vazio.className="adm-seletor-vazio";vazio.textContent="Nenhum jogador encontrado";admJogadorLista.appendChild(vazio);return;
@@ -1937,7 +1957,7 @@ const registro=doc.data()||{};const pres=registro.presenca||{};
 let atualizado=0;
 try{atualizado=pres.atualizadoEm&&pres.atualizadoEm.toMillis?pres.atualizadoEm.toMillis():0;}catch(e){}
 const online=pres.online===true&&atualizado>0&&(Date.now()-atualizado)<65000;
-return {uid:doc.id,nome:doc.id===ADMIN_UID?"Arthur":String(registro.nome||"Jogador"),dados:registro.dados||{},online};
+return {uid:doc.id,nome:String(registro.nome||"Jogador"),dados:registro.dados||{},online};
 }).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
 select.textContent="";
 for(const jogador of jogadoresAdmin){
@@ -2070,18 +2090,18 @@ dados.picaretasCompradas.sort((a,b)=>a-b);
 dados.mineriosComprados.sort((a,b)=>a-b);
 const nome=String(registro.nome||jogador.nome);
 const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):"";
-let textoAviso="O admin Artur alterou sua conta: "+def.rotulo.toLowerCase();
-if(acao==="addMoney")textoAviso="O admin Artur te deu $"+formatarDinheiro(valor)+".";
-else if(acao==="removeMoney")textoAviso="O admin Artur removeu $"+formatarDinheiro(valor)+" da sua conta.";
-else if(acao==="givePickaxe")textoAviso="O admin Artur te deu a picareta "+itemNome+".";
-else if(acao==="removePickaxe")textoAviso="O admin Artur removeu a picareta "+itemNome+" da sua conta.";
-else if(acao==="giveOre")textoAviso="O admin Artur te deu o minério "+itemNome+".";
-else if(acao==="removeOre")textoAviso="O admin Artur removeu o minério "+itemNome+" da sua conta.";
-else if(acao==="giveAuto")textoAviso="O admin Artur liberou o Auto Clicker para você.";
-else if(acao==="removeAuto")textoAviso="O admin Artur removeu o Auto Clicker da sua conta.";
-else if(acao==="givePro")textoAviso="O admin Artur liberou o Auto Clicker Pro para você.";
-else if(acao==="removePro")textoAviso="O admin Artur removeu o Auto Clicker Pro da sua conta.";
-else if(acao==="setMultiplier")textoAviso="O admin Artur definiu sua melhoria de dinheiro no nível "+valor+".";
+let textoAviso="O admin "+nomeDoAdminAtual()+" alterou sua conta: "+def.rotulo.toLowerCase();
+if(acao==="addMoney")textoAviso="O admin "+nomeDoAdminAtual()+" te deu $"+formatarDinheiro(valor)+".";
+else if(acao==="removeMoney")textoAviso="O admin "+nomeDoAdminAtual()+" removeu $"+formatarDinheiro(valor)+" da sua conta.";
+else if(acao==="givePickaxe")textoAviso="O admin "+nomeDoAdminAtual()+" te deu a picareta "+itemNome+".";
+else if(acao==="removePickaxe")textoAviso="O admin "+nomeDoAdminAtual()+" removeu a picareta "+itemNome+" da sua conta.";
+else if(acao==="giveOre")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o minério "+itemNome+".";
+else if(acao==="removeOre")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o minério "+itemNome+" da sua conta.";
+else if(acao==="giveAuto")textoAviso="O admin "+nomeDoAdminAtual()+" liberou o Auto Clicker para você.";
+else if(acao==="removeAuto")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o Auto Clicker da sua conta.";
+else if(acao==="givePro")textoAviso="O admin "+nomeDoAdminAtual()+" liberou o Auto Clicker Pro para você.";
+else if(acao==="removePro")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o Auto Clicker Pro da sua conta.";
+else if(acao==="setMultiplier")textoAviso="O admin "+nomeDoAdminAtual()+" definiu sua melhoria de dinheiro no nível "+valor+".";
 await comTempoLimite(ref.set({dados,avisoAdmin:{id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
@@ -2115,7 +2135,7 @@ if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado
 const mult=Number(admEventoMultiplicador.value),minutos=Number(admEventoMinutos.value);
 if(!Number.isInteger(mult)||mult<2||mult>1000000){admResultado("Digite um multiplicador inteiro entre 2x e 1.000.000x.","erro");return;}
 if(!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("A duração deve ser de 1 a 10.080 minutos.","erro");return;}
-const adminNome="Artur";
+const adminNome=nomeDoAdminAtual();
 const expiraEm=new Date(Date.now()+minutos*60000);
 const id=String(Date.now())+"-"+usuarioAtual.uid;
 try{
@@ -2127,7 +2147,7 @@ atualizarStatusEventoAdmin();
 async function encerrarEventoGlobal(){
 if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
 try{
-await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoGlobal.multiplicador)||1),expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:"Artur",motivo:"desativado-pelo-admin",id:"desativado-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
+await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoGlobal.multiplicador)||1),expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:nomeDoAdminAtual(),motivo:"desativado-pelo-admin",id:"desativado-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
 admResultado("Evento global encerrado.","ok");
 }catch(error){admResultado("Não foi possível encerrar o evento: "+(error.message||"erro no Firestore"),"erro");}
 atualizarStatusEventoAdmin();
