@@ -302,7 +302,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
   </div>
   <button id="admAtualizarJogadores" type="button" class="adm-b roxo" style="max-width:112px">Atualizar lista</button>
 </div>
-<div id="admResumoJogador" class="adm-resumo" aria-live="polite"></div>
+<div id="admResumoJogador" class="adm-resumo" aria-live="polite" hidden></div>
 <select id="admAcao" class="adm-in" aria-label="Ação"></select>
 
 <div id="admCampoValor">
@@ -1695,15 +1695,17 @@ return [
 }
 function atualizarAdmin(){
 ultimaAtualizacaoAdmin=Date.now();if(!adminAberto)return;
-const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
-const itens=estatisticasDadosAdmin(nome,dadosDoJogo(),"ONLINE");
-criarResumoAdmin(admResumo,itens);
 const abaOutroVisivel=!document.getElementById("abaOutro").hidden;
 if(abaOutroVisivel){
 const jogador=jogadoresAdmin.find(j=>j.uid===admJogador.value);
-if(jogador)criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(jogador.nome,jogador.dados,jogador.online?"ONLINE":"OFFLINE"));
-else criarResumoAdmin(admResumoJogador,[]);
+if(jogador)criarResumoAdmin(admResumo,estatisticasDadosAdmin(jogador.nome,jogador.dados,jogador.online?"ONLINE":"OFFLINE"));
+else criarResumoAdmin(admResumo,[]);
+criarResumoAdmin(admResumoJogador,[]);
+return;
 }
+const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
+criarResumoAdmin(admResumo,estatisticasDadosAdmin(nome,dadosDoJogo(),"ONLINE"));
+criarResumoAdmin(admResumoJogador,[]);
 }
 
 function abrirAdmin(){
@@ -1879,8 +1881,9 @@ admJogadorAbrir.setAttribute("aria-expanded","false");
 }
 function atualizarSeletorVisualJogadores(){
 const atual=jogadoresAdmin.find(j=>j.uid===admJogador.value);
-admJogadorSelecionado.textContent=atual?atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" • "+(atual.online?"ONLINE":"OFFLINE"):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
-if(atual)criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(atual.nome,atual.dados,atual.online?"ONLINE":"OFFLINE"));
+admJogadorSelecionado.textContent=atual?atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":""):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
+if(atual)atualizarAdmin();
+else criarResumoAdmin(admResumo,[]);
 admJogadorLista.textContent="";
 if(!jogadoresAdmin.length){
 const vazio=document.createElement("div");vazio.className="adm-seletor-vazio";vazio.textContent="Nenhum jogador encontrado";admJogadorLista.appendChild(vazio);return;
@@ -1890,7 +1893,7 @@ const opcao=document.createElement("button");
 opcao.type="button";opcao.className="adm-seletor-opcao"+(jogador.uid===admJogador.value?" selecionada":"");
 opcao.setAttribute("role","option");opcao.setAttribute("aria-selected",jogador.uid===admJogador.value?"true":"false");
 opcao.dataset.uid=jogador.uid;
-opcao.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"ONLINE":"OFFLINE");
+opcao.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"");
 admJogadorLista.appendChild(opcao);
 }
 }
