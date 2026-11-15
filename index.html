@@ -531,26 +531,38 @@ adminDesbloqueado=admin;
 codigoAdminSessao=codigo;
 }
 
-// Mantém o jogo sincronizado quando o painel Admin altera a conta pelo Firestore.
+// Sincroniza somente alterações explícitas feitas pelo painel Admin.
+// Snapshots comuns dos próprios salvamentos não podem reaplicar um saldo antigo
+// por cima das moedas que o jogador acabou de minerar.
 function iniciarMonitoramentoJogador(uid){
 if(cancelarMonitoramentoJogador){
 try{cancelarMonitoramentoJogador();}catch(e){}
 cancelarMonitoramentoJogador=null;
 }
+let primeiroSnapshot=true;
 const ref=db.collection("jogadores").doc(uid);
 cancelarMonitoramentoJogador=ref.onSnapshot(snapshot=>{
 if(!usuarioAtual||usuarioAtual.uid!==uid||!dadosCarregados||!snapshot.exists)return;
 if(snapshot.metadata&&snapshot.metadata.hasPendingWrites)return;
 const registro=snapshot.data()||{};
 const avisoAdmin=registro.avisoAdmin;
-if(avisoAdmin&&avisoAdmin.id&&avisoAdmin.id!==ultimoAvisoAdminId){
+const idAviso=avisoAdmin&&avisoAdmin.id?String(avisoAdmin.id):"";
+// O primeiro snapshot serve apenas para memorizar o aviso já existente.
+if(primeiroSnapshot){
+primeiroSnapshot=false;
+ultimoAvisoAdminId=idAviso;
+return;
+}
+// Sem um novo aviso, não aplicar dados remotos: pode ser apenas um eco atrasado
+// de um salvamento anterior do próprio jogador.
+if(!idAviso||idAviso===ultimoAvisoAdminId)return;
+ultimoAvisoAdminId=idAviso;
 const idadeAviso=Date.now()-(Number(avisoAdmin.criadoEm)||0);
-if(ultimoAvisoAdminId!==""||(idadeAviso>=0&&idadeAviso<86400000))mostrarAviso(String(avisoAdmin.texto||"O admin "+nomeDoAdminAtual()+" fez uma alteração na sua conta."),"info");
-ultimoAvisoAdminId=String(avisoAdmin.id);
+if(idadeAviso>=0&&idadeAviso<86400000){
+mostrarAviso(String(avisoAdmin.texto||"O admin "+nomeDoAdminAtual()+" fez uma alteração na sua conta."),"info");
 }
 const dados=registro.dados;
 if(!dados||typeof dados!=="object"||Array.isArray(dados))return;
-// Cancela um salvamento antigo pendente para ele não sobrescrever a alteração remota.
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
 aplicarDadosDoServidor(dados);
 try{localStorage.setItem("mining_game_save_"+uid,JSON.stringify(dados));}catch(e){}
@@ -562,6 +574,7 @@ console.error("Erro ao sincronizar os dados do jogador em tempo real:",error);
 
 function textoErroLogin(error){
 const c=error&&error.code;
+if(c==="auth/username-case-mismatch")return "Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas.";
 if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Senha incorreta. Digite a senha atual.";
 if(c==="auth/user-not-found")return "Essa conta não foi encontrada. Confira o nome de usuário.";
 if(c==="auth/user-disabled")return "Esta conta foi banida ou desativada.";
@@ -1382,6 +1395,15 @@ mensagemDeLogin("ETAPA 1/2: conectando à conta...",false);
 let avisoLogin=setTimeout(()=>{mensagemDeLogin("Ainda aguardando o Firebase. Se continuar assim, atualize a página e confira se publicou este arquivo novo.");},40000);
 try{
 const cred=await comTempoLimite(auth.signInWithEmailAndPassword(usuarioEmail(nome),senha),20000,"entrar na conta");
+// O Firebase trata o e-mail sem diferenciar maiúsculas/minúsculas.
+// Esta conferência adicional mantém o nome de usuário realmente exato.
+const registroSnap=await comTempoLimite(db.collection("jogadores").doc(cred.user.uid).get(),15000,"conferir o nome exato da conta");
+const registroConta=registroSnap.exists?(registroSnap.data()||{}):{};
+const nomeCadastrado=String(registroConta.nome||cred.user.displayName||"");
+if(nomeCadastrado!==nome){
+await auth.signOut();
+throw {code:"auth/username-case-mismatch",message:"Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas."};
+}
 mensagemDeLogin("ETAPA 2/2: conta reconhecida; carregando progresso...",false);
 const ok=await entrarNoJogo(cred.user,nome);
 if(!ok&&auth.currentUser)await auth.signOut();
@@ -1718,7 +1740,7 @@ return [
 }
 function atualizarAdmin(){
 ultimaAtualizacaoAdmin=Date.now();if(!adminAberto)return;
-const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
+const nome=usuarioAtual?String(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
 const itens=estatisticasDadosAdmin(nome,dadosDoJogo(),"ONLINE");
 criarResumoAdmin(admResumo,itens);
 const abaOutroVisivel=!document.getElementById("abaOutro").hidden;
@@ -2913,9 +2935,19 @@ mostrarRecompensa=false;
 }
 }
 
-// Mantém somente o indicador normal de dinheiro nesta área.
-// O multiplicador e o tempo do evento aparecem no quadradinho verde do canto.
-texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
+const eventoNaTela=multiplicadorEventoAtual()>1;
+if(eventoNaTela){
+  // Indicador bem pequeno: somente multiplicador e tempo restante.
+  texto("$ "+formatarDinheiro(moedas),365,288,18,"#ffdc00","right");
+  const restante=Math.max(0,Math.ceil((eventoGlobal.expiraEm-Date.now())/1000));
+  const mm=String(Math.floor(restante/60)).padStart(2,"0");
+  const ss=String(restante%60).padStart(2,"0");
+  retangulo(373,275,119,17,"#3d2a0b",4);
+  texto(eventoGlobal.multiplicador+"x",402,287,10,"#ffe08a","center");
+  texto(mm+":"+ss,484,287,9,"#ffffff","right");
+}else{
+  texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
+}
 
 // BOTÃO DE RENASCIMENTO (canto superior esquerdo)
 const gradRen=ctx.createLinearGradient(7,5,132,35);
