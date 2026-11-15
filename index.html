@@ -192,7 +192,35 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 
 /* Novos sistemas: mundos, mascotes e ranking global */
 .novo-modal{display:none;position:fixed;inset:0;z-index:18000;background:#000d;align-items:center;justify-content:center;padding:14px;color:#fff;font-family:Arial,sans-serif}
-.novo-box{width:min(430px,94vw);max-height:min(620px,88dvh);overflow:auto;padding:17px;border-radius:16px;background:linear-gradient(145deg,#202d48,#111522);border:2px solid #5689c9;box-shadow:0 0 28px #287bd455}
+ .novo-box{width:min(470px,94vw);max-height:min(680px,90vh);overflow:auto;padding:17px;border-radius:16px;background:linear-gradient(145deg,#202d48,#111522);border:2px solid #5689c9;box-shadow:0 0 28px #287bd455}
+#inventarioPetsModal .novo-box{width:min(900px,96vw);height:min(650px,90vh);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.inventario-layout{display:grid;grid-template-columns:minmax(175px,1fr) minmax(0,3fr);gap:12px;min-height:0;flex:1}
+.pet-status{min-width:0;overflow:auto;padding:12px;border:1px solid #526985;border-radius:12px;background:#101a2a}
+.pet-status h3{margin:0 0 10px;font-size:15px;color:#d6e7ff}
+.pet-status p{margin:7px 0;color:#d0d9e8;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.pet-status .pet-status-nome{font-size:19px;font-weight:900;color:#fff}
+.pet-grade-area{min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.pet-grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;overflow:auto;padding:3px;align-content:start;flex:1;min-height:0}
+.pet-slot{min-width:0;min-height:102px;padding:9px 6px;border:2px solid #66758b;border-radius:10px;background:#111b2b;color:#fff;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.pet-slot.selecionado{outline:2px solid #fff;outline-offset:1px;background:#263b58}
+.pet-slot .pet-iniciais{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:#202d40;color:#fff;font-size:12px;font-weight:900;border:1px solid currentColor}
+.pet-slot strong{font-size:12px;overflow-wrap:anywhere}
+.pet-slot small{font-size:10px;color:#c7d4e5}
+.pet-ferramentas{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.pet-ferramentas button{flex:1;min-width:125px}
+.pet-venda{border:1px solid #4c5e78;border-radius:10px;padding:9px;margin-top:8px;background:#0d1726}
+.pet-venda-titulo{font-size:12px;font-weight:900;color:#fff;margin-bottom:7px}
+.pet-venda-opcoes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.pet-venda-opcoes label{font-size:11px;color:#d8e2f0;display:flex;align-items:center;gap:5px}
+.pet-venda-opcoes input{accent-color:#45c47b}
+#listaChancesPets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.pet-chance-card{padding:9px;border:1px solid #526985;border-radius:9px;background:#111b2b;min-width:0}
+.pet-chance-card strong{display:block;font-size:12px}
+.pet-chance-card small{display:block;color:#c4d0e1;font-size:10px;margin-top:4px}
+.pet-raridade{display:inline-block;margin-top:4px;padding:2px 7px;border:1px solid currentColor;border-radius:20px;font-size:10px;font-weight:900;letter-spacing:.3px}
+.pet-chance{display:block;color:#e6edf7;font-size:10px;margin-top:3px}
+@media(max-width:620px){#inventarioPetsModal .novo-box{height:90vh;width:96vw;padding:12px}.inventario-layout{grid-template-columns:1fr;grid-template-rows:minmax(105px,.7fr) minmax(0,2fr);gap:8px}.pet-status{padding:8px}.pet-status h3{font-size:13px;margin-bottom:4px}.pet-status p{display:inline-block;margin:3px 8px 3px 0}.pet-status .pet-status-nome{display:block;font-size:16px}.pet-grade{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:380px){.novo-box{padding:13px}.novo-card{gap:7px;padding:8px}.novo-card button{padding:8px;font-size:11px}.pet-grade{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .novo-topo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .novo-topo h2{margin:0;font-size:20px;color:#b8dcff}
 .novo-fechar{width:34px;height:34px;border:0;border-radius:8px;background:#a83232;color:white;font-size:18px;font-weight:bold}
@@ -229,7 +257,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 
 <div id="renascimentoModal">
   <div id="renascimentoBox">
-    <h2>♻ RENASCIMENTO</h2>
+    <h2>RENASCIMENTO</h2>
     <p id="renascimentoInfo"></p>
     <p>Ao renascer, você perde seu dinheiro, picaretas, minérios e melhorias. Seus renascimentos e o multiplicador permanente serão mantidos.</p>
     <button id="confirmarRenascimento" type="button">FAZER RENASCIMENTO</button>
@@ -252,7 +280,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 
 <div id="senhaModal">
   <div id="senhaBox" role="dialog" aria-modal="true" aria-label="Trocar senha">
-    <h2>🔐 TROCAR SENHA</h2>
+    <h2>TROCAR SENHA</h2>
     <p>Confirme sua senha atual e escolha uma nova senha.</p>
     <input id="senhaAtual" type="password" placeholder="Senha atual" autocomplete="current-password">
     <input id="senhaNova" type="password" placeholder="Nova senha (mínimo 6 caracteres)" autocomplete="new-password">
@@ -265,7 +293,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 
 <div id="codeModal">
 <div class="modal">
-<h2>🎁 REDEEM CODE</h2>
+<h2>REDEEM CODE</h2>
 <p>Digite um código para receber recompensas ou desbloquear funções especiais.</p>
 <input id="codeInput" placeholder="Digite seu código..." autocomplete="off">
 <button id="redeemButton">RESGATAR CÓDIGO</button>
@@ -276,23 +304,42 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <div id="aviso" role="status" aria-live="polite"></div>
 
 <div id="mundosModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Mundos">
- <div class="novo-topo"><h2>🌎 Mundos</h2><button class="novo-fechar" data-fechar-novo="mundos">✕</button></div>
+ <div class="novo-topo"><h2>MUNDOS</h2><button class="novo-fechar" data-fechar-novo="mundos">X</button></div>
  <p class="novo-desc">Explore novas dimensões. Cada mundo desbloqueado aumenta o dinheiro recebido em todas as minerações.</p>
  <div id="listaMundos"></div>
 </div></div>
-<div id="petsModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Mascotes">
- <div class="novo-topo"><h2>🐾 Mascotes</h2><button class="novo-fechar" data-fechar-novo="pets">✕</button></div>
- <p class="novo-desc">Abra ovos, consiga mascotes raros e equipe até 3 para aumentar seus ganhos. Seus mascotes continuam com você após renascer.</p>
+<div id="ovosPetsModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Ovos de mascotes">
+ <div class="novo-topo"><h2>OVOS</h2><button class="novo-fechar" data-fechar-novo="ovos">X</button></div>
+ <p class="novo-desc">Abra ovos para conseguir mascotes. As chances e os multiplicadores de cada mascote aparecem abaixo.</p>
+ <div id="ovosResumo" class="novo-desc"></div>
+ <button id="comprarOvoPet" class="novo-acao">ABRIR OVO - $ 100K</button>
+ <h3 class="pets-subtitulo">CHANCES E MULTIPLICADORES</h3><div id="listaChancesPets"></div>
+</div></div>
+<div id="inventarioPetsModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Inventário de mascotes">
+ <div class="novo-topo"><h2>INVENTARIO DE PETS</h2><button class="novo-fechar" data-fechar-novo="inventario">X</button></div>
  <div id="petsResumo" class="novo-desc"></div>
- <button id="comprarOvoPet" class="novo-acao">🥚 Abrir ovo — $ 100K</button>
- <div class="pets-ordenacao" aria-label="Ordenar mascotes"><button type="button" data-pets-ordem="melhores" class="ativa">⭐ Melhores</button><button type="button" data-pets-ordem="nome">🔤 A–Z</button><button type="button" data-pets-ordem="raridade">💎 Raridade</button></div>
- <h3 class="pets-subtitulo">🐣 Chances do ovo</h3><div id="listaChancesPets"></div>
- <h3 class="pets-subtitulo">🎒 Seus mascotes</h3><div id="listaPets"></div>
+ <div class="inventario-layout">
+  <aside class="pet-status" id="petStatusPainel"><h3>STATUS DO PET</h3><p>Selecione um mascote para ver os detalhes.</p></aside>
+  <section class="pet-grade-area">
+   <div class="pet-ferramentas"><button id="equiparMelhoresPets" class="novo-acao" type="button">EQUIPAR MELHORES</button><button id="desequiparPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#68778d,#39465a)">DESEQUIPAR TODOS</button></div>
+   <div class="pets-ordenacao" aria-label="Ordenar inventario"><button type="button" data-pets-ordem="melhores" class="ativa">MELHORES</button><button type="button" data-pets-ordem="nome">NOME A-Z</button><button type="button" data-pets-ordem="raridade">RARIDADE</button></div>
+   <div id="listaPets" class="pet-grade"></div>
+   <div class="pet-venda"><div class="pet-venda-titulo">VENDER PETS POR RARIDADE</div><div style="font-size:10px;color:#bdc9da;margin-bottom:7px">Valores: Comum $10K | Incomum $15K | Raro $25K | Épico $50K | Lendário $100K | Mítico $250K | Secreto $500K</div>
+    <div class="pet-venda-opcoes">
+     <label><input type="checkbox" data-vender-raridade="Comum"> Comum</label><label><input type="checkbox" data-vender-raridade="Incomum"> Incomum</label>
+     <label><input type="checkbox" data-vender-raridade="Raro"> Raro</label><label><input type="checkbox" data-vender-raridade="Épico"> Épico</label>
+     <label><input type="checkbox" data-vender-raridade="Lendário"> Lendário</label><label><input type="checkbox" data-vender-raridade="Mítico"> Mítico</label>
+     <label><input type="checkbox" data-vender-raridade="Secreto"> Secreto</label>
+    </div>
+    <button id="venderPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS DAS RARIDADES MARCADAS</button>
+   </div>
+  </section>
+ </div>
 </div></div>
 <div id="rankingModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Ranking global">
- <div class="novo-topo"><h2>🏆 Ranking global</h2><button class="novo-fechar" data-fechar-novo="ranking">✕</button></div>
+ <div class="novo-topo"><h2>RANKING GLOBAL</h2><button class="novo-fechar" data-fechar-novo="ranking">X</button></div>
  <p class="novo-desc">Os 10 melhores jogadores do Ultimate Miner.</p>
- <div class="novo-tabs"><button id="rankDinheiro" class="ativa">💰 Dinheiro</button><button id="rankRenascimentos">♻ Renascimentos</button></div>
+ <div class="novo-tabs"><button id="rankDinheiro" class="ativa">DINHEIRO</button><button id="rankRenascimentos">RENASCIMENTOS</button></div>
  <div id="listaRanking" class="novo-vazio">Carregando ranking...</div>
  <button id="atualizarRanking" class="novo-acao">↻ Atualizar ranking</button>
 </div></div>
@@ -303,8 +350,8 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <div id="adminBox" role="dialog" aria-modal="true" aria-label="Painel de administração">
 
 <div class="adm-topo">
-<h2>⚙ Painel de admin</h2>
-<button id="adminFechar" class="adm-x" type="button" aria-label="Fechar painel">✕</button>
+<h2>PAINEL DE ADMIN</h2>
+<button id="adminFechar" class="adm-x" type="button" aria-label="Fechar painel">X</button>
 </div>
 
 <div id="adminResumo" class="adm-resumo"></div>
@@ -317,7 +364,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 
 <div id="abaEu" class="adm-aba">
 
-<h3>💰 Dinheiro</h3>
+<h3>DINHEIRO</h3>
 <input id="admValor" class="adm-in" placeholder="Quantidade (ex.: 5000, 2,5M, 10K)" autocomplete="off" autocapitalize="characters" spellcheck="false">
 <div class="adm-linha">
 <button type="button" class="adm-b azul" data-acao="moedas-add">Adicionar</button>
@@ -326,7 +373,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <button type="button" class="adm-b vermelho" data-acao="moedas-zerar" data-perigo>Zerar</button>
 </div>
 
-<h3>⛏ Picaretas</h3>
+<h3>PICARETAS</h3>
 <select id="admPicareta" class="adm-in" aria-label="Picareta"></select>
 <div class="adm-linha">
 <button type="button" class="adm-b azul" data-acao="picareta-dar">Liberar</button>
@@ -335,7 +382,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <button type="button" class="adm-b vermelho" data-acao="picareta-resetar" data-perigo>Resetar</button>
 </div>
 
-<h3>💎 Minérios</h3>
+<h3>MINERIOS</h3>
 <select id="admMinerio" class="adm-in" aria-label="Minério"></select>
 <div class="adm-linha">
 <button type="button" class="adm-b azul" data-acao="minerio-dar">Liberar</button>
@@ -391,7 +438,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div>
 
 <div id="abaEvento" class="adm-aba" hidden>
-<h3>💰 Evento global de multiplicador</h3>
+<h3>EVENTO GLOBAL DE MULTIPLICADOR</h3>
 <p class="adm-dica">O evento aumenta o dinheiro recebido por todos os jogadores enquanto estiver ativo.</p>
 <div class="adm-linha" id="admEventoPresets">
 <button type="button" class="adm-b azul" data-evento-mult="2">2x dinheiro</button>
@@ -409,7 +456,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <div id="admEventoStatus" class="adm-dica" style="margin-top:8px">Nenhum evento ativo.</div>
 </div>
 
-<h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">📜 Histórico da sessão</h3>
+<h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">HISTORICO DA SESSAO</h3>
 <div id="admLog" class="adm-log"></div>
 
 </div>
@@ -485,7 +532,7 @@ const linha=document.createElement("div");
 linha.className="conta-salva";
 const escolher=document.createElement("button");
 escolher.type="button";
-escolher.textContent="👤 "+nome;
+escolher.textContent="CONTA: "+nome;
 escolher.addEventListener("click",async()=>{
 nomeLogin.value=nome;
 const emailSalvo=usuarioEmail(nome);
@@ -942,11 +989,11 @@ let ultimoAutoClick=Date.now();
 
 // MUNDOS: desbloqueio permanente por progresso de minérios.
 const mundosJogo=[
- {nome:"Superfície",emoji:"🌳",requisito:0,mult:1,descricao:"O começo da sua jornada."},
- {nome:"Cavernas Profundas",emoji:"🪨",requisito:10,mult:1.5,descricao:"Minere minérios mais valiosos."},
- {nome:"Vulcão",emoji:"🌋",requisito:25,mult:2,descricao:"Calor extremo e recompensas maiores."},
- {nome:"Glacial",emoji:"❄️",requisito:45,mult:3,descricao:"Uma dimensão congelada e rara."},
- {nome:"Galáxia",emoji:"🌌",requisito:70,mult:5,descricao:"O mundo final, com bônus máximo."}
+ {nome:"Superfície",sigla:"SUP",requisito:0,mult:1,descricao:"O começo da sua jornada."},
+ {nome:"Cavernas Profundas",sigla:"CAV",requisito:10,mult:1.5,descricao:"Minere minérios mais valiosos."},
+ {nome:"Vulcão",sigla:"VOL",requisito:25,mult:2,descricao:"Calor extremo e recompensas maiores."},
+ {nome:"Glacial",sigla:"GLA",requisito:45,mult:3,descricao:"Uma dimensão congelada e rara."},
+ {nome:"Galáxia",sigla:"GAL",requisito:70,mult:5,descricao:"O mundo final, com bônus máximo."}
 ];
 let mundoAtual=0;
 let mundosDesbloqueados=[0];
@@ -955,13 +1002,13 @@ let petsEquipados=[];
 let ovosAbertos=0;
 let rankingTipo="dinheiro";
 const catalogoPets=[
- {nome:"Slime",emoji:"🟢",raridade:"Comum",peso:45,mult:1.10,cor:"#d1d5db"},
- {nome:"Coelhinho",emoji:"🐰",raridade:"Incomum",peso:25,mult:1.15,cor:"#45d36b"},
- {nome:"Raposa",emoji:"🦊",raridade:"Raro",peso:15,mult:1.30,cor:"#4295ff"},
- {nome:"Lobo",emoji:"🐺",raridade:"Épico",peso:8,mult:1.60,cor:"#b66cff"},
- {nome:"Dragão",emoji:"🐉",raridade:"Lendário",peso:5,mult:2.20,cor:"#ffd43b"},
- {nome:"Fênix",emoji:"🔥",raridade:"Mítico",peso:1.8,mult:3.00,cor:"#ff4545"},
- {nome:"Sombra",emoji:"👁️",raridade:"Secreto",peso:0.2,mult:5.00,cor:"#111111",borda:"#ffffff"}
+ {nome:"Slime",sigla:"SL",raridade:"Comum",peso:45,mult:1.10,cor:"#d1d5db"},
+ {nome:"Coelhinho",sigla:"CO",raridade:"Incomum",peso:25,mult:1.15,cor:"#45d36b"},
+ {nome:"Raposa",sigla:"RA",raridade:"Raro",peso:15,mult:1.30,cor:"#4295ff"},
+ {nome:"Lobo",sigla:"LO",raridade:"Épico",peso:8,mult:1.60,cor:"#b66cff"},
+ {nome:"Dragão",sigla:"DR",raridade:"Lendário",peso:5,mult:2.20,cor:"#ffd43b"},
+ {nome:"Fênix",sigla:"FE",raridade:"Mítico",peso:1.8,mult:3.00,cor:"#ff4545"},
+ {nome:"Sombra",sigla:"SO",raridade:"Secreto",peso:0.2,mult:5.00,cor:"#111111",borda:"#ffffff"}
 ];
 const ORDEM_RARIDADE_PETS={"Comum":0,"Incomum":1,"Raro":2,"Épico":3,"Lendário":4,"Mítico":5,"Secreto":6};
 const CORES_RARIDADE_PETS={"Comum":"#d1d5db","Incomum":"#45d36b","Raro":"#4295ff","Épico":"#b66cff","Lendário":"#ffd43b","Mítico":"#ff4545","Secreto":"#ffffff"};
@@ -978,20 +1025,21 @@ function abrirNovoModal(tipo){
  if(!jogoPronto())return;
  fecharNovosModais();
  if(tipo==="mundos"){atualizarMundosDesbloqueados();renderizarMundos();document.getElementById("mundosModal").style.display="flex";}
- if(tipo==="pets"){renderizarPets();document.getElementById("petsModal").style.display="flex";}
+ if(tipo==="ovos"){renderizarChancesOvo();renderizarResumoPets();document.getElementById("ovosPetsModal").style.display="flex";}
+ if(tipo==="inventario"){renderizarPets();document.getElementById("inventarioPetsModal").style.display="flex";}
  if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";carregarRanking();}
  somAbrirLoja();
 }
-function fecharNovosModais(){["mundosModal","petsModal","rankingModal"].forEach(id=>document.getElementById(id).style.display="none");}
+function fecharNovosModais(){["mundosModal","ovosPetsModal","inventarioPetsModal","rankingModal"].forEach(id=>document.getElementById(id).style.display="none");}
 function renderizarMundos(){
  const el=document.getElementById("listaMundos");el.innerHTML="";
  mundosJogo.forEach((m,i)=>{
   const aberto=mundosDesbloqueados.includes(i),selecionado=mundoAtual===i;
   const card=document.createElement("div");card.className="novo-card"+(aberto?"":" novo-bloqueado");
-  const ic=document.createElement("div");ic.className="novo-emoji";ic.textContent=m.emoji;
+  const ic=document.createElement("div");ic.className="novo-emoji pet-iniciais";ic.textContent=m.sigla;ic.style.fontSize="12px";ic.style.fontWeight="900";
   const info=document.createElement("div");info.className="novo-info";
   const nome=document.createElement("strong");nome.textContent=m.nome;
-  const desc=document.createElement("small");desc.textContent=(aberto?m.descricao:("🔒 Desbloqueie ao comprar o minério nº "+(m.requisito+1)))+" • Bônus "+m.mult+"x";
+  const desc=document.createElement("small");desc.textContent=(aberto?m.descricao:("BLOQUEADO: compre o minério nº "+(m.requisito+1)))+" • Bônus "+m.mult+"x";
   info.append(nome,desc);
   const b=document.createElement("button");b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":"BLOQUEADO");b.disabled=!aberto||selecionado;
   b.addEventListener("click",()=>{mundoAtual=i;salvar();renderizarMundos();mostrarAviso("Mundo alterado: "+m.nome+" (bônus "+m.mult+"x).","ok");});
@@ -1008,55 +1056,92 @@ function abrirOvoPet(){
  if(moedas<custo){mostrarAviso("Você precisa de $ 100K para abrir um ovo.","erro");return;}
  if(petsInventario.length>=50){mostrarAviso("Seu inventário de mascotes está cheio (50/50).","erro");return;}
  moedas-=custo;const base=escolherPetAleatorio();
- const pet={id:"pet_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7),nome:base.nome,emoji:base.emoji,raridade:base.raridade,peso:base.peso,mult:base.mult,cor:base.cor,borda:base.borda||""};
- petsInventario.push(pet);ovosAbertos++;salvar();renderizarPets();
- mostrarAviso("Você encontrou: "+pet.emoji+" "+pet.nome+" ("+pet.raridade+")! Bônus "+pet.mult+"x.",pet.raridade==="Lendário"||pet.raridade==="Mítico"?"ok":"info");
- if(pet.raridade==="Lendário"||pet.raridade==="Mítico")somRaro();
+ const pet={id:"pet_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:base.mult,cor:base.cor,borda:base.borda||""};
+ petsInventario.push(pet);ovosAbertos++;salvar();renderizarChancesOvo();renderizarResumoPets();
+ mostrarAviso("Você encontrou: "+pet.nome+" ("+pet.raridade+")! Bônus "+pet.mult+"x.",pet.raridade==="Lendário"||pet.raridade==="Mítico"||pet.raridade==="Secreto"?"ok":"info");
+ if(pet.raridade==="Lendário"||pet.raridade==="Mítico"||pet.raridade==="Secreto")somRaro();
 }
 function alternarPet(id){
  const i=petsEquipados.indexOf(id);
  if(i>=0)petsEquipados.splice(i,1);
  else if(petsEquipados.length>=3){mostrarAviso("Você só pode equipar 3 mascotes.","erro");return;}
  else petsEquipados.push(id);
- salvar();renderizarPets();
+ petSelecionadoId=id;salvar();renderizarPets();
+}
+let petSelecionadoId=null;
+const VALOR_VENDA_PET={"Comum":10000,"Incomum":15000,"Raro":25000,"Épico":50000,"Lendário":100000,"Mítico":250000,"Secreto":500000};
+function renderizarResumoPets(){
+ const texto="Mascotes: "+petsInventario.length+"/50 | Equipados: "+petsEquipados.length+"/3 | Bônus equipado: "+multiplicadorPets().toFixed(2)+"x | Ovos abertos: "+ovosAbertos;
+ const resumo=document.getElementById("petsResumo");if(resumo)resumo.textContent=texto;
+ const ovos=document.getElementById("ovosResumo");if(ovos)ovos.textContent="Saldo: $ "+formatarDinheiro(moedas)+" | "+texto;
+}
+function renderizarChancesOvo(){
+ const el=document.getElementById("listaChancesPets");if(!el)return;el.innerHTML="";
+ const total=catalogoPets.reduce((a,p)=>a+p.peso,0);
+ const lista=catalogoPets.slice().sort((a,b)=>(ORDEM_RARIDADE_PETS[b.raridade]??-1)-(ORDEM_RARIDADE_PETS[a.raridade]??-1));
+ lista.forEach(p=>{
+  const cor=CORES_RARIDADE_PETS[p.raridade]||"#d1d5db";
+  const card=document.createElement("div");card.className="pet-chance-card";card.style.borderColor=p.raridade==="Secreto"?"#fff":cor;
+  const nome=document.createElement("strong");nome.textContent=p.nome;
+  const rar=document.createElement("span");rar.className="pet-raridade";rar.textContent=p.raridade.toUpperCase();rar.style.color=cor;rar.style.borderColor=cor;rar.style.background=p.raridade==="Secreto"?"#050505":"#ffffff0b";
+  const info=document.createElement("small");info.textContent="Chance: "+(p.peso/total*100).toFixed(p.peso<1?2:1)+"% | Multiplicador: "+p.mult.toFixed(2)+"x";
+  card.append(nome,rar,info);el.appendChild(card);
+ });
+ const botao=document.getElementById("comprarOvoPet");if(botao)botao.textContent="ABRIR OVO - $ 100K (SALDO: $ "+formatarDinheiro(moedas)+")";
+}
+function petCor(p){return p.raridade==="Secreto"?"#ffffff":(CORES_RARIDADE_PETS[p.raridade]||"#d1d5db");}
+function selecionarPetInventario(id){petSelecionadoId=id;renderizarPets();}
+function renderizarStatusPet(){
+ const painel=document.getElementById("petStatusPainel");if(!painel)return;
+ const p=petsInventario.find(x=>x.id===petSelecionadoId);
+ painel.innerHTML="";
+ const titulo=document.createElement("h3");titulo.textContent="STATUS DO PET";painel.appendChild(titulo);
+ if(!p){const vazio=document.createElement("p");vazio.textContent=petsInventario.length?"Selecione um mascote na grade para ver os detalhes.":"Seu inventário está vazio. Abra um ovo para conseguir mascotes.";painel.appendChild(vazio);return;}
+ const nome=document.createElement("div");nome.className="pet-status-nome";nome.textContent=p.nome;nome.style.color=petCor(p);
+ const rar=document.createElement("p");rar.textContent="Raridade: "+p.raridade;rar.style.color=petCor(p);
+ const mult=document.createElement("p");mult.textContent="Multiplicador: "+Number(p.mult||1).toFixed(2)+"x";
+ const equipado=document.createElement("p");equipado.textContent=petsEquipados.includes(p.id)?"Status: EQUIPADO":"Status: NO INVENTÁRIO";
+ const chance=document.createElement("p");const base=catalogoPets.find(x=>x.nome===p.nome);const total=catalogoPets.reduce((a,x)=>a+x.peso,0);chance.textContent="Chance no ovo: "+(base?(base.peso/total*100).toFixed(base.peso<1?2:1):"-")+"%";
+ const venda=document.createElement("p");venda.textContent="Valor de venda: $ "+formatarDinheiro(VALOR_VENDA_PET[p.raridade]||0);
+ const acao=document.createElement("button");acao.className="novo-acao";acao.type="button";acao.textContent=petsEquipados.includes(p.id)?"GUARDAR PET":"EQUIPAR PET";acao.addEventListener("click",()=>alternarPet(p.id));
+ painel.append(nome,rar,mult,equipado,chance,venda,acao);
 }
 function renderizarPets(){
- const resumo=document.getElementById("petsResumo");
- resumo.textContent="Mascotes: "+petsInventario.length+"/50 • Equipados: "+petsEquipados.length+"/3 • Bônus total: "+multiplicadorPets().toFixed(2)+"x • Ovos abertos: "+ovosAbertos;
- document.getElementById("comprarOvoPet").textContent="🥚 Abrir ovo — $ 100K (saldo: $ "+formatarDinheiro(moedas)+")";
- const el=document.getElementById("listaPets"),chancesEl=document.getElementById("listaChancesPets");el.innerHTML="";chancesEl.innerHTML="";
+ renderizarResumoPets();
+ const el=document.getElementById("listaPets");if(!el)return;el.innerHTML="";
  document.querySelectorAll("[data-pets-ordem]").forEach(b=>b.classList.toggle("ativa",b.dataset.petsOrdem===petsOrdenacao));
- const totalPeso=catalogoPets.reduce((a,p)=>a+p.peso,0);
  const ordenar=(a,b)=>{
   if(petsOrdenacao==="nome")return a.nome.localeCompare(b.nome,"pt-BR");
   if(petsOrdenacao==="raridade")return (ORDEM_RARIDADE_PETS[b.raridade]??-1)-(ORDEM_RARIDADE_PETS[a.raridade]??-1)||Number(b.mult)-Number(a.mult);
   return Number(b.mult)-Number(a.mult)||(ORDEM_RARIDADE_PETS[b.raridade]??-1)-(ORDEM_RARIDADE_PETS[a.raridade]??-1);
  };
- catalogoPets.slice().sort(ordenar).forEach(p=>{
-  const chance=p.peso/totalPeso*100,cor=CORES_RARIDADE_PETS[p.raridade]||"#d1d5db";
-  const card=document.createElement("div");card.className="novo-card";card.style.borderColor=p.raridade==="Secreto"?"#fff":cor;
-  card.style.boxShadow=p.raridade==="Secreto"?"0 0 10px #ffffff35":"0 0 8px "+cor+"22";
-  const ic=document.createElement("div");ic.className="novo-emoji";ic.textContent=p.emoji;ic.style.border="1px solid "+(p.raridade==="Secreto"?"#fff":cor);ic.style.background=p.raridade==="Secreto"?"#050505":"#182438";
-  const info=document.createElement("div");info.className="novo-info";
-  const nome=document.createElement("strong");nome.textContent=p.nome;
-  const rar=document.createElement("span");rar.className="pet-raridade";rar.textContent=p.raridade.toUpperCase();rar.style.color=cor;rar.style.borderColor=cor;rar.style.background=p.raridade==="Secreto"?"#050505":"#ffffff0b";
-  const mult=document.createElement("small");mult.textContent="Multiplicador: "+Number(p.mult).toFixed(2)+"x";
-  const odds=document.createElement("span");odds.className="pet-chance";odds.textContent="Chance: "+(chance<0.1?chance.toFixed(2):chance.toFixed(1))+"%";
-  info.append(nome,rar,mult,odds);card.append(ic,info);chancesEl.appendChild(card);
- });
- if(!petsInventario.length){const v=document.createElement("div");v.className="novo-vazio";v.textContent="Você ainda não tem mascotes. Abra seu primeiro ovo!";el.appendChild(v);return;}
+ if(!petsInventario.length){const v=document.createElement("div");v.className="novo-vazio";v.textContent="INVENTARIO VAZIO - ABRA UM OVO PARA CONSEGUIR PETS";el.appendChild(v);petSelecionadoId=null;renderizarStatusPet();return;}
+ if(!petsInventario.some(p=>p.id===petSelecionadoId))petSelecionadoId=petsInventario[0].id;
  petsInventario.slice().sort(ordenar).forEach(p=>{
-  const cor=CORES_RARIDADE_PETS[p.raridade]||"#d1d5db";
-  const card=document.createElement("div");card.className="novo-card";card.style.borderColor=p.raridade==="Secreto"?"#fff":cor;
-  const ic=document.createElement("div");ic.className="novo-emoji";ic.textContent=p.emoji;ic.style.border="1px solid "+(p.raridade==="Secreto"?"#fff":cor);ic.style.background=p.raridade==="Secreto"?"#050505":"#182438";
-  const info=document.createElement("div");info.className="novo-info";
+  const cor=petCor(p);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"");card.style.borderColor=cor;card.addEventListener("click",()=>selecionarPetInventario(p.id));
+  const sigla=document.createElement("span");sigla.className="pet-iniciais";sigla.textContent=p.sigla||p.nome.slice(0,2).toUpperCase();sigla.style.color=cor;sigla.style.borderColor=cor;sigla.style.background=p.raridade==="Secreto"?"#050505":"#202d40";
   const nome=document.createElement("strong");nome.textContent=p.nome;
-  const rar=document.createElement("span");rar.className="pet-raridade";rar.textContent=p.raridade.toUpperCase();rar.style.color=cor;rar.style.borderColor=cor;rar.style.background=p.raridade==="Secreto"?"#050505":"#ffffff0b";
-  const desc=document.createElement("small");desc.textContent="Multiplicador: "+Number(p.mult).toFixed(2)+"x";
-  info.append(nome,rar,desc);
-  const b=document.createElement("button");const equipado=petsEquipados.includes(p.id);b.textContent=equipado?"GUARDAR":"EQUIPAR";b.style.background=equipado?"linear-gradient(180deg,#bd5555,#843535)":"linear-gradient(180deg,#348ee5,#1d5da5)";b.addEventListener("click",()=>alternarPet(p.id));
-  card.append(ic,info,b);el.appendChild(card);
+  const rar=document.createElement("small");rar.textContent=p.raridade+(petsEquipados.includes(p.id)?" | EQUIPADO":"");
+  card.append(sigla,nome,rar);el.appendChild(card);
  });
+ renderizarStatusPet();
+}
+function equiparMelhoresPets(){
+ if(!petsInventario.length){mostrarAviso("Você ainda não tem mascotes.","erro");return;}
+ const melhores=petsInventario.slice().sort((a,b)=>Number(b.mult)-Number(a.mult)||(ORDEM_RARIDADE_PETS[b.raridade]??-1)-(ORDEM_RARIDADE_PETS[a.raridade]??-1)).slice(0,3);
+ petsEquipados=melhores.map(p=>p.id);petSelecionadoId=melhores[0]?.id||null;salvar();renderizarPets();mostrarAviso("Seus 3 melhores mascotes foram equipados.","ok");
+}
+function venderPetsSelecionados(){
+ const raridades=[...document.querySelectorAll("[data-vender-raridade]:checked")].map(x=>x.dataset.venderRaridade);
+ if(!raridades.length){mostrarAviso("Marque pelo menos uma raridade para vender.","erro");return;}
+ const vender=petsInventario.filter(p=>raridades.includes(p.raridade));
+ if(!vender.length){mostrarAviso("Você não possui pets das raridades marcadas.","erro");return;}
+ const total=vender.reduce((s,p)=>s+(VALOR_VENDA_PET[p.raridade]||0),0);
+ if(!confirm("Vender "+vender.length+" pet(s) das raridades selecionadas por $ "+formatarDinheiro(total)+"? Esta ação não pode ser desfeita."))return;
+ const ids=new Set(vender.map(p=>p.id));petsInventario=petsInventario.filter(p=>!ids.has(p.id));petsEquipados=petsEquipados.filter(id=>!ids.has(id));
+ moedas+=total;petSelecionadoId=petsInventario[0]?.id||null;
+ document.querySelectorAll("[data-vender-raridade]").forEach(x=>x.checked=false);
+ salvar();renderizarPets();mostrarAviso(vender.length+" pet(s) vendidos. Você recebeu $ "+formatarDinheiro(total)+".","ok");
 }
 
 async function carregarRanking(){
@@ -1490,7 +1575,7 @@ if(autoClickerAtivo&&autoClickerProAtivo)autoClickerAtivo=false;
 mundoAtual=Math.max(0,Math.min(mundosJogo.length-1,Math.floor(Number(dados.mundoAtual)||0)));
 mundosDesbloqueados=Array.isArray(dados.mundosDesbloqueados)?dados.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
 if(!mundosDesbloqueados.includes(0))mundosDesbloqueados.push(0);
-petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,50):[];
+petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,50).map(p=>({...p,sigla:p.sigla||catalogoPets.find(c=>c.nome===p.nome).sigla,emoji:undefined})):[];
 petsEquipados=Array.isArray(dados.petsEquipados)?dados.petsEquipados.filter(id=>petsInventario.some(p=>p.id===id)).slice(0,3):[];
 ovosAbertos=Math.max(0,Math.floor(Number(dados.ovosAbertos)||0));
 atualizarMundosDesbloqueados();
@@ -3110,12 +3195,12 @@ autoClickerProAtivo?"ATIVADO":"DESATIVADO",
 // TROCAR SENHA
 
 retangulo(45,214,410,27,"#2864a8",7);
-texto("🔐 TROCAR SENHA",250,233,13,"#fff","center");
+texto("TROCAR SENHA",250,233,13,"#fff","center");
 
 // CÓDIGOS E SAIR DA CONTA
 
 retangulo(45,246,190,28,"#7134bd",7);
-texto("🎁 CÓDIGOS",140,265,13,"#fff","center");
+texto("CODIGOS",140,265,13,"#fff","center");
 
 retangulo(255,246,200,28,"#a83232",7);
 texto("VOLTAR ÀS CONTAS",355,265,13,"#fff","center");
@@ -3175,8 +3260,8 @@ if(Date.now()-tempoGolpe>=100)diagonal=false;
 desenharMinerio();
 
 // Atalhos compactos para os três sistemas novos, sem ocupar os botões existentes.
-const atalhos=[{x:326,t:"🌎",nome:"MUNDO"},{x:382,t:"🐾",nome:"PETS"},{x:438,t:"🏆",nome:"RANK"}];
-atalhos.forEach((a,i)=>{retangulo(a.x,75,52,28,["#174d78","#28643a","#75501a"][i],7);ctx.strokeStyle=["#78c8ff","#a8ef9b","#ffe08a"][i];ctx.lineWidth=1.2;ctx.strokeRect(a.x+0.5,75.5,51,27);texto(a.t,a.x+26,88,13,"#fff","center");texto(a.nome,a.x+26,99,7,"#fff","center");});
+const atalhos=[{x:306,nome:"MUNDO",cor:"#174d78",borda:"#78c8ff"},{x:352,nome:"OVOS",cor:"#66501b",borda:"#ffe08a"},{x:398,nome:"PETS",cor:"#28643a",borda:"#a8ef9b"},{x:444,nome:"RANK",cor:"#4b3b78",borda:"#c4a8ff"}];
+atalhos.forEach(a=>{retangulo(a.x,75,44,28,a.cor,6);ctx.strokeStyle=a.borda;ctx.lineWidth=1;ctx.strokeRect(a.x+0.5,75.5,43,27);texto(a.nome,a.x+22,93,7.5,"#fff","center");});
 
 if(mostrarRecompensa){
 texto(recompensaTexto,350,85,25,"#ffdc00");
@@ -3207,7 +3292,7 @@ gradRen.addColorStop(0.5,"#b77a22");
 gradRen.addColorStop(1,"#754313");
 retangulo(7,5,126,31,"#3b260c",7);
 retangulo(9,7,122,27,gradRen,5);
-texto("♻ RENASCIMENTO",70,25,12,"#fff","center");
+texto("RENASCIMENTO",70,25,12,"#fff","center");
 
 retangulo(450,5,42,30,"#343b55",6);
 desenharEngrenagem(471,20);
@@ -3231,7 +3316,7 @@ gradAdmin.addColorStop(0.48,"#914bd0");
 gradAdmin.addColorStop(1,"#54268d");
 retangulo(16,125,128,35,"#30144e",8);
 retangulo(18,127,124,31,gradAdmin,6);
-texto("⚙ ADMIN",80,148,15,"#fff","center");
+texto("ADMIN",80,148,15,"#fff","center");
 }
 
 // BOTÃO SHOP
@@ -3262,7 +3347,7 @@ if(autoClickerAtivo||autoClickerProAtivo){
 retangulo(350,5,90,25,"#183c2b",6);
 
 texto(
-autoClickerProAtivo?"⚡ PRO ON":"⚡ AUTO ON",
+autoClickerProAtivo?"PRO ON":"AUTO ON",
 395,22,11,"#7dffac","center"
 );
 }
@@ -3326,9 +3411,10 @@ if(!jogoPronto()||adminAberto)return;
 
 // Atalhos dos novos sistemas (área superior direita).
 if(!lojaAberta&&!melhoriasAbertas&&!configuracoesAbertas){
- if(p.y>=75&&p.y<=103&&p.x>=326&&p.x<=378){abrirNovoModal("mundos");return;}
- if(p.y>=75&&p.y<=103&&p.x>=382&&p.x<=434){abrirNovoModal("pets");return;}
- if(p.y>=75&&p.y<=103&&p.x>=438&&p.x<=490){abrirNovoModal("ranking");return;}
+ if(p.y>=75&&p.y<=103&&p.x>=306&&p.x<350){abrirNovoModal("mundos");return;}
+ if(p.y>=75&&p.y<=103&&p.x>=352&&p.x<396){abrirNovoModal("ovos");return;}
+ if(p.y>=75&&p.y<=103&&p.x>=398&&p.x<442){abrirNovoModal("inventario");return;}
+ if(p.y>=75&&p.y<=103&&p.x>=444&&p.x<=488){abrirNovoModal("ranking");return;}
 }
 
 // CONFIGURAÇÕES
@@ -3619,9 +3705,12 @@ somClique();
 
 // CONTROLES DOS NOVOS SISTEMAS
  document.querySelectorAll("[data-fechar-novo]").forEach(b=>b.addEventListener("click",fecharNovosModais));
- ["mundosModal","petsModal","rankingModal"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target.id===id)fecharNovosModais();}));
+ ["mundosModal","ovosPetsModal","inventarioPetsModal","rankingModal"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target.id===id)fecharNovosModais();}));
  document.getElementById("comprarOvoPet").addEventListener("click",abrirOvoPet);
  document.querySelectorAll("[data-pets-ordem]").forEach(b=>b.addEventListener("click",()=>{petsOrdenacao=b.dataset.petsOrdem;renderizarPets();}));
+ document.getElementById("equiparMelhoresPets").addEventListener("click",equiparMelhoresPets);
+ document.getElementById("desequiparPets").addEventListener("click",()=>{petsEquipados=[];salvar();renderizarPets();mostrarAviso("Todos os mascotes foram guardados.","ok");});
+ document.getElementById("venderPetsSelecionados").addEventListener("click",venderPetsSelecionados);
  document.getElementById("rankDinheiro").addEventListener("click",()=>{rankingTipo="dinheiro";document.getElementById("rankDinheiro").classList.add("ativa");document.getElementById("rankRenascimentos").classList.remove("ativa");carregarRanking();});
  document.getElementById("rankRenascimentos").addEventListener("click",()=>{rankingTipo="renascimentos";document.getElementById("rankRenascimentos").classList.add("ativa");document.getElementById("rankDinheiro").classList.remove("ativa");carregarRanking();});
  document.getElementById("atualizarRanking").addEventListener("click",carregarRanking);
