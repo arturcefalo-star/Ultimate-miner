@@ -1109,7 +1109,7 @@ function abrirNovoModal(tipo){
  if(tipo==="mundos"){atualizarMundosDesbloqueados();renderizarMundos();document.getElementById("mundosModal").style.display="flex";}
  if(tipo==="ovos"){renderizarChancesOvo();renderizarResumoPets();document.getElementById("ovosPetsModal").style.display="flex";}
  if(tipo==="inventario"){renderizarPets();document.getElementById("inventarioPetsModal").style.display="flex";}
- if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";iniciarContagemRanking();carregarRanking();}
+ if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";atualizarContagemRanking();carregarRanking();}
  somAbrirLoja();
 }
 function fecharNovosModais(){
@@ -1378,21 +1378,22 @@ async function carregarRanking(){
  finally{rankingCarregando=false;}
 }
 
-function iniciarContagemRanking(){
- rankingProximaAtualizacao=Date.now()+60000;
- atualizarContagemRanking();
-}
 function atualizarContagemRanking(){
  const texto=document.getElementById("rankingContagem");
  const modal=document.getElementById("rankingModal");
- if(!texto)return;
- let restante=Math.max(0,Math.ceil((rankingProximaAtualizacao-Date.now())/1000));
- texto.textContent=String(Math.floor(restante/60)).padStart(2,"0")+":"+String(restante%60).padStart(2,"0");
- if(restante===0&&modal&&modal.style.display==="flex"){
-  rankingProximaAtualizacao=Date.now()+60000;
-  carregarRanking();
+ // O prazo é global à página: abrir/fechar o ranking nunca reinicia os 60 segundos.
+ const agora=Date.now();
+ if(agora>=rankingProximaAtualizacao){
+  // Avança o relógio mesmo quando o painel está fechado.
+  // Se a aba ficou suspensa, calcula o próximo ciclo a partir do horário atual.
+  rankingProximaAtualizacao=agora+60000;
+  if(modal&&modal.style.display==="flex")carregarRanking();
  }
+ const restante=Math.max(0,Math.ceil((rankingProximaAtualizacao-Date.now())/1000));
+ if(texto)texto.textContent=String(Math.floor(restante/60)).padStart(2,"0")+":"+String(restante%60).padStart(2,"0");
 }
+// Ao voltar de uma aba/app em segundo plano, sincroniza o cronômetro com o relógio real.
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)atualizarContagemRanking();});
 
 
 function multiplicadorRenascimento(){
