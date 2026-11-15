@@ -135,6 +135,15 @@ border:2px solid #5689c9;box-shadow:0 0 28px #287bd455
 .adm-chip strong{display:block;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adm-chip strong.adm-presenca-online{display:inline-flex;align-items:center;margin-top:4px;padding:3px 8px;border-radius:5px;color:#baffd0;background:#145b36;border:1px solid #32c875;font-size:11px}
 .adm-chip strong.adm-presenca-offline{display:inline-flex;align-items:center;margin-top:4px;padding:3px 8px;border-radius:5px;color:#ffd0d0;background:#632626;border:1px solid #d84b4b;font-size:11px}
+.adm-mundos-botao{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:5px;padding:7px 9px;border:1px solid #6685ae;border-radius:8px;background:#172b45;color:#eaf3ff;font-weight:900;font-size:11px;cursor:pointer}
+.adm-mundos-modal{position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;padding:16px;background:#000b}
+.adm-mundos-caixa{width:min(420px,100%);max-height:80vh;overflow:auto;padding:16px;border:1px solid #55749a;border-radius:15px;background:#101a2a;box-shadow:0 16px 55px #000b}
+.adm-mundos-cabecalho{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.adm-mundos-cabecalho h3{margin:0;color:#fff;font-size:17px}
+.adm-mundos-fechar{border:0;border-radius:8px;padding:7px 11px;background:#263a54;color:#fff;font-weight:900}
+.adm-mundo-liberado{display:flex;align-items:center;gap:10px;padding:10px;margin:7px 0;border:1px solid #2e9e66;border-radius:9px;background:#123324;color:#eafff1}
+.adm-mundo-liberado strong{flex:1}
+.adm-mundo-liberado small{color:#a9f2c4;font-weight:800}
 .adm-chip:nth-child(3) strong,.adm-chip:nth-child(4) strong{font-size:18px;color:#ffe17b}
 
 #abaEu{display:none!important}
@@ -460,6 +469,8 @@ background:#10101c;color:#fff;font-size:16px;outline:none
  <div id="adminInventarioLista" class="pet-grade admin-inventario-grade"></div>
  <button id="adminExcluirPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d64a4a,#922323)" disabled>EXCLUIR SELECIONADOS (0)</button>
 </div></div>
+
+<div id="admMundosModal" class="adm-mundos-modal" role="dialog" aria-modal="true" aria-label="Mundos liberados"><div class="adm-mundos-caixa"><div class="adm-mundos-cabecalho"><h3>🌎 MUNDOS LIBERADOS</h3><button id="admMundosFechar" class="adm-mundos-fechar" type="button">FECHAR</button></div><div id="admMundosLista"></div></div></div>
 
 <div id="eventoGlobalBadge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">00:00</span></div>
 <div id="eventoSorteBadge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span id="eventoSorteTempo">SORTE</span></div>
@@ -1484,13 +1495,11 @@ function renderizarListaRanking(snap){
  const el=document.getElementById("listaRanking");
  const lista=[];
  snap.forEach(doc=>{
-  const d=doc.data()||{},g=d.dados||{},r=d.ranking||{};
-  // O progresso dentro de dados é a fonte primária. O resumo ranking é apenas fallback,
-  // pois pode ficar atrasado em relação ao saldo real salvo no jogo.
-  // Cada ranking lê e apresenta somente seu próprio campo; nunca mistura moedas e renascimentos.
-  const valorDinheiro=Number(g.moedas??d.moedas??r.moedas??0);
-  const valorRenascimentos=Number(g.renascimentos??d.renascimentos??r.renascimentos??0);
-  lista.push({nome:String(d.nome||d.displayName||g.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(valorDinheiro)?valorDinheiro:0,renascimentos:Number.isFinite(valorRenascimentos)?valorRenascimentos:0,uid:doc.id,online:jogadorEstaOnline(d)});
+  const d=doc.data()||{};
+  // A coleção pública contém somente os campos necessários ao ranking.
+  const valorDinheiro=Number(d.moedas)||0;
+  const valorRenascimentos=Number(d.renascimentos)||0;
+  lista.push({nome:String(d.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(valorDinheiro)?valorDinheiro:0,renascimentos:Number.isFinite(valorRenascimentos)?valorRenascimentos:0,uid:doc.id,online:d.online===true});
  });
  lista.sort((a,b)=>{
   const diferenca=rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos;
@@ -1534,13 +1543,13 @@ async function carregarRanking(forcar=false){
  const el=document.getElementById("listaRanking");
  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Carregando ranking...";}
  try{
-  const snap=await comTempoLimite(db.collection("jogadores").get(),20000,"atualizar ranking");
+  const snap=await comTempoLimite(db.collection("rankingGlobal").get(),20000,"atualizar ranking");
   rankingUltimoSnapshot=snap;
   rankingUltimaBusca=Date.now();
   renderizarListaRanking(snap);
  }catch(error){
   console.error("Falha ao atualizar ranking:",error);
-  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Não foi possível carregar o ranking. Verifique a conexão e as permissões de leitura.";}
+  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent=(error&&error.code==="permission-denied")?"O ranking global está bloqueado pelas regras de leitura do Firestore. Libere a leitura autenticada da coleção rankingGlobal.":"Não foi possível carregar o ranking. Verifique a conexão e tente novamente.";}
  }finally{rankingBuscaEmAndamento=false;}
 }
 
@@ -1929,6 +1938,13 @@ ovosAbertos:ovosAbertos
 };
 }
 
+async function publicarResumoRanking(uid,nome,dados,online=true){
+ if(!uid||!dados)return;
+ const resumo={nome:String(nome||"Jogador"),moedas:Math.max(0,Number(dados.moedas)||0),renascimentos:Math.max(0,Number(dados.renascimentos)||0),online:online===true,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
+ try{await db.collection("rankingGlobal").doc(uid).set(resumo,{merge:true});}
+ catch(error){console.warn("Não foi possível atualizar o ranking público:",error);}
+}
+
 function agendarSalvamentoNuvem(dados){
 if(!jogoPronto()||carregandoDados||!usuarioAtual)return;
 // Não reinicia o temporizador em cada mineração: isso impedia o envio
@@ -1941,12 +1957,14 @@ if(!usuarioAtual||usuarioAtual.uid!==id||!jogoPronto()||carregandoDados)return;
 // Lê o estado atual no momento do envio, não uma cópia antiga capturada antes.
 const copia=limparDadosParaFirestore(dadosDoJogo());
 try{
+const nomeRanking=usuarioAtual.displayName||usuarioAtual.email.split("@")[0];
 await db.collection("jogadores").doc(id).set({
-nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
+nome:nomeRanking,
 dados:copia,
 ranking:{moedas:Number(copia.moedas)||0,renascimentos:Number(copia.renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
+await publicarResumoRanking(id,nomeRanking,copia,true);
 }catch(error){console.error("Erro ao salvar no Firebase:",error);}
 },500);
 }
@@ -2117,6 +2135,7 @@ dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
 iniciarMonitoramentoEventoGlobal();
 iniciarPresenca(user.uid);
+await publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true);
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
@@ -2297,6 +2316,7 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 // Mantém a sessão autenticada no Firebase neste aparelho.
 // Assim, ao tocar novamente no nome salvo, a conta abre sem pedir a senha.
 dadosCarregados=false;
+try{await publicarResumoRanking(usuarioId,usuarioAtual.displayName||usuarioAtual.email.split("@")[0],dadosSeguros,false);}catch(e){}
 pararPresenca(usuarioAtual&&usuarioAtual.uid);
 usuarioAtual=null;
 codigoAdminSessao="";
@@ -2348,7 +2368,7 @@ nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados,
 ranking:{moedas:Number(moedas)||0,renascimentos:Number(renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
-},{merge:true}).catch(error=>console.error("Erro ao salvar:",error));
+},{merge:true}).then(()=>publicarResumoRanking(id,usuarioAtual&&usuarioAtual.uid===id?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"Jogador",dados,true)).catch(error=>console.error("Erro ao salvar:",error));
 }
 
 document.addEventListener("visibilitychange",()=>{
@@ -2481,14 +2501,32 @@ renderizarLogAdmin();
 mostrarAviso(texto,tipo);
 }
 
+function abrirResumoMundos(indices){
+ const modal=document.getElementById("admMundosModal"),lista=document.getElementById("admMundosLista");
+ if(!modal||!lista)return;
+ const validos=[...new Set([0,...(Array.isArray(indices)?indices:[])].map(Number))].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b);
+ lista.textContent="";
+ if(!validos.length){lista.textContent="Nenhum mundo liberado.";}
+ validos.forEach(i=>{const linha=document.createElement("div");linha.className="adm-mundo-liberado";const nome=document.createElement("strong");nome.textContent="Mundo "+(i+1)+" — "+mundosJogo[i].nome;const status=document.createElement("small");status.textContent="LIBERADO";linha.append(nome,status);lista.appendChild(linha);});
+ modal.style.display="flex";
+}
 function criarResumoAdmin(container,itens){
 if(!container)return;
 container.textContent="";
 for(const [rotulo,valor,classe] of itens){
 const chip=document.createElement("div");chip.className="adm-chip";
 const r=document.createElement("span");r.textContent=rotulo;
-const v=document.createElement("strong");v.textContent=valor;if(classe)v.className=classe;
-chip.appendChild(r);chip.appendChild(v);container.appendChild(chip);
+if(classe==="mundos"){
+ const b=document.createElement("button");b.type="button";b.className="adm-mundos-botao";
+ const quantidade=Array.isArray(valor)?valor.length:0;
+ b.textContent="Ver mundos liberados ("+quantidade+")  ⋯";
+ b.addEventListener("click",()=>abrirResumoMundos(valor));
+ chip.append(r,b);
+}else{
+ const v=document.createElement("strong");v.textContent=valor;if(classe)v.className=classe;
+ chip.append(r,v);
+}
+container.appendChild(chip);
 }
 }
 function estatisticasDadosAdmin(nome,dados,status){
@@ -2516,7 +2554,7 @@ return [
 ["Minérios liberados",mrs.length+"/"+minerios.length],
 ["Mundo atual","Mundo "+(Math.max(0,Math.min(mundosJogo.length-1,Number(d.mundoAtual)||0))+1)+" — "+(mundosJogo[Math.max(0,Math.min(mundosJogo.length-1,Number(d.mundoAtual)||0))]?.nome||"Superfície")],
 ["Mundos desbloqueados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).length:1)+"/"+mundosJogo.length],
-["Mundos liberados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b):[0]).map(i=>"Mundo "+(i+1)).join(", ")],
+["Mundos liberados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b):[0]),"mundos"],
 ["Auto clicker",d.autoClickerProComprado?"Pro":(d.autoClickerComprado?"Normal":"Nenhum")]
 ];
 }
@@ -3067,7 +3105,30 @@ else if(acao==="givePro")textoAviso="O admin "+nomeDoAdminAtual()+" liberou o Au
 else if(acao==="removePro")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o Auto Clicker Pro da sua conta.";
 else if(acao==="setMultiplier")textoAviso="O admin "+nomeDoAdminAtual()+" definiu sua melhoria de dinheiro no nível "+valor+".";
 else if(acao==="givePet")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o pet "+itemNome+".";
-await comTempoLimite(ref.set({dados,avisoAdmin:{id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
+const avisoRemoto={id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()};
+if(acao==="giveWorld"||acao==="removeWorld"){
+ await comTempoLimite(db.runTransaction(async tx=>{
+  const atualSnap=await tx.get(ref);
+  if(!atualSnap.exists)throw new Error("Essa conta não existe mais.");
+  const registroAtual=atualSnap.data()||{};
+  const dadosAtuais=Object.assign({},registroAtual.dados||{});
+  let listaAtual=Array.isArray(dadosAtuais.mundosDesbloqueados)?dadosAtuais.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
+  listaAtual=[...new Set([0,...listaAtual])];
+  if(acao==="giveWorld"){
+   if(!listaAtual.includes(valor))listaAtual.push(valor);
+  }else{
+   if(valor===0)throw new Error("O mundo inicial não pode ser removido.");
+   listaAtual=listaAtual.filter(i=>i!==valor);
+   if(Number(dadosAtuais.mundoAtual)===valor)dadosAtuais.mundoAtual=0;
+  }
+  dadosAtuais.mundosDesbloqueados=listaAtual.sort((a,b)=>a-b);
+  Object.assign(dados,dadosAtuais);
+  tx.set(ref,{dados:dadosAtuais,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+ }),20000,"salvar mundo do jogador");
+}else{
+ await comTempoLimite(ref.set({dados,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
+}
+await publicarResumoRanking(uid,nome,dados,jogadorEstaOnline(registro));
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
 aplicarDadosDoServidor(dados);
@@ -3083,6 +3144,9 @@ admResultado("Não foi possível alterar a conta: "+(error.message||"erro no Fir
 admExecutando=false;botao.disabled=false;botao.textContent=admAcao.value==="viewInventory"?"VER INVENTÁRIO":"Executar";
 }
 }
+
+document.getElementById("admMundosFechar").addEventListener("click",()=>{document.getElementById("admMundosModal").style.display="none";});
+document.getElementById("admMundosModal").addEventListener("click",e=>{if(e.target.id==="admMundosModal")e.currentTarget.style.display="none";});
 
 // EVENTOS GLOBAIS
 const admEventoMultiplicador=document.getElementById("admEventoMultiplicador");
