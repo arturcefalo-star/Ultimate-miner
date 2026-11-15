@@ -160,6 +160,16 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .adm-seletor-opcao:active,.adm-seletor-opcao.selecionada{background:#287f91;color:#fff}
 .adm-seletor-vazio{padding:10px;color:#aaa;font-size:13px}
 @media(max-width:420px){.adm-seletor-linha{grid-template-columns:minmax(0,1fr) 104px}.adm-seletor-botao{font-size:14px}.adm-seletor-lista{max-height:175px}}
+/* O mesmo seletor personalizado é reutilizado para jogadores, picaretas e minérios. */
+.adm-select-wrap{position:relative;width:100%;min-width:0;margin:5px 0}
+.adm-select-original{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;left:0;bottom:0;padding:0!important;margin:0!important}
+.adm-select-trigger{width:100%;min-height:43px;padding:10px 12px;border:1px solid #657acb;border-radius:9px;background:#10101c;color:#fff;font-size:14px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}
+.adm-select-trigger span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-select-list{position:absolute;z-index:35;top:calc(100% + 4px);left:0;right:0;max-height:190px;overflow-y:auto;overscroll-behavior:contain;background:#171722;border:1px solid #8a72bd;border-radius:9px;box-shadow:0 8px 22px #000b;padding:4px}
+.adm-select-option{display:block;width:100%;padding:9px 10px;border:0;border-radius:6px;background:transparent;color:#eee;text-align:left;font-size:14px;line-height:1.25;cursor:pointer}
+.adm-select-option:active,.adm-select-option.selecionada{background:#287f91;color:#fff}
+.adm-presenca-online{color:#8dffad}.adm-presenca-offline{color:#ffcc80}
+
 
 @media (max-width:420px){.adm-resumo,.adm-linha{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -292,6 +302,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
   </div>
   <button id="admAtualizarJogadores" type="button" class="adm-b roxo" style="max-width:112px">Atualizar lista</button>
 </div>
+<div id="admResumoJogador" class="adm-resumo" aria-live="polite"></div>
 <select id="admAcao" class="adm-in" aria-label="Ação"></select>
 
 <div id="admCampoValor">
@@ -355,6 +366,8 @@ let carregandoDados=false;
 let dadosCarregados=false;
 let saindoDaConta=false;
 let cancelarMonitoramentoJogador=null;
+let timerPresenca=null;
+let ultimaPresencaUid="";
 
 const loginModal=document.getElementById("loginModal");
 const nomeLogin=document.getElementById("nomeLogin");
@@ -1249,6 +1262,33 @@ let entradaEmAndamento=null;
 let uidEntradaEmAndamento=null;
 let operacaoManualDeConta=false;
 
+// Presença online/offline compartilhada pelo Firestore.
+async function atualizarPresenca(online,uidForcado){
+const uid=uidForcado||(usuarioAtual&&usuarioAtual.uid);
+if(!uid)return;
+try{
+await db.collection("jogadores").doc(uid).set({presenca:{online:!!online,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()}},{merge:true});
+}catch(error){console.warn("Não foi possível atualizar a presença:",error);}
+}
+function iniciarPresenca(uid){
+if(timerPresenca)clearInterval(timerPresenca);
+ultimaPresencaUid=uid;
+atualizarPresenca(true,uid);
+timerPresenca=setInterval(()=>{
+if(usuarioAtual&&usuarioAtual.uid===uid&&document.visibilityState!=="hidden")atualizarPresenca(true,uid);
+},20000);
+}
+function pararPresenca(uid){
+if(timerPresenca){clearInterval(timerPresenca);timerPresenca=null;}
+if(uid)atualizarPresenca(false,uid);
+}
+window.addEventListener("pagehide",()=>{if(ultimaPresencaUid)atualizarPresenca(false,ultimaPresencaUid);});
+document.addEventListener("visibilitychange",()=>{
+if(!usuarioAtual)return;
+if(document.visibilityState==="hidden")atualizarPresenca(false,usuarioAtual.uid);
+else atualizarPresenca(true,usuarioAtual.uid);
+});
+
 function entrarNoJogo(user,nome){
 mensagemDeLogin("Conta reconhecida. Carregando seu progresso...",false);
 if(entradaEmAndamento&&uidEntradaEmAndamento===user.uid)return entradaEmAndamento;
@@ -1282,6 +1322,7 @@ codigoAdminSessao="";
 dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
 iniciarMonitoramentoEventoGlobal();
+iniciarPresenca(user.uid);
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
@@ -1449,6 +1490,7 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 // Mantém a sessão autenticada no Firebase neste aparelho.
 // Assim, ao tocar novamente no nome salvo, a conta abre sem pedir a senha.
 dadosCarregados=false;
+pararPresenca(usuarioAtual&&usuarioAtual.uid);
 usuarioAtual=null;
 codigoAdminSessao="";
 adminDesbloqueado=false;
@@ -1541,6 +1583,7 @@ salvar();
 const adminModal=document.getElementById("adminModal");
 const adminBox=document.getElementById("adminBox");
 const admResumo=document.getElementById("adminResumo");
+const admResumoJogador=document.getElementById("admResumoJogador");
 const admValor=document.getElementById("admValor");
 const admPicareta=document.getElementById("admPicareta");
 const admMinerio=document.getElementById("admMinerio");
@@ -1563,6 +1606,8 @@ const admLogEl=document.getElementById("admLog");
 const admHistorico=[];
 let ultimaAtualizacaoAdmin=0;
 let admExecutando=false;
+let timerListaJogadoresAdmin=null;
+let admCarregandoJogadores=false;
 
 // Ações disponíveis para administrar outras contas pelo Firestore
 const ACOES_REMOTAS={
@@ -1612,31 +1657,52 @@ renderizarLogAdmin();
 mostrarAviso(texto,tipo);
 }
 
-function atualizarAdmin(){
-ultimaAtualizacaoAdmin=Date.now();
-if(!adminAberto)return;
-const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
-const itens=[
-["Jogador",nome],
-["Dinheiro","$ "+formatarDinheiro(moedas)],
-["Bônus de renascimento",multiplicadorRenascimento().toFixed(1)+"x"],
-["Melhoria de dinheiro",multiplicadorMelhoria().toFixed(1)+"x"],
-["Multiplicador final",multiplicadorDinheiro().toFixed(1)+"x"],
-["Picaretas",picaretasCompradas.length+"/"+picaretas.length],
-["Minérios",mineriosComprados.length+"/"+minerios.length],
-["Auto clicker",autoClickerProComprado?"Pro":(autoClickerComprado?"Normal":"Nenhum")]
+function criarResumoAdmin(container,itens){
+if(!container)return;
+container.textContent="";
+for(const [rotulo,valor,classe] of itens){
+const chip=document.createElement("div");chip.className="adm-chip";
+const r=document.createElement("span");r.textContent=rotulo;
+const v=document.createElement("strong");v.textContent=valor;if(classe)v.className=classe;
+chip.appendChild(r);chip.appendChild(v);container.appendChild(chip);
+}
+}
+function estatisticasDadosAdmin(nome,dados,status){
+const d=dados||{};
+const pcs=Array.isArray(d.picaretasCompradas)?d.picaretasCompradas:[];
+const mrs=Array.isArray(d.mineriosComprados)?d.mineriosComprados:[];
+const pi=Math.max(0,Math.min(picaretas.length-1,Number(d.picaretaAtual)||0));
+const mi=Math.max(0,Math.min(minerios.length-1,Number(d.minerioAtual)||0));
+const ren=Math.max(0,Number(d.renascimentos)||0);
+const nivel=Math.max(0,Number(d.multiplicadorCompras)||0);
+const bonus=1+ren;
+const melhoria=1+nivel;
+return [
+["Jogador",nome||"Jogador"],
+["Status",status||"OFFLINE",status==="ONLINE"?"adm-presenca-online":"adm-presenca-offline"],
+["Dinheiro","$ "+formatarDinheiro(Math.max(0,Number(d.moedas)||0))],
+["Renascimentos",String(ren)],
+["Bônus de renascimento",bonus.toFixed(1)+"x"],
+["Nível da melhoria",String(nivel)],
+["Melhoria de dinheiro",melhoria.toFixed(1)+"x"],
+["Multiplicador final",(bonus*melhoria).toFixed(1)+"x"],
+["Picareta atual",picaretas[pi][0]],
+["Picaretas liberadas",pcs.length+"/"+picaretas.length],
+["Minério atual",minerios[mi][0]],
+["Minérios liberados",mrs.length+"/"+minerios.length],
+["Auto clicker",d.autoClickerProComprado?"Pro":(d.autoClickerComprado?"Normal":"Nenhum")]
 ];
-admResumo.textContent="";
-for(const [rotulo,valor] of itens){
-const chip=document.createElement("div");
-chip.className="adm-chip";
-const r=document.createElement("span");
-r.textContent=rotulo;
-const v=document.createElement("strong");
-v.textContent=valor;
-chip.appendChild(r);
-chip.appendChild(v);
-admResumo.appendChild(chip);
+}
+function atualizarAdmin(){
+ultimaAtualizacaoAdmin=Date.now();if(!adminAberto)return;
+const nome=usuarioAtual?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
+const itens=estatisticasDadosAdmin(nome,dadosDoJogo(),"ONLINE");
+criarResumoAdmin(admResumo,itens);
+const abaOutroVisivel=!document.getElementById("abaOutro").hidden;
+if(abaOutroVisivel){
+const jogador=jogadoresAdmin.find(j=>j.uid===admJogador.value);
+if(jogador)criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(jogador.nome,jogador.dados,jogador.online?"ONLINE":"OFFLINE"));
+else criarResumoAdmin(admResumoJogador,[]);
 }
 }
 
@@ -1646,11 +1712,14 @@ adminAberto=true;
 adminModal.style.display="flex";
 atualizarAdmin();
 carregarJogadoresAdmin();
+if(timerListaJogadoresAdmin)clearInterval(timerListaJogadoresAdmin);
+timerListaJogadoresAdmin=setInterval(()=>{if(adminAberto&&!admCarregandoJogadores)carregarJogadoresAdmin(true);},20000);
 somAbrirLoja();
 }
 
 function fecharAdmin(){
 adminAberto=false;
+if(timerListaJogadoresAdmin){clearInterval(timerListaJogadoresAdmin);timerListaJogadoresAdmin=null;}
 adminModal.style.display="none";
 }
 
@@ -1659,6 +1728,7 @@ document.getElementById("abaEu").hidden=aba!=="eu";
 document.getElementById("abaOutro").hidden=aba!=="outro";
 document.getElementById("abaEvento").hidden=aba!=="evento";
 if(aba==="evento")atualizarStatusEventoAdmin();
+if(aba==="outro")atualizarAdmin();
 for(const botao of adminBox.querySelectorAll(".adm-abas button"))botao.classList.toggle("ativa",botao.dataset.aba===aba);
 }
 
@@ -1809,7 +1879,8 @@ admJogadorAbrir.setAttribute("aria-expanded","false");
 }
 function atualizarSeletorVisualJogadores(){
 const atual=jogadoresAdmin.find(j=>j.uid===admJogador.value);
-admJogadorSelecionado.textContent=atual?atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":""):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
+admJogadorSelecionado.textContent=atual?atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" • "+(atual.online?"ONLINE":"OFFLINE"):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
+if(atual)criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(atual.nome,atual.dados,atual.online?"ONLINE":"OFFLINE"));
 admJogadorLista.textContent="";
 if(!jogadoresAdmin.length){
 const vazio=document.createElement("div");vazio.className="adm-seletor-vazio";vazio.textContent="Nenhum jogador encontrado";admJogadorLista.appendChild(vazio);return;
@@ -1819,7 +1890,7 @@ const opcao=document.createElement("button");
 opcao.type="button";opcao.className="adm-seletor-opcao"+(jogador.uid===admJogador.value?" selecionada":"");
 opcao.setAttribute("role","option");opcao.setAttribute("aria-selected",jogador.uid===admJogador.value?"true":"false");
 opcao.dataset.uid=jogador.uid;
-opcao.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"");
+opcao.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"ONLINE":"OFFLINE");
 admJogadorLista.appendChild(opcao);
 }
 }
@@ -1842,8 +1913,10 @@ if(!evento.target.closest(".adm-seletor-wrap"))fecharListaJogadoresAdmin();
 });
 admJogador.addEventListener("change",atualizarSeletorVisualJogadores);
 
-async function carregarJogadoresAdmin(){
+async function carregarJogadoresAdmin(silencioso){
+if(admCarregandoJogadores)return;
 if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+admCarregandoJogadores=true;
 const select=admJogador;
 const valorAnterior=select.value;
 select.disabled=true;
@@ -1856,11 +1929,13 @@ carregando.value="";carregando.textContent="Carregando jogadores...";
 select.appendChild(carregando);
 try{
 const snapshot=await comTempoLimite(db.collection("jogadores").get(),20000,"listar jogadores");
-jogadoresAdmin=snapshot.docs.map(doc=>({
-uid:doc.id,
-nome:String((doc.data()&&doc.data().nome)||"Jogador"),
- dados:(doc.data()&&doc.data().dados)||{}
-})).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
+jogadoresAdmin=snapshot.docs.map(doc=>{
+const registro=doc.data()||{};const pres=registro.presenca||{};
+let atualizado=0;
+try{atualizado=pres.atualizadoEm&&pres.atualizadoEm.toMillis?pres.atualizadoEm.toMillis():0;}catch(e){}
+const online=pres.online===true&&atualizado>0&&(Date.now()-atualizado)<65000;
+return {uid:doc.id,nome:String(registro.nome||"Jogador"),dados:registro.dados||{},online};
+}).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
 select.textContent="";
 for(const jogador of jogadoresAdmin){
 const op=document.createElement("option");
@@ -1872,14 +1947,14 @@ if(!jogadoresAdmin.length){const op=document.createElement("option");op.value=""
 if(jogadoresAdmin.some(j=>j.uid===valorAnterior))select.value=valorAnterior;
 else if(jogadoresAdmin.length)select.selectedIndex=0;
 atualizarSeletorVisualJogadores();
-admResultado("Lista carregada: "+jogadoresAdmin.length+" conta(s).","ok");
+if(!silencioso)admResultado("Lista carregada: "+jogadoresAdmin.length+" conta(s).","ok");
 }catch(error){
 console.error("Erro ao listar jogadores:",error);
 select.textContent="";
 const op=document.createElement("option");op.value="";op.textContent="Erro ao carregar jogadores";select.appendChild(op);
 atualizarSeletorVisualJogadores();
-admResultado("Não foi possível listar jogadores. Confira as regras do Firestore: "+(error.message||"erro"),"erro");
-}finally{select.disabled=false;admJogadorAbrir.disabled=false;}
+if(!silencioso)admResultado("Não foi possível listar jogadores. Confira as regras do Firestore: "+(error.message||"erro"),"erro");
+}finally{select.disabled=false;admJogadorAbrir.disabled=false;admCarregandoJogadores=false;}
 }
 
 function atualizarCamposRemotos(){
@@ -2011,6 +2086,8 @@ aplicarDadosDoServidor(dados);
 atualizarAdmin();
 }
 jogador.dados=dados;
+atualizarSeletorVisualJogadores();
+atualizarAdmin();
 }catch(error){
 console.error("Erro ao gerenciar jogador:",error);
 admResultado("Não foi possível alterar a conta: "+(error.message||"erro no Firestore"),"erro");
@@ -2056,10 +2133,41 @@ document.getElementById("admEventoAtivar").addEventListener("click",ativarEvento
 document.getElementById("admEventoEncerrar").addEventListener("click",encerrarEventoGlobal);
 document.getElementById("admEventoPresets").addEventListener("click",e=>{const b=e.target.closest("button[data-evento-mult]");if(b)admEventoMultiplicador.value=b.dataset.eventoMult;});
 
+// Transforma selects do painel em menus suspensos internos, sem abrir a interface nativa do celular.
+function instalarSeletorPersonalizado(select,opcoes){
+if(!select||select.dataset.customizado==="1")return;
+select.dataset.customizado="1";
+const wrap=document.createElement("div");wrap.className="adm-select-wrap";
+select.parentNode.insertBefore(wrap,select);wrap.appendChild(select);select.classList.add("adm-select-original");
+const botao=document.createElement("button");botao.type="button";botao.className="adm-select-trigger";botao.setAttribute("aria-haspopup","listbox");botao.setAttribute("aria-expanded","false");
+botao.innerHTML='<span></span><span class="adm-seta">▾</span>';
+const label=botao.querySelector("span");const lista=document.createElement("div");lista.className="adm-select-list";lista.setAttribute("role","listbox");lista.hidden=true;
+wrap.appendChild(botao);wrap.appendChild(lista);
+function fechar(){lista.hidden=true;botao.setAttribute("aria-expanded","false");}
+function render(){
+label.textContent=select.selectedOptions&&select.selectedOptions[0]?select.selectedOptions[0].textContent:(select.options.length?select.options[0].textContent:"Selecione");
+lista.textContent="";
+Array.from(select.options).forEach(opt=>{
+const item=document.createElement("button");item.type="button";item.className="adm-select-option"+(opt.value===select.value?" selecionada":"");item.setAttribute("role","option");item.setAttribute("aria-selected",opt.value===select.value?"true":"false");item.textContent=opt.textContent;item.disabled=opt.disabled;item.addEventListener("click",()=>{select.value=opt.value;select.dispatchEvent(new Event("change",{bubbles:true}));render();fechar();});lista.appendChild(item);
+});
+}
+botao.addEventListener("click",()=>{if(select.disabled||botao.disabled)return;const abrir=lista.hidden;lista.hidden=!abrir;botao.setAttribute("aria-expanded",abrir?"true":"false");if(abrir){const atual=lista.querySelector(".selecionada");if(atual)atual.scrollIntoView({block:"nearest"});}});
+select.addEventListener("change",render);
+new MutationObserver(render).observe(select,{childList:true,subtree:true,attributes:true});
+select._renderSeletor=render;select._fecharSeletor=fechar;
+if(opcoes&&opcoes.recarregar)select.addEventListener("adm:refresh",render);
+render();
+return {render,fechar,wrap,botao,lista};
+}
+document.addEventListener("click",e=>{document.querySelectorAll(".adm-select-wrap").forEach(w=>{if(!w.contains(e.target)){const l=w.querySelector(".adm-select-list"),b=w.querySelector(".adm-select-trigger");if(l)l.hidden=true;if(b)b.setAttribute("aria-expanded","false");}});});
+
 // INICIALIZAÇÃO E EVENTOS
 
 preencherLista(admPicareta,picaretas,1);
 preencherLista(admMinerio,minerios,1);
+instalarSeletorPersonalizado(admPicareta);
+instalarSeletorPersonalizado(admMinerio);
+instalarSeletorPersonalizado(admRemotoItem);
 for(const [chave,def] of Object.entries(ACOES_REMOTAS)){
 const opcao=document.createElement("option");
 opcao.value=chave;
