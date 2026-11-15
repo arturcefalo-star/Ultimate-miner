@@ -366,7 +366,6 @@ background:#10101c;color:#fff;font-size:16px;outline:none
  <p class="novo-desc">Os 10 melhores jogadores do Ultimate Miner.</p>
  <div class="novo-tabs"><button id="rankDinheiro" class="ativa">DINHEIRO</button><button id="rankRenascimentos">RENASCIMENTOS</button></div>
  <div id="listaRanking" class="novo-vazio">Carregando ranking...</div>
- <button id="atualizarRanking" class="novo-acao">↻ Atualizar ranking</button>
 </div></div>
 
 <div id="eventoGlobalBadge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">00:00</span></div>
@@ -1066,6 +1065,7 @@ let petsConseguidosSessao=[];
 let painelAFKAberto=false;
 let ovosAbertos=0;
 let rankingTipo="dinheiro";
+let rankingCarregando=false;
 const catalogoPets=[
  {nome:"Slime",sigla:"SL",raridade:"Comum",peso:45,mult:1.10,cor:"#d1d5db"},
  {nome:"Coelhinho",sigla:"CO",raridade:"Incomum",peso:25,mult:1.15,cor:"#45d36b"},
@@ -1337,12 +1337,23 @@ function venderPetsSelecionados(){
 }
 
 async function carregarRanking(){
- const el=document.getElementById("listaRanking");el.className="novo-vazio";el.textContent="Carregando ranking...";
+ if(rankingCarregando)return;
+ const modal=document.getElementById("rankingModal");
+ if(!modal||modal.style.display!=="flex")return;
+ rankingCarregando=true;
+ const el=document.getElementById("listaRanking");
+ el.className="novo-vazio";el.textContent="Atualizando ranking...";
  try{
   let snap;
-  try{snap=await db.collection("jogadores").orderBy("dados."+(rankingTipo==="dinheiro"?"moedas":"renascimentos"),"desc").limit(10).get();}
+  const campo=rankingTipo==="dinheiro"?"moedas":"renascimentos";
+  try{snap=await db.collection("jogadores").orderBy("ranking."+campo,"desc").limit(10).get();}
   catch(e){snap=await db.collection("jogadores").limit(100).get();}
-  const lista=[];snap.forEach(doc=>{const d=doc.data()||{},g=d.dados||{};lista.push({nome:String(d.nome||"Jogador"),moedas:Number(g.moedas)||0,renascimentos:Number(g.renascimentos)||0,uid:doc.id});});
+  const lista=[];
+  snap.forEach(doc=>{
+   const d=doc.data()||{},g=d.dados||{},r=d.ranking||{};
+   // O ranking é somente leitura: usa o retrato salvo do progresso e nunca altera o saldo do jogador.
+   lista.push({nome:String(d.nome||"Jogador"),moedas:Number(r.moedas??g.moedas)||0,renascimentos:Number(r.renascimentos??g.renascimentos)||0,uid:doc.id});
+  });
   lista.sort((a,b)=>rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos);
   el.innerHTML="";el.className="";
   if(!lista.length){el.className="novo-vazio";el.textContent="Ainda não há jogadores no ranking.";return;}
@@ -1354,7 +1365,8 @@ async function carregarRanking(){
    const desc=document.createElement("small");desc.textContent=rankingTipo==="dinheiro"?"$ "+formatarDinheiro(j.moedas)+" • "+j.renascimentos+" renascimentos":j.renascimentos+" renascimentos • $ "+formatarDinheiro(j.moedas);
    info.append(nome,desc);card.append(n,info);el.appendChild(card);
   });
- }catch(e){console.error("Falha no ranking:",e);el.className="novo-vazio";el.textContent="Não foi possível carregar o ranking. Verifique as permissões de leitura da coleção jogadores no Firestore.";}
+ }catch(e){console.error("Falha no ranking:",e);el.className="novo-vazio";el.textContent="Não foi possível carregar o ranking. Verifique a conexão e as permissões de leitura.";}
+ finally{rankingCarregando=false;}
 }
 
 
@@ -3961,7 +3973,7 @@ somClique();
  document.getElementById("venderPetsSelecionados").addEventListener("click",venderPetsSelecionados);
  document.getElementById("rankDinheiro").addEventListener("click",()=>{rankingTipo="dinheiro";document.getElementById("rankDinheiro").classList.add("ativa");document.getElementById("rankRenascimentos").classList.remove("ativa");carregarRanking();});
  document.getElementById("rankRenascimentos").addEventListener("click",()=>{rankingTipo="renascimentos";document.getElementById("rankRenascimentos").classList.add("ativa");document.getElementById("rankDinheiro").classList.remove("ativa");carregarRanking();});
- document.getElementById("atualizarRanking").addEventListener("click",carregarRanking);
+ setInterval(()=>{const modal=document.getElementById("rankingModal");if(modal&&modal.style.display==="flex")carregarRanking();},60000);
 
 // INICIAR JOGO
 
