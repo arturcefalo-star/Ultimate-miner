@@ -1390,10 +1390,10 @@ function renderizarListaRanking(snap){
   const d=doc.data()||{},g=d.dados||{},r=d.ranking||{};
   // O progresso dentro de dados é a fonte primária. O resumo ranking é apenas fallback,
   // pois pode ficar atrasado em relação ao saldo real salvo no jogo.
-  const saldo=g.moedas??d.moedas??r.moedas??0;
-  const renas=g.renascimentos??d.renascimentos??r.renascimentos??0;
-  const moedas=Number(saldo),renascimentos=Number(renas);
-  lista.push({nome:String(d.nome||d.displayName||g.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(moedas)?moedas:0,renascimentos:Number.isFinite(renascimentos)?renascimentos:0,uid:doc.id,online:jogadorEstaOnline(d)});
+  // Cada ranking lê e apresenta somente seu próprio campo; nunca mistura moedas e renascimentos.
+  const valorDinheiro=Number(g.moedas??d.moedas??r.moedas??0);
+  const valorRenascimentos=Number(g.renascimentos??d.renascimentos??r.renascimentos??0);
+  lista.push({nome:String(d.nome||d.displayName||g.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(valorDinheiro)?valorDinheiro:0,renascimentos:Number.isFinite(valorRenascimentos)?valorRenascimentos:0,uid:doc.id,online:jogadorEstaOnline(d)});
  });
  lista.sort((a,b)=>{
   const diferenca=rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos;
@@ -1407,7 +1407,9 @@ function renderizarListaRanking(snap){
   const n=document.createElement("div");n.className="novo-rank-num";n.textContent=(i+1)+"º";
   const info=document.createElement("div");info.className="novo-info";
   const nome=document.createElement("strong");nome.textContent=j.nome+(usuarioAtual&&j.uid===usuarioAtual.uid?" (Você)":"");nome.appendChild(criarEtiquetaPresenca(j.online));
-  const desc=document.createElement("small");desc.textContent=rankingTipo==="dinheiro"?"$ "+formatarDinheiro(j.moedas)+" • "+j.renascimentos+" renascimentos":j.renascimentos+" renascimentos • $ "+formatarDinheiro(j.moedas);
+  const desc=document.createElement("small");
+  if(rankingTipo==="dinheiro")desc.textContent="$ "+formatarDinheiro(j.moedas);
+  else desc.textContent=String(j.renascimentos)+" renascimentos";
   info.append(nome,desc);card.append(n,info);el.appendChild(card);
  });
 }
@@ -2585,8 +2587,14 @@ admJogadorAbrir.setAttribute("aria-expanded","false");
 }
 function atualizarSeletorVisualJogadores(){
 const atual=jogadoresAdmin.find(j=>j.uid===admJogador.value);
-admJogadorSelecionado.textContent=atual?atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" • "+(atual.online?"ON":"OFF"):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
-if(atual)criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(atual.nome,atual.dados,atual.online?"ONLINE":"OFFLINE"));
+admJogadorSelecionado.textContent="";
+if(atual){
+ admJogadorSelecionado.appendChild(document.createTextNode(atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" "));
+ admJogadorSelecionado.appendChild(criarEtiquetaPresenca(atual.online));
+ criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(atual.nome,atual.dados,atual.online?"ONLINE":"OFFLINE"));
+}else{
+ admJogadorSelecionado.textContent=admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado";
+}
 admJogadorLista.textContent="";
 if(!jogadoresAdmin.length){
 const vazio=document.createElement("div");vazio.className="adm-seletor-vazio";vazio.textContent="Nenhum jogador encontrado";admJogadorLista.appendChild(vazio);return;
@@ -2596,7 +2604,8 @@ const opcao=document.createElement("button");
 opcao.type="button";opcao.className="adm-seletor-opcao"+(jogador.uid===admJogador.value?" selecionada":"");
 opcao.setAttribute("role","option");opcao.setAttribute("aria-selected",jogador.uid===admJogador.value?"true":"false");
 opcao.dataset.uid=jogador.uid;
-opcao.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"ON":"OFF");
+opcao.appendChild(document.createTextNode(jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" "));
+opcao.appendChild(criarEtiquetaPresenca(jogador.online));
 admJogadorLista.appendChild(opcao);
 }
 }
@@ -2644,7 +2653,7 @@ select.textContent="";
 for(const jogador of jogadoresAdmin){
 const op=document.createElement("option");
 op.value=jogador.uid;
-op.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"");
+op.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"ON":"OFF");
 select.appendChild(op);
 }
 if(!jogadoresAdmin.length){const op=document.createElement("option");op.value="";op.textContent="Nenhum jogador encontrado";select.appendChild(op);}
