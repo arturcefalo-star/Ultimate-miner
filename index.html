@@ -229,9 +229,15 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 #listaAFKOvos{white-space:pre-line;color:#e5edf8;font-size:12px}
 .pet-slot.dourado{border-color:#f4cf55!important;box-shadow:0 0 12px #f4cf5544}
 .pet-slot.dourado .pet-iniciais{border-color:#f4cf55!important;color:#ffe27a!important;background:#4b3b12!important}
+.pet-slot.diamante{border-color:#55dfff!important;box-shadow:0 0 12px #55dfff55}
+.pet-slot.diamante .pet-iniciais{border-color:#55dfff!important;color:#aaf2ff!important;background:#123d50!important}
+.pet-slot.rainbow{border-color:#ff75e8!important;box-shadow:0 0 12px #ff75e855}
+.pet-slot.rainbow .pet-iniciais{border-color:#ff75e8!important;color:#fff!important;background:linear-gradient(135deg,#e64b4b,#e8b83d,#42c96b,#438bff,#a75cff)!important}
 .pet-slot.dourado.equipado{border-color:#35e879!important;box-shadow:0 0 0 1px #35e87966,0 0 13px #35e87955}
 .pet-dourado-tag{display:inline-block;margin-top:3px;padding:2px 6px;border:1px solid #f4cf55;border-radius:10px;color:#ffe27a;font-size:9px;font-weight:900}
 #fazerPetDourado{margin-top:7px;background:linear-gradient(180deg,#e4bd42,#99721b);color:#211900;border:1px solid #ffe58a;font-weight:900}
+#fazerPetDiamante{margin-top:7px;background:linear-gradient(180deg,#55dfff,#147da0);color:#05212a;border:1px solid #aaf2ff;font-weight:900}
+#fazerPetRainbow{margin-top:7px;background:linear-gradient(110deg,#e64b4b,#e8b83d,#42c96b,#438bff,#a75cff);color:#fff;border:1px solid #fff;font-weight:900}
 @media(max-width:420px){.ovos-acoes{grid-template-columns:1fr}.ovos-acoes button{min-height:36px}}
 .pet-chance-card{padding:9px;border:1px solid #526985;border-radius:9px;background:#111b2b;min-width:0}
 .pet-chance-card strong{display:block;font-size:12px}
@@ -349,7 +355,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
  <div class="inventario-layout">
   <aside class="pet-status" id="petStatusPainel"><h3>STATUS DO PET</h3><p>Selecione um mascote para ver os detalhes.</p></aside>
   <section class="pet-grade-area">
-   <div class="pet-ferramentas"><button id="equiparMelhoresPets" class="novo-acao" type="button">EQUIPAR MELHORES</button><button id="desequiparPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#e34b4b,#9d2020)">DESEQUIPAR TODOS</button><button id="abrirVendaPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS</button></div>
+   <div class="pet-ferramentas"><button id="equiparMelhoresPets" class="novo-acao" type="button">EQUIPAR MELHORES</button><button id="desequiparPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#e34b4b,#9d2020)">DESEQUIPAR TODOS</button><button id="abrirVendaPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS</button><button id="fundirTodosDourados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#e4bd42,#99721b);color:#211900;border:1px solid #ffe58a">FUNDIR TODOS EM DOURADOS</button></div>
    <div class="pets-ordenacao" aria-label="Ordenar inventario"><button type="button" data-pets-ordem="melhores" class="ativa">MELHORES</button><button type="button" data-pets-ordem="nome">NOME A-Z</button><button type="button" data-pets-ordem="raridade">RARIDADE</button></div>
    <div id="listaPets" class="pet-grade"></div>
   </section>
@@ -1148,10 +1154,9 @@ function abrirOvosQuantidade(quantidade=1,automatico=false){
  sorteios.forEach((base)=>{
   const pet={id:"pet_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:base.mult,cor:base.cor,borda:base.borda||"",dourado:false};
   ovosAbertos++;
-  petsConseguidosSessao.push({nome:pet.nome,raridade:pet.raridade,dourado:!!pet.dourado});
   if(petsVendaAutomatica.includes(base.nome)){
    const valor=VALOR_VENDA_PET[pet.raridade]||0;moedas+=valor;vendidos.push({pet,valor});
-  }else{petsInventario.push(pet);encontrados.push(pet);}
+  }else{petsInventario.push(pet);encontrados.push(pet);petsConseguidosSessao.push({nome:pet.nome,raridade:pet.raridade,dourado:false,diamante:false,rainbow:false});}
  });
  atualizarPainelAFK();
  salvar();renderizarChancesOvo();renderizarResumoPets();
@@ -1172,7 +1177,7 @@ function atualizarPainelAFK(){
  botao.hidden=!(autoOvoComprado&&autoOvoAtivo);
  painel.hidden=!painelAFKAberto||botao.hidden;
  if(!petsConseguidosSessao.length)lista.textContent="Nenhum pet conseguido ainda.";
- else lista.textContent=petsConseguidosSessao.map((p,i)=>(i+1)+". "+p.nome+(p.dourado?" DOURADO":"")+" — "+p.raridade).join("\n");
+ else lista.textContent=petsConseguidosSessao.map((p,i)=>(i+1)+". "+p.nome+(p.rainbow?" RAINBOW":p.diamante?" DIAMANTE":p.dourado?" DOURADO":"")+" — "+p.raridade).join("\n");
 }
 function atualizarControlesOvo(){
  const triplo=document.getElementById("abrirTresOvosPet");
@@ -1219,23 +1224,49 @@ function renderizarChancesOvo(){
 }
 function petCor(p){return p.raridade==="Secreto"?"#ffffff":(CORES_RARIDADE_PETS[p.raridade]||"#d1d5db");}
 function selecionarPetInventario(id){petSelecionadoId=id;renderizarPets();}
-function contarPetsParaDourado(p){return petsInventario.filter(x=>x.nome===p.nome&&!x.dourado).length;}
-function criarPetDourado(id){
+function nivelEvolucaoPet(p){return p&&p.rainbow?3:p&&p.diamante?2:p&&p.dourado?1:0;}
+function nomeNivelPet(n){return n===3?"RAINBOW":n===2?"DIAMANTE":n===1?"DOURADO":"NORMAL";}
+function multiplicadorNivelPet(base,nivel){return Number(base.mult||1)*Math.pow(2,nivel);}
+function contarPetsMesmoNivel(p,nivel){return petsInventario.filter(x=>x.nome===p.nome&&nivelEvolucaoPet(x)===nivel).length;}
+function contarPetsParaDourado(p){return contarPetsMesmoNivel(p,0);}
+function criarPetEvoluido(id,nivelDestino){
  const selecionado=petsInventario.find(x=>x.id===id);
- if(!selecionado){mostrarAviso("Selecione um pet primeiro.","erro");return;}
- if(selecionado.dourado){mostrarAviso("Esse pet já é dourado.","info");return;}
- const iguais=petsInventario.filter(x=>x.nome===selecionado.nome&&!x.dourado).slice(0,3);
- if(iguais.length<3){mostrarAviso("Você precisa de 3 pets "+selecionado.nome+" iguais para criar a versão dourada.","erro");return;}
+ if(!selecionado){mostrarAviso("Selecione um pet primeiro.","erro");return false;}
+ const nivelAtual=nivelEvolucaoPet(selecionado);
+ if(nivelDestino!==nivelAtual+1||nivelDestino>3){mostrarAviso("Não é possível evoluir esse pet.","erro");return false;}
+ const iguais=petsInventario.filter(x=>x.nome===selecionado.nome&&nivelEvolucaoPet(x)===nivelAtual).slice(0,3);
+ if(iguais.length<3){mostrarAviso("Você precisa de 3 pets "+selecionado.nome+" "+nomeNivelPet(nivelAtual).toLowerCase()+" iguais.","erro");return false;}
  const ids=new Set(iguais.map(x=>x.id));
  const eraEquipado=iguais.some(x=>petsEquipados.includes(x.id));
  petsInventario=petsInventario.filter(x=>!ids.has(x.id));
  petsEquipados=petsEquipados.filter(x=>!ids.has(x));
  const base=catalogoPets.find(x=>x.nome===selecionado.nome)||selecionado;
- const dourado={id:"pet_gold_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:Number(base.mult||selecionado.mult||1)*2,cor:base.cor,borda:base.borda||"",dourado:true};
- petsInventario.push(dourado);
- if(eraEquipado&&petsEquipados.length<3)petsEquipados.push(dourado.id);
- petSelecionadoId=dourado.id;salvar();renderizarPets();somRaro();
- mostrarAviso("PET DOURADO CRIADO! "+dourado.nome+" agora tem multiplicador "+dourado.mult.toFixed(2)+"x.","ok");
+ const evoluido={id:"pet_"+nomeNivelPet(nivelDestino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,nivelDestino),cor:base.cor,borda:base.borda||"",dourado:nivelDestino>=1,diamante:nivelDestino>=2,rainbow:nivelDestino>=3};
+ petsInventario.push(evoluido);
+ if(eraEquipado&&petsEquipados.length<3)petsEquipados.push(evoluido.id);
+ petSelecionadoId=evoluido.id;salvar();renderizarPets();somRaro();
+ mostrarAviso("PET "+nomeNivelPet(nivelDestino)+" CRIADO! "+evoluido.nome+" agora tem multiplicador "+evoluido.mult.toFixed(2)+"x.","ok");
+ return true;
+}
+function criarPetDourado(id){return criarPetEvoluido(id,1);}
+function fundirTodosPetsDourados(){
+ let totalCriados=0;const removidos=new Set(),novos=[],equiparNovos=[];
+ for(const base of catalogoPets){
+  const iguais=petsInventario.filter(p=>p.nome===base.nome&&nivelEvolucaoPet(p)===0);
+  const grupos=Math.floor(iguais.length/3);if(!grupos)continue;
+  const usados=iguais.slice(0,grupos*3);usados.forEach(p=>removidos.add(p.id));
+  const deveEquipar=usados.some(p=>petsEquipados.includes(p.id));
+  for(let i=0;i<grupos;i++){
+   const novo={id:"pet_gold_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9)+"_"+totalCriados,nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,1),cor:base.cor,borda:base.borda||"",dourado:true,diamante:false,rainbow:false};
+   novos.push(novo);if(deveEquipar&&i===0)equiparNovos.push(novo.id);totalCriados++;
+  }
+ }
+ if(!totalCriados){mostrarAviso("Você não tem grupos de 3 pets normais iguais para fundir.","info");return;}
+ petsInventario=petsInventario.filter(p=>!removidos.has(p.id)).concat(novos);
+ petsEquipados=petsEquipados.filter(id=>!removidos.has(id));
+ for(const id of equiparNovos){if(petsEquipados.length<3)petsEquipados.push(id);}
+ petSelecionadoId=novos[0]?.id||petsInventario[0]?.id||null;salvar();renderizarPets();somRaro();
+ mostrarAviso(totalCriados+" PET(S) DOURADO(S) CRIADO(S)!", "ok");
 }
 function renderizarStatusPet(){
  const painel=document.getElementById("petStatusPainel");if(!painel)return;
@@ -1243,18 +1274,20 @@ function renderizarStatusPet(){
  painel.innerHTML="";
  const titulo=document.createElement("h3");titulo.textContent="STATUS DO PET";painel.appendChild(titulo);
  if(!p){const vazio=document.createElement("p");vazio.textContent=petsInventario.length?"Selecione um mascote na grade para ver os detalhes.":"Seu inventário está vazio. Abra um ovo para conseguir mascotes.";painel.appendChild(vazio);return;}
- const nome=document.createElement("div");nome.className="pet-status-nome";nome.textContent=p.nome+(p.dourado?" DOURADO":"");nome.style.color=p.dourado?"#ffe27a":petCor(p);
- const rar=document.createElement("p");rar.textContent="Raridade: "+p.raridade+(p.dourado?" | DOURADO":"");rar.style.color=p.dourado?"#ffe27a":petCor(p);
- const mult=document.createElement("p");mult.textContent="Multiplicador: "+Number(p.mult||1).toFixed(2)+"x"+(p.dourado?" (2x do normal)":"");
+ const nivel=nivelEvolucaoPet(p),rotulo=nomeNivelPet(nivel);
+ const nome=document.createElement("div");nome.className="pet-status-nome";nome.textContent=p.nome+(nivel?" "+rotulo:"");nome.style.color=nivel===3?"#ff9ded":nivel===2?"#aaf2ff":nivel===1?"#ffe27a":petCor(p);
+ const rar=document.createElement("p");rar.textContent="Raridade: "+p.raridade+(nivel?" | "+rotulo:"");rar.style.color=nome.style.color;
+ const mult=document.createElement("p");mult.textContent="Multiplicador: "+Number(p.mult||1).toFixed(2)+"x"+(nivel?" ("+Math.pow(2,nivel)+"x do normal)":"");
  const equipado=document.createElement("p");equipado.textContent=petsEquipados.includes(p.id)?"Status: EQUIPADO":"Status: NO INVENTÁRIO";
- const chance=document.createElement("p");const base=catalogoPets.find(x=>x.nome===p.nome);const total=catalogoPets.reduce((a,x)=>a+x.peso,0);chance.textContent="Chance no ovo: "+(base?(base.peso/total*100).toFixed(base.peso<1?2:1):"-")+"%";
+ const base=catalogoPets.find(x=>x.nome===p.nome),total=catalogoPets.reduce((a,x)=>a+x.peso,0);
+ const chance=document.createElement("p");chance.textContent="Chance no ovo: "+(base?(base.peso/total*100).toFixed(base.peso<1?2:1):"-")+"%";
  const acao=document.createElement("button");acao.className="novo-acao";acao.type="button";acao.textContent=petsEquipados.includes(p.id)?"DESEQUIPAR":"EQUIPAR PET";if(petsEquipados.includes(p.id))acao.style.background="linear-gradient(180deg,#e34b4b,#9d2020)";acao.addEventListener("click",()=>alternarPet(p.id));
  painel.append(nome,rar,mult,equipado,chance,acao);
- if(!p.dourado){
-  const qtd=contarPetsParaDourado(p);
-  const dourar=document.createElement("button");dourar.id="fazerPetDourado";dourar.className="novo-acao";dourar.type="button";dourar.textContent="FAZER PET DOURADO ("+qtd+"/3)";dourar.disabled=qtd<3;dourar.style.opacity=qtd<3?".55":"1";dourar.addEventListener("click",()=>criarPetDourado(p.id));painel.appendChild(dourar);
+ if(nivel<3){
+  const proximo=nivel+1,qtd=contarPetsMesmoNivel(p,nivel);
+  const evoluir=document.createElement("button");evoluir.id=proximo===1?"fazerPetDourado":proximo===2?"fazerPetDiamante":"fazerPetRainbow";evoluir.className="novo-acao";evoluir.type="button";evoluir.textContent="FUNDIR PARA "+nomeNivelPet(proximo)+" ("+qtd+"/3)";evoluir.disabled=qtd<3;evoluir.style.opacity=qtd<3?".55":"1";evoluir.addEventListener("click",()=>criarPetEvoluido(p.id,proximo));painel.appendChild(evoluir);
  }else{
-  const etiqueta=document.createElement("p");etiqueta.textContent="PET DOURADO: multiplicador em dobro";etiqueta.style.color="#ffe27a";etiqueta.style.fontWeight="900";painel.appendChild(etiqueta);
+  const etiqueta=document.createElement("p");etiqueta.textContent="PET RAINBOW: multiplicador 8x";etiqueta.style.color="#ff9ded";etiqueta.style.fontWeight="900";painel.appendChild(etiqueta);
  }
 }
 function renderizarPets(){
@@ -1269,10 +1302,10 @@ function renderizarPets(){
  if(!petsInventario.length){const v=document.createElement("div");v.className="novo-vazio";v.textContent="INVENTARIO VAZIO - ABRA UM OVO PARA CONSEGUIR PETS";el.appendChild(v);petSelecionadoId=null;renderizarStatusPet();return;}
  if(!petsInventario.some(p=>p.id===petSelecionadoId))petSelecionadoId=petsInventario[0].id;
  petsInventario.slice().sort(ordenar).forEach(p=>{
-  const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(p.dourado?" dourado":"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":(p.dourado?"#f4cf55":cor);card.addEventListener("click",()=>selecionarPetInventario(p.id));
+  const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(p.rainbow?" rainbow":p.diamante?" diamante":p.dourado?" dourado":"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":(p.rainbow?"#ff75e8":p.diamante?"#55dfff":p.dourado?"#f4cf55":cor);card.addEventListener("click",()=>selecionarPetInventario(p.id));
   const sigla=document.createElement("span");sigla.className="pet-iniciais";sigla.textContent=p.sigla||p.nome.slice(0,2).toUpperCase();sigla.style.color=cor;sigla.style.borderColor=cor;sigla.style.background=p.raridade==="Secreto"?"#050505":"#202d40";
   const nome=document.createElement("strong");nome.textContent=p.nome;
-  const rar=document.createElement("small");rar.textContent=p.raridade+(p.dourado?" | DOURADO":"")+(petsEquipados.includes(p.id)?" | EQUIPADO":"");
+  const rar=document.createElement("small");rar.textContent=p.raridade+(nivelEvolucaoPet(p)?" | "+nomeNivelPet(nivelEvolucaoPet(p)):"")+(petsEquipados.includes(p.id)?" | EQUIPADO":"");
   card.append(sigla,nome,rar);el.appendChild(card);
  });
  renderizarStatusPet();
@@ -1744,7 +1777,7 @@ if(autoClickerAtivo&&autoClickerProAtivo)autoClickerAtivo=false;
 mundoAtual=Math.max(0,Math.min(mundosJogo.length-1,Math.floor(Number(dados.mundoAtual)||0)));
 mundosDesbloqueados=Array.isArray(dados.mundosDesbloqueados)?dados.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
 if(!mundosDesbloqueados.includes(0))mundosDesbloqueados.push(0);
-petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,50).map(p=>{const base=catalogoPets.find(c=>c.nome===p.nome);const dourado=!!p.dourado;return {...p,sigla:p.sigla||base.sigla,dourado,mult:dourado?base.mult*2:(Number(p.mult)||base.mult),emoji:undefined};}):[];
+petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,50).map(p=>{const base=catalogoPets.find(c=>c.nome===p.nome);const rainbow=!!p.rainbow,diamante=!!p.diamante&&!rainbow,dourado=!!p.dourado||diamante||rainbow,nivel=rainbow?3:diamante?2:dourado?1:0;return {...p,sigla:p.sigla||base.sigla,dourado,diamante,rainbow,mult:Number(p.mult)||multiplicadorNivelPet(base,nivel),emoji:undefined};}):[];
 petsEquipados=Array.isArray(dados.petsEquipados)?dados.petsEquipados.filter(id=>petsInventario.some(p=>p.id===id)).slice(0,3):[];
 ovosAbertos=Math.max(0,Math.floor(Number(dados.ovosAbertos)||0));
 atualizarMundosDesbloqueados();
@@ -3831,6 +3864,7 @@ somClique();
  document.getElementById("botaoAFKOvos").addEventListener("click",()=>{painelAFKAberto=!painelAFKAberto;atualizarPainelAFK();});
  document.querySelectorAll("[data-pets-ordem]").forEach(b=>b.addEventListener("click",()=>{petsOrdenacao=b.dataset.petsOrdem;renderizarPets();}));
  document.getElementById("equiparMelhoresPets").addEventListener("click",equiparMelhoresPets);
+ document.getElementById("fundirTodosDourados").addEventListener("click",fundirTodosPetsDourados);
  document.getElementById("desequiparPets").addEventListener("click",()=>{petsEquipados=[];salvar();renderizarPets();mostrarAviso("Todos os pets foram desequipados.","ok");});
  document.getElementById("venderPetsSelecionados").addEventListener("click",venderPetsSelecionados);
  document.getElementById("rankDinheiro").addEventListener("click",()=>{rankingTipo="dinheiro";document.getElementById("rankDinheiro").classList.add("ativa");document.getElementById("rankRenascimentos").classList.remove("ativa");carregarRanking();});
