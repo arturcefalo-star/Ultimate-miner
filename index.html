@@ -2913,19 +2913,9 @@ mostrarRecompensa=false;
 }
 }
 
-const eventoNaTela=multiplicadorEventoAtual()>1;
-if(eventoNaTela){
-  // Indicador bem pequeno: somente multiplicador e tempo restante.
-  texto("$ "+formatarDinheiro(moedas),365,288,18,"#ffdc00","right");
-  const restante=Math.max(0,Math.ceil((eventoGlobal.expiraEm-Date.now())/1000));
-  const mm=String(Math.floor(restante/60)).padStart(2,"0");
-  const ss=String(restante%60).padStart(2,"0");
-  retangulo(373,275,119,17,"#3d2a0b",4);
-  texto(eventoGlobal.multiplicador+"x",402,287,10,"#ffe08a","center");
-  texto(mm+":"+ss,484,287,9,"#ffffff","right");
-}else{
-  texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
-}
+// Mantém somente o indicador normal de dinheiro nesta área.
+// O multiplicador e o tempo do evento aparecem no quadradinho verde do canto.
+texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
 
 // BOTÃO DE RENASCIMENTO (canto superior esquerdo)
 const gradRen=ctx.createLinearGradient(7,5,132,35);
