@@ -14,7 +14,7 @@ background:#111;display:flex;justify-content:center;align-items:center;
 min-height:100vh;min-height:100dvh;
 font-family:Arial,sans-serif;overscroll-behavior:none;
 }
-#game{
+canvas,#game{
 display:block;flex:none;
 width:min(100vw,166.667vh);
 height:min(60vw,100vh);
@@ -1628,7 +1628,6 @@ if(!adminDesbloqueado||!jogoPronto()||!usuarioAtual||usuarioAtual.uid!==ADMIN_UI
 adminAberto=true;
 adminModal.style.display="flex";
 atualizarAdmin();
-carregarJogadoresAdmin();
 somAbrirLoja();
 }
 
@@ -1642,6 +1641,7 @@ document.getElementById("abaEu").hidden=aba!=="eu";
 document.getElementById("abaOutro").hidden=aba!=="outro";
 document.getElementById("abaEvento").hidden=aba!=="evento";
 if(aba==="evento")atualizarStatusEventoAdmin();
+if(aba==="outro")carregarJogadoresAdmin();
 for(const botao of adminBox.querySelectorAll(".adm-abas button"))botao.classList.toggle("ativa",botao.dataset.aba===aba);
 }
 
@@ -1785,39 +1785,63 @@ atualizarAdmin();
 
 // OUTRO JOGADOR (Firestore, autorizado pelas regras do projeto)
 let jogadoresAdmin=[];
+let jogadoresAdminCarregados=false;
+let carregandoJogadoresAdmin=false;
 
-async function carregarJogadoresAdmin(){
+async function carregarJogadoresAdmin(forcarAtualizacao=false){
 if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+if(carregandoJogadoresAdmin)return;
+if(jogadoresAdminCarregados&&!forcarAtualizacao)return;
+
+carregandoJogadoresAdmin=true;
 const select=admJogador;
 const valorAnterior=select.value;
 select.disabled=true;
-select.textContent="";
 const carregando=document.createElement("option");
-carregando.value="";carregando.textContent="Carregando jogadores...";
-select.appendChild(carregando);
+carregando.value="";
+carregando.textContent="Carregando jogadores...";
+select.replaceChildren(carregando);
+
 try{
 const snapshot=await comTempoLimite(db.collection("jogadores").get(),20000,"listar jogadores");
-jogadoresAdmin=snapshot.docs.map(doc=>({
+jogadoresAdmin=snapshot.docs.map(doc=>{
+const registro=doc.data()||{};
+return {
 uid:doc.id,
-nome:String((doc.data()&&doc.data().nome)||"Jogador"),
- dados:(doc.data()&&doc.data().dados)||{}
-})).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
-select.textContent="";
+nome:String(registro.nome||"Jogador"),
+dados:registro.dados||{}
+};
+}).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
+
+const opcoes=document.createDocumentFragment();
 for(const jogador of jogadoresAdmin){
 const op=document.createElement("option");
 op.value=jogador.uid;
 op.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"");
-select.appendChild(op);
+opcoes.appendChild(op);
 }
-if(!jogadoresAdmin.length){const op=document.createElement("option");op.value="";op.textContent="Nenhum jogador encontrado";select.appendChild(op);}
+if(!jogadoresAdmin.length){
+const op=document.createElement("option");
+op.value="";
+op.textContent="Nenhum jogador encontrado";
+opcoes.appendChild(op);
+}
+select.replaceChildren(opcoes);
 if(jogadoresAdmin.some(j=>j.uid===valorAnterior))select.value=valorAnterior;
+jogadoresAdminCarregados=true;
 admResultado("Lista carregada: "+jogadoresAdmin.length+" conta(s).","ok");
 }catch(error){
 console.error("Erro ao listar jogadores:",error);
-select.textContent="";
-const op=document.createElement("option");op.value="";op.textContent="Erro ao carregar jogadores";select.appendChild(op);
+jogadoresAdminCarregados=false;
+const op=document.createElement("option");
+op.value="";
+op.textContent="Erro ao carregar jogadores";
+select.replaceChildren(op);
 admResultado("Não foi possível listar jogadores. Confira as regras do Firestore: "+(error.message||"erro"),"erro");
-}finally{select.disabled=false;}
+}finally{
+carregandoJogadoresAdmin=false;
+select.disabled=false;
+}
 }
 
 function atualizarCamposRemotos(){
@@ -2005,7 +2029,7 @@ opcao.textContent=def.rotulo;
 admAcao.appendChild(opcao);
 }
 admAcao.addEventListener("change",atualizarCamposRemotos);
-document.getElementById("admAtualizarJogadores").addEventListener("click",carregarJogadoresAdmin);
+document.getElementById("admAtualizarJogadores").addEventListener("click",()=>carregarJogadoresAdmin(true));
 atualizarCamposRemotos();
 
 adminBox.addEventListener("click",evento=>{
