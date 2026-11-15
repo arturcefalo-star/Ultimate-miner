@@ -104,6 +104,9 @@ color:#fff;text-align:center;font-family:Arial,sans-serif;
 flex-direction:column;align-items:center;justify-content:center;
 line-height:1.05;pointer-events:none;
 }
+#eventoSorteBadge{display:none;position:fixed;top:64px;right:12px;z-index:8;width:48px;height:46px;padding:4px 3px;background:linear-gradient(145deg,#a56bff,#6130bd);border:2px solid #dfc4ff;border-radius:5px;box-shadow:0 2px 8px #0009,0 0 10px #a56bff66;color:#fff;text-align:center;font-family:Arial,sans-serif;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;pointer-events:none}
+#eventoSorteBadge strong{display:block;font-size:15px;font-weight:900;color:#fff}
+#eventoSorteBadge span{display:block;margin-top:3px;font-size:9px;font-weight:800;color:#f5eaff}
 #eventoGlobalBadge strong{
 display:block;font-size:15px;font-weight:900;color:#fff;
 text-shadow:0 1px 2px #075b27;
@@ -233,6 +236,8 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .pet-slot.diamante .pet-iniciais{border-color:#55dfff!important;color:#aaf2ff!important;background:#123d50!important}
 .pet-slot.rainbow{border-color:#ff75e8!important;box-shadow:0 0 12px #ff75e855}
 .pet-slot.rainbow .pet-iniciais{border-color:#ff75e8!important;color:#fff!important;background:linear-gradient(135deg,#e64b4b,#e8b83d,#42c96b,#438bff,#a75cff)!important}
+.pet-slot.void{border-color:#b58aff!important;box-shadow:0 0 14px #9b59ff99!important}
+.pet-slot.void .pet-iniciais{border-color:#d7c2ff!important;color:#fff!important;background:linear-gradient(135deg,#171026,#542a83,#111)!important}
 .pet-slot.dourado.equipado{border-color:#35e879!important;box-shadow:0 0 0 1px #35e87966,0 0 13px #35e87955}
 .pet-dourado-tag{display:inline-block;margin-top:3px;padding:2px 6px;border:1px solid #f4cf55;border-radius:10px;color:#ffe27a;font-size:9px;font-weight:900}
 #fazerPetDourado{margin-top:7px;background:linear-gradient(180deg,#e4bd42,#99721b);color:#211900;border:1px solid #ffe58a;font-weight:900}
@@ -355,7 +360,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
  <div class="inventario-layout">
   <aside class="pet-status" id="petStatusPainel"><h3>STATUS DO PET</h3><p>Selecione um mascote para ver os detalhes.</p></aside>
   <section class="pet-grade-area">
-   <div class="pet-ferramentas"><button id="equiparMelhoresPets" class="novo-acao" type="button">EQUIPAR MELHORES</button><button id="desequiparPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#e34b4b,#9d2020)">DESEQUIPAR TODOS</button><button id="abrirVendaPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS</button><button id="fundirTodosDourados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#e4bd42,#99721b);color:#211900;border:1px solid #ffe58a">FUNDIR TODOS EM DOURADOS</button></div>
+   <div class="pet-ferramentas"><button id="equiparMelhoresPets" class="novo-acao" type="button">EQUIPAR MELHORES</button><button id="desequiparPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#e34b4b,#9d2020)">DESEQUIPAR TODOS</button><button id="abrirVendaPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS</button><button id="fundirTodosDourados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#e4bd42,#99721b);color:#211900;border:1px solid #ffe58a">FUNDIR TODOS</button></div>
    <div class="pets-ordenacao" aria-label="Ordenar inventario"><button type="button" data-pets-ordem="melhores" class="ativa">MELHORES</button><button type="button" data-pets-ordem="nome">NOME A-Z</button><button type="button" data-pets-ordem="raridade">RARIDADE</button></div>
    <div id="listaPets" class="pet-grade"></div>
   </section>
@@ -383,6 +388,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div></div>
 
 <div id="eventoGlobalBadge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">00:00</span></div>
+<div id="eventoSorteBadge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span id="eventoSorteTempo">SORTE</span></div>
 
 <div id="adminModal">
 <div id="adminBox" role="dialog" aria-modal="true" aria-label="Painel de administração">
@@ -471,6 +477,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <div id="admCampoDest" hidden>
 <input id="admDestinatario" class="adm-in" placeholder="Nome de quem recebe as moedas" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false">
 </div>
+<div id="admCampoPet" hidden><select id="admPetEscolhido" class="adm-in" aria-label="Pet para dar"></select><select id="admPetMutacao" class="adm-in" aria-label="Mutação do pet"><option value="0">Normal</option><option value="1">Dourado</option><option value="2">Diamante</option><option value="3">Rainbow</option><option value="4">Void</option></select></div>
 
 <button id="admExecutar" type="button" class="adm-b azul grande" data-acao="remoto">Executar</button>
 </div>
@@ -492,6 +499,15 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <button id="admEventoAtivar" type="button" class="adm-b verde grande">Ativar evento global</button>
 <button id="admEventoEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento</button>
 <div id="admEventoStatus" class="adm-dica" style="margin-top:8px">Nenhum evento ativo.</div>
+<hr style="border:0;border-top:1px solid #ffffff22;margin:16px 0">
+<h3>EVENTO GLOBAL DE SORTE</h3>
+<p class="adm-dica">Aumenta a chance de conseguir pets raros para todos os jogadores.</p>
+<div class="adm-linha" id="admEventoSortePresets"><button type="button" class="adm-b azul" data-sorte-mult="2">2x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="4">4x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="8">8x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="16">16x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="64">64x sorte</button></div>
+<input id="admEventoSorteMultiplicador" class="adm-in" type="number" min="2" max="1000000" step="1" value="2" placeholder="Multiplicador de sorte">
+<input id="admEventoSorteMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Duração em minutos">
+<button id="admEventoSorteAtivar" type="button" class="adm-b verde grande">Ativar evento de sorte</button>
+<button id="admEventoSorteEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento de sorte</button>
+<div id="admEventoSorteStatus" class="adm-dica" style="margin-top:8px">Nenhum evento de sorte ativo.</div>
 </div>
 
 <h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">HISTORICO DA SESSAO</h3>
@@ -1041,6 +1057,7 @@ const CUSTO_OVO_PET=100000,INTERVALO_AUTO_OVO=1000;
 
 // Evento global de dinheiro sincronizado pelo Firestore.
 let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
+let eventoSorteGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
 let cancelarMonitoramentoEvento=null;
 let ultimoAvisoAdminId="";
 
@@ -1088,7 +1105,9 @@ function multiplicadorPets(){
 function pesoPetComSorte(p){
  const nivel=Math.max(0,Math.min(20,Number(sorteOvoNivel)||0));
  const raridade=ORDEM_RARIDADE_PETS[p.raridade]||0;
- return p.peso*(1+raridade*0.35*nivel);
+ const eventoAtivo=eventoSorteGlobal.ativo&&eventoSorteGlobal.expiraEm>Date.now();
+ const bonusEvento=eventoAtivo?Math.pow(Math.max(1,eventoSorteGlobal.multiplicador),raridade/6):1;
+ return p.peso*(1+raridade*0.35*nivel)*bonusEvento;
 }
 function multiplicadorMundo(){return mundosJogo[mundoAtual]?.mult||1;}
 function atualizarMundosDesbloqueados(){
@@ -1177,7 +1196,7 @@ function atualizarPainelAFK(){
  botao.hidden=!(autoOvoComprado&&autoOvoAtivo);
  painel.hidden=!painelAFKAberto||botao.hidden;
  if(!petsConseguidosSessao.length)lista.textContent="Nenhum pet conseguido ainda.";
- else lista.textContent=petsConseguidosSessao.map((p,i)=>(i+1)+". "+p.nome+(p.rainbow?" RAINBOW":p.diamante?" DIAMANTE":p.dourado?" DOURADO":"")+" — "+p.raridade).join("\n");
+ else lista.textContent=petsConseguidosSessao.map((p,i)=>(i+1)+". "+p.nome+(p.void?" VOID":p.rainbow?" RAINBOW":p.diamante?" DIAMANTE":p.dourado?" DOURADO":"")+" — "+p.raridade).join("\n");
 }
 function atualizarControlesOvo(){
  const triplo=document.getElementById("abrirTresOvosPet");
@@ -1224,8 +1243,8 @@ function renderizarChancesOvo(){
 }
 function petCor(p){return p.raridade==="Secreto"?"#ffffff":(CORES_RARIDADE_PETS[p.raridade]||"#d1d5db");}
 function selecionarPetInventario(id){petSelecionadoId=id;renderizarPets();}
-function nivelEvolucaoPet(p){return p&&p.rainbow?3:p&&p.diamante?2:p&&p.dourado?1:0;}
-function nomeNivelPet(n){return n===3?"RAINBOW":n===2?"DIAMANTE":n===1?"DOURADO":"NORMAL";}
+function nivelEvolucaoPet(p){return p&&p.void?4:p&&p.rainbow?3:p&&p.diamante?2:p&&p.dourado?1:0;}
+function nomeNivelPet(n){return n===4?"VOID":n===3?"RAINBOW":n===2?"DIAMANTE":n===1?"DOURADO":"NORMAL";}
 function multiplicadorNivelPet(base,nivel){return Number(base.mult||1)*Math.pow(2,nivel);}
 function contarPetsMesmoNivel(p,nivel){return petsInventario.filter(x=>x.nome===p.nome&&nivelEvolucaoPet(x)===nivel).length;}
 function contarPetsParaDourado(p){return contarPetsMesmoNivel(p,0);}
@@ -1233,7 +1252,7 @@ function criarPetEvoluido(id,nivelDestino){
  const selecionado=petsInventario.find(x=>x.id===id);
  if(!selecionado){mostrarAviso("Selecione um pet primeiro.","erro");return false;}
  const nivelAtual=nivelEvolucaoPet(selecionado);
- if(nivelDestino!==nivelAtual+1||nivelDestino>3){mostrarAviso("Não é possível evoluir esse pet.","erro");return false;}
+ if(nivelDestino!==nivelAtual+1||nivelDestino>4){mostrarAviso("Não é possível evoluir esse pet.","erro");return false;}
  const iguais=petsInventario.filter(x=>x.nome===selecionado.nome&&nivelEvolucaoPet(x)===nivelAtual).slice(0,3);
  if(iguais.length<3){mostrarAviso("Você precisa de 3 pets "+selecionado.nome+" "+nomeNivelPet(nivelAtual).toLowerCase()+" iguais.","erro");return false;}
  const ids=new Set(iguais.map(x=>x.id));
@@ -1241,7 +1260,7 @@ function criarPetEvoluido(id,nivelDestino){
  petsInventario=petsInventario.filter(x=>!ids.has(x.id));
  petsEquipados=petsEquipados.filter(x=>!ids.has(x));
  const base=catalogoPets.find(x=>x.nome===selecionado.nome)||selecionado;
- const evoluido={id:"pet_"+nomeNivelPet(nivelDestino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,nivelDestino),cor:base.cor,borda:base.borda||"",dourado:nivelDestino>=1,diamante:nivelDestino>=2,rainbow:nivelDestino>=3};
+ const evoluido={id:"pet_"+nomeNivelPet(nivelDestino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,nivelDestino),cor:base.cor,borda:base.borda||"",dourado:nivelDestino>=1,diamante:nivelDestino>=2,rainbow:nivelDestino>=3,void:nivelDestino>=4};
  petsInventario.push(evoluido);
  if(eraEquipado&&petsEquipados.length<3)petsEquipados.push(evoluido.id);
  petSelecionadoId=evoluido.id;salvar();renderizarPets();somRaro();
@@ -1250,23 +1269,31 @@ function criarPetEvoluido(id,nivelDestino){
 }
 function criarPetDourado(id){return criarPetEvoluido(id,1);}
 function fundirTodosPetsDourados(){
- let totalCriados=0;const removidos=new Set(),novos=[],equiparNovos=[];
+ // Cada clique avança somente um estágio global: normal, dourado, diamante, rainbow e void.
+ // Assim, o resultado de uma fusão nunca é fundido novamente no mesmo clique.
+ let nivelAlvo=-1;
+ for(let nivel=0;nivel<4;nivel++){
+  const temGrupo=catalogoPets.some(base=>Math.floor(petsInventario.filter(p=>p.nome===base.nome&&nivelEvolucaoPet(p)===nivel).length/3)>0);
+  if(temGrupo){nivelAlvo=nivel;break;}
+ }
+ if(nivelAlvo<0){mostrarAviso("Você não tem grupos de 3 pets iguais para avançar de mutação.","info");return;}
+ const removidos=new Set(),novos=[],equiparNovos=[];let totalGrupos=0;
  for(const base of catalogoPets){
-  const iguais=petsInventario.filter(p=>p.nome===base.nome&&nivelEvolucaoPet(p)===0);
+  const iguais=petsInventario.filter(p=>p.nome===base.nome&&nivelEvolucaoPet(p)===nivelAlvo);
   const grupos=Math.floor(iguais.length/3);if(!grupos)continue;
   const usados=iguais.slice(0,grupos*3);usados.forEach(p=>removidos.add(p.id));
   const deveEquipar=usados.some(p=>petsEquipados.includes(p.id));
   for(let i=0;i<grupos;i++){
-   const novo={id:"pet_gold_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9)+"_"+totalCriados,nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,1),cor:base.cor,borda:base.borda||"",dourado:true,diamante:false,rainbow:false};
-   novos.push(novo);if(deveEquipar&&i===0)equiparNovos.push(novo.id);totalCriados++;
+   const destino=nivelAlvo+1;
+   const novo={id:"pet_"+nomeNivelPet(destino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9)+"_"+totalGrupos,nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,destino),cor:base.cor,borda:base.borda||"",dourado:destino>=1,diamante:destino>=2,rainbow:destino>=3,void:destino>=4};
+   novos.push(novo);if(deveEquipar&&i===0)equiparNovos.push(novo.id);totalGrupos++;
   }
  }
- if(!totalCriados){mostrarAviso("Você não tem grupos de 3 pets normais iguais para fundir.","info");return;}
  petsInventario=petsInventario.filter(p=>!removidos.has(p.id)).concat(novos);
  petsEquipados=petsEquipados.filter(id=>!removidos.has(id));
  for(const id of equiparNovos){if(petsEquipados.length<3)petsEquipados.push(id);}
- petSelecionadoId=novos[0]?.id||petsInventario[0]?.id||null;salvar();renderizarPets();somRaro();
- mostrarAviso(totalCriados+" PET(S) DOURADO(S) CRIADO(S)!", "ok");
+ petSelecionadoId=novos[novos.length-1]?.id||petsInventario[0]?.id||null;salvar();renderizarPets();somRaro();
+ mostrarAviso("FUSÃO CONCLUÍDA: "+totalGrupos+" PET(S) " +nomeNivelPet(nivelAlvo+1)+" CRIADO(S)!","ok");
 }
 function renderizarStatusPet(){
  const painel=document.getElementById("petStatusPainel");if(!painel)return;
@@ -1275,7 +1302,7 @@ function renderizarStatusPet(){
  const titulo=document.createElement("h3");titulo.textContent="STATUS DO PET";painel.appendChild(titulo);
  if(!p){const vazio=document.createElement("p");vazio.textContent=petsInventario.length?"Selecione um mascote na grade para ver os detalhes.":"Seu inventário está vazio. Abra um ovo para conseguir mascotes.";painel.appendChild(vazio);return;}
  const nivel=nivelEvolucaoPet(p),rotulo=nomeNivelPet(nivel);
- const nome=document.createElement("div");nome.className="pet-status-nome";nome.textContent=p.nome+(nivel?" "+rotulo:"");nome.style.color=nivel===3?"#ff9ded":nivel===2?"#aaf2ff":nivel===1?"#ffe27a":petCor(p);
+ const nome=document.createElement("div");nome.className="pet-status-nome";nome.textContent=p.nome+(nivel?" "+rotulo:"");nome.style.color=nivel===4?"#c9a7ff":nivel===3?"#ff9ded":nivel===2?"#aaf2ff":nivel===1?"#ffe27a":petCor(p);
  const rar=document.createElement("p");rar.textContent="Raridade: "+p.raridade+(nivel?" | "+rotulo:"");rar.style.color=nome.style.color;
  const mult=document.createElement("p");mult.textContent="Multiplicador: "+Number(p.mult||1).toFixed(2)+"x"+(nivel?" ("+Math.pow(2,nivel)+"x do normal)":"");
  const equipado=document.createElement("p");equipado.textContent=petsEquipados.includes(p.id)?"Status: EQUIPADO":"Status: NO INVENTÁRIO";
@@ -1283,11 +1310,11 @@ function renderizarStatusPet(){
  const chance=document.createElement("p");chance.textContent="Chance no ovo: "+(base?(base.peso/total*100).toFixed(base.peso<1?2:1):"-")+"%";
  const acao=document.createElement("button");acao.className="novo-acao";acao.type="button";acao.textContent=petsEquipados.includes(p.id)?"DESEQUIPAR":"EQUIPAR PET";if(petsEquipados.includes(p.id))acao.style.background="linear-gradient(180deg,#e34b4b,#9d2020)";acao.addEventListener("click",()=>alternarPet(p.id));
  painel.append(nome,rar,mult,equipado,chance,acao);
- if(nivel<3){
+ if(nivel<4){
   const proximo=nivel+1,qtd=contarPetsMesmoNivel(p,nivel);
-  const evoluir=document.createElement("button");evoluir.id=proximo===1?"fazerPetDourado":proximo===2?"fazerPetDiamante":"fazerPetRainbow";evoluir.className="novo-acao";evoluir.type="button";evoluir.textContent="FUNDIR PARA "+nomeNivelPet(proximo)+" ("+qtd+"/3)";evoluir.disabled=qtd<3;evoluir.style.opacity=qtd<3?".55":"1";evoluir.addEventListener("click",()=>criarPetEvoluido(p.id,proximo));painel.appendChild(evoluir);
+  const evoluir=document.createElement("button");evoluir.id=proximo===1?"fazerPetDourado":proximo===2?"fazerPetDiamante":proximo===3?"fazerPetRainbow":"fazerPetVoid";evoluir.className="novo-acao";evoluir.type="button";evoluir.textContent="FUNDIR PARA "+nomeNivelPet(proximo)+" ("+qtd+"/3)";evoluir.disabled=qtd<3;evoluir.style.opacity=qtd<3?".55":"1";evoluir.addEventListener("click",()=>criarPetEvoluido(p.id,proximo));painel.appendChild(evoluir);
  }else{
-  const etiqueta=document.createElement("p");etiqueta.textContent="PET RAINBOW: multiplicador 8x";etiqueta.style.color="#ff9ded";etiqueta.style.fontWeight="900";painel.appendChild(etiqueta);
+  const etiqueta=document.createElement("p");etiqueta.textContent="PET "+nomeNivelPet(nivel)+": multiplicador "+Math.pow(2,nivel)+"x";etiqueta.style.color=nivel===4?"#c9a7ff":"#ff9ded";etiqueta.style.fontWeight="900";painel.appendChild(etiqueta);
  }
 }
 function renderizarPets(){
@@ -1302,7 +1329,7 @@ function renderizarPets(){
  if(!petsInventario.length){const v=document.createElement("div");v.className="novo-vazio";v.textContent="INVENTARIO VAZIO - ABRA UM OVO PARA CONSEGUIR PETS";el.appendChild(v);petSelecionadoId=null;renderizarStatusPet();return;}
  if(!petsInventario.some(p=>p.id===petSelecionadoId))petSelecionadoId=petsInventario[0].id;
  petsInventario.slice().sort(ordenar).forEach(p=>{
-  const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(p.rainbow?" rainbow":p.diamante?" diamante":p.dourado?" dourado":"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":(p.rainbow?"#ff75e8":p.diamante?"#55dfff":p.dourado?"#f4cf55":cor);card.addEventListener("click",()=>selecionarPetInventario(p.id));
+  const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(p.void?" void":p.rainbow?" rainbow":p.diamante?" diamante":p.dourado?" dourado":"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":(p.void?"#b58aff":p.rainbow?"#ff75e8":p.diamante?"#55dfff":p.dourado?"#f4cf55":cor);card.addEventListener("click",()=>selecionarPetInventario(p.id));
   const sigla=document.createElement("span");sigla.className="pet-iniciais";sigla.textContent=p.sigla||p.nome.slice(0,2).toUpperCase();sigla.style.color=cor;sigla.style.borderColor=cor;sigla.style.background=p.raridade==="Secreto"?"#050505":"#202d40";
   const nome=document.createElement("strong");nome.textContent=p.nome;
   const rar=document.createElement("small");rar.textContent=p.raridade+(nivelEvolucaoPet(p)?" | "+nomeNivelPet(nivelEvolucaoPet(p)):"")+(petsEquipados.includes(p.id)?" | EQUIPADO":"");
@@ -1390,6 +1417,7 @@ document.getElementById("eventoGlobalTempo").textContent=String(min).padStart(2,
 let estadoEventoGlobalConhecido=false;
 let eventoGlobalEstavaAtivo=false;
 function iniciarMonitoramentoEventoGlobal(){
+ iniciarMonitoramentoEventoSorte();
 if(cancelarMonitoramentoEvento){try{cancelarMonitoramentoEvento();}catch(e){}cancelarMonitoramentoEvento=null;}
 const ref=db.collection("eventos").doc("multiplicadorGlobal");
 cancelarMonitoramentoEvento=ref.onSnapshot(snapshot=>{
@@ -1429,7 +1457,7 @@ if(typeof atualizarStatusEventoAdmin==="function")atualizarStatusEventoAdmin();
 },error=>console.error("Erro ao acompanhar evento global:",error));
 }
 let ultimoEventoGlobalAvisado="";
-setInterval(atualizarBadgeEvento,500);
+setInterval(()=>{atualizarBadgeEvento();atualizarBadgeEventoSorte();},500);
 
 function precoRenascimento(){
 // Começa em 10 milhões e triplica a cada renascimento realizado.
@@ -1777,7 +1805,7 @@ if(autoClickerAtivo&&autoClickerProAtivo)autoClickerAtivo=false;
 mundoAtual=Math.max(0,Math.min(mundosJogo.length-1,Math.floor(Number(dados.mundoAtual)||0)));
 mundosDesbloqueados=Array.isArray(dados.mundosDesbloqueados)?dados.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
 if(!mundosDesbloqueados.includes(0))mundosDesbloqueados.push(0);
-petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,50).map(p=>{const base=catalogoPets.find(c=>c.nome===p.nome);const rainbow=!!p.rainbow,diamante=!!p.diamante&&!rainbow,dourado=!!p.dourado||diamante||rainbow,nivel=rainbow?3:diamante?2:dourado?1:0;return {...p,sigla:p.sigla||base.sigla,dourado,diamante,rainbow,mult:Number(p.mult)||multiplicadorNivelPet(base,nivel),emoji:undefined};}):[];
+petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,50).map(p=>{const base=catalogoPets.find(c=>c.nome===p.nome);const voidPet=!!p.void,rainbow=!!p.rainbow&&!voidPet,diamante=!!p.diamante&&!rainbow&&!voidPet,dourado=!!p.dourado||diamante||rainbow||voidPet,nivel=voidPet?4:rainbow?3:diamante?2:dourado?1:0;return {...p,sigla:p.sigla||base.sigla,dourado,diamante,rainbow,void:voidPet,mult:Number(p.mult)||multiplicadorNivelPet(base,nivel),emoji:undefined};}):[];
 petsEquipados=Array.isArray(dados.petsEquipados)?dados.petsEquipados.filter(id=>petsInventario.some(p=>p.id===id)).slice(0,3):[];
 ovosAbertos=Math.max(0,Math.floor(Number(dados.ovosAbertos)||0));
 atualizarMundosDesbloqueados();
@@ -2155,6 +2183,9 @@ const admDestinatario=document.getElementById("admDestinatario");
 const admCampoValor=document.getElementById("admCampoValor");
 const admCampoItem=document.getElementById("admCampoItem");
 const admCampoDest=document.getElementById("admCampoDest");
+const admCampoPet=document.getElementById("admCampoPet");
+const admPetEscolhido=document.getElementById("admPetEscolhido");
+const admPetMutacao=document.getElementById("admPetMutacao");
 const admLogEl=document.getElementById("admLog");
 
 const admHistorico=[];
@@ -2180,7 +2211,8 @@ giveAuto:{rotulo:"Liberar Auto Clicker",campo:"nenhum"},
 removeAuto:{rotulo:"Remover Auto Clicker",campo:"nenhum",perigo:true},
 givePro:{rotulo:"Liberar Auto Clicker Pro",campo:"nenhum"},
 removePro:{rotulo:"Remover Auto Clicker Pro",campo:"nenhum",perigo:true},
-setMultiplier:{rotulo:"Definir nível do multiplicador",campo:"nivel"}
+setMultiplier:{rotulo:"Definir nível do multiplicador",campo:"nivel"},
+givePet:{rotulo:"Dar pet para jogador",campo:"pet"}
 };
 
 function preencherLista(select,lista,inicio){
@@ -2286,7 +2318,7 @@ function trocarAbaAdmin(aba){
 document.getElementById("abaEu").hidden=aba!=="eu";
 document.getElementById("abaOutro").hidden=aba!=="outro";
 document.getElementById("abaEvento").hidden=aba!=="evento";
-if(aba==="evento")atualizarStatusEventoAdmin();
+if(aba==="evento"){atualizarStatusEventoAdmin();if(admEventoSorteStatus)admEventoSorteStatus.textContent=eventoSorteGlobal.ativo?"Evento de sorte ativo: "+eventoSorteGlobal.multiplicador+"x.":"Nenhum evento de sorte ativo.";}
 if(aba==="outro")atualizarAdmin();
 for(const botao of adminBox.querySelectorAll(".adm-abas button"))botao.classList.toggle("ativa",botao.dataset.aba===aba);
 }
@@ -2523,8 +2555,13 @@ admCampoValor.hidden=def.campo!=="valor";
 admCampoItem.hidden=!(def.campo==="picareta"||def.campo==="minerio");
 admCampoNivel.hidden=def.campo!=="nivel";
 admCampoDest.hidden=true;
+admCampoPet.hidden=def.campo!=="pet";
 if(def.campo==="picareta")preencherLista(admRemotoItem,picaretas,0);
 else if(def.campo==="minerio")preencherLista(admRemotoItem,minerios,0);
+else if(def.campo==="pet"){
+ admPetEscolhido.textContent="";
+ catalogoPets.forEach((pet,i)=>{const op=document.createElement("option");op.value=String(i);op.textContent=pet.nome+" — "+pet.raridade;admPetEscolhido.appendChild(op);});
+}
 }
 
 async function admExecutarRemoto(botao){
@@ -2545,6 +2582,9 @@ valor=Math.min(valor,MAX_MOEDAS);
 valor=Number(admRemotoItem.value);
 const total=def.campo==="picareta"?picaretas.length:minerios.length;
 if(!Number.isInteger(valor)||valor<0||valor>=total){admResultado("Escolha um item da lista.","erro");return;}
+}else if(def.campo==="pet"){
+valor=Number(admPetEscolhido.value);
+if(!Number.isInteger(valor)||!catalogoPets[valor]){admResultado("Escolha um pet válido.","erro");return;}
 }else if(def.campo==="nivel"){
 valor=Number(admRemotoNivel.value);
 if(!Number.isInteger(valor)||valor<0||valor>500){admResultado("Digite um nível inteiro de 0 a 500.","erro");return;}
@@ -2559,7 +2599,7 @@ const registro=snap.data()||{};
 const dados=Object.assign({
 moedas:0,renascimentos:0,picaretasCompradas:[0],mineriosComprados:[0],picaretaAtual:0,minerioAtual:0,
 volumeGeral:1,codigosUsados:[],multiplicadorCompras:0,precoMultiplicador:100,
-autoClickerComprado:false,autoClickerProComprado:false,autoClickerAtivo:false,autoClickerProAtivo:false
+autoClickerComprado:false,autoClickerProComprado:false,autoClickerAtivo:false,autoClickerProAtivo:false,petsInventario:[],petsEquipados:[]
 },registro.dados||{});
 dados.moedas=Math.max(0,Number(dados.moedas)||0);
 dados.picaretasCompradas=Array.isArray(dados.picaretasCompradas)?dados.picaretasCompradas.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<picaretas.length):[0];
@@ -2637,12 +2677,21 @@ if(acao==="setMultiplier"){
 dados.multiplicadorCompras=valor;
 dados.precoMultiplicador=100*Math.pow(3,valor);
 }
+if(acao==="givePet"){
+ const base=catalogoPets[valor];
+ const mutacao=Math.max(0,Math.min(4,Number(admPetMutacao.value)||0));
+ const inventario=Array.isArray(dados.petsInventario)?dados.petsInventario.slice():[];
+ if(inventario.length>=50)throw new Error("O inventário do jogador está cheio (50 pets).");
+ const pet={id:"pet_admin_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,mutacao),cor:base.cor,borda:base.borda||"",dourado:mutacao>=1,diamante:mutacao>=2,rainbow:mutacao>=3,void:mutacao>=4};
+ inventario.push(pet);dados.petsInventario=inventario;
+ dados.petsEquipados=Array.isArray(dados.petsEquipados)?dados.petsEquipados:[];
+}
 // Impede que os dois auto clickers fiquem ativos ao mesmo tempo.
 if(dados.autoClickerAtivo&&dados.autoClickerProAtivo)dados.autoClickerAtivo=false;
 dados.picaretasCompradas.sort((a,b)=>a-b);
 dados.mineriosComprados.sort((a,b)=>a-b);
 const nome=String(registro.nome||jogador.nome);
-const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):"";
+const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="pet"?(catalogoPets[valor].nome+" ("+["Normal","Dourado","Diamante","Rainbow","Void"][Number(admPetMutacao.value)||0]+")"):def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):"";
 let textoAviso="O admin "+nomeDoAdminAtual()+" alterou sua conta: "+def.rotulo.toLowerCase();
 if(acao==="addMoney")textoAviso="O admin "+nomeDoAdminAtual()+" te deu $"+formatarDinheiro(valor)+".";
 else if(acao==="removeMoney")textoAviso="O admin "+nomeDoAdminAtual()+" removeu $"+formatarDinheiro(valor)+" da sua conta.";
@@ -2660,6 +2709,7 @@ else if(acao==="removeAuto")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o
 else if(acao==="givePro")textoAviso="O admin "+nomeDoAdminAtual()+" liberou o Auto Clicker Pro para você.";
 else if(acao==="removePro")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o Auto Clicker Pro da sua conta.";
 else if(acao==="setMultiplier")textoAviso="O admin "+nomeDoAdminAtual()+" definiu sua melhoria de dinheiro no nível "+valor+".";
+else if(acao==="givePet")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o pet "+itemNome+".";
 await comTempoLimite(ref.set({dados,avisoAdmin:{id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
@@ -2710,6 +2760,50 @@ admResultado("Evento global encerrado.","ok");
 }catch(error){admResultado("Não foi possível encerrar o evento: "+(error.message||"erro no Firestore"),"erro");}
 atualizarStatusEventoAdmin();
 }
+const admEventoSorteMultiplicador=document.getElementById("admEventoSorteMultiplicador");
+const admEventoSorteMinutos=document.getElementById("admEventoSorteMinutos");
+const admEventoSorteStatus=document.getElementById("admEventoSorteStatus");
+let cancelarMonitoramentoSorte=null;
+function atualizarBadgeEventoSorte(){
+ const badge=document.getElementById("eventoSorteBadge");if(!badge)return;
+ const restante=(Number(eventoSorteGlobal.expiraEm)||0)-Date.now();
+ const ativo=eventoSorteGlobal.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(!ativo)return;
+ const segundos=Math.max(0,Math.ceil(restante/1000)),min=Math.floor(segundos/60),seg=segundos%60;
+ document.getElementById("eventoSorteMultiplicador").textContent=eventoSorteGlobal.multiplicador+"x";
+ document.getElementById("eventoSorteTempo").textContent=String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
+}
+function iniciarMonitoramentoEventoSorte(){
+ if(cancelarMonitoramentoSorte){try{cancelarMonitoramentoSorte();}catch(e){}}
+ cancelarMonitoramentoSorte=db.collection("eventos").doc("sorteGlobal").onSnapshot(snap=>{
+  const estavaAtivo=eventoSorteGlobal.ativo&&eventoSorteGlobal.expiraEm>Date.now();
+  const ev=snap.exists?(snap.data()||{}):{};
+  const expira=ev.expiraEm&&typeof ev.expiraEm.toMillis==="function"?ev.expiraEm.toMillis():Number(ev.expiraEm)||0;
+  const ativo=ev.ativo===true&&expira>Date.now();
+  const id=String(ev.id||"");
+  const novo=ativo&&(!eventoSorteGlobal.ativo||eventoSorteGlobal.id!==id);
+  eventoSorteGlobal={ativo,multiplicador:Math.max(1,Number(ev.multiplicador)||1),expiraEm:expira,admin:String(ev.admin||"Admin"),id};
+  if(novo)mostrarAviso("Evento global de SORTE ativado: "+eventoSorteGlobal.multiplicador+"x!","ok");
+  if(estavaAtivo&&!ativo)mostrarAviso("O evento global de sorte terminou.","info");
+  atualizarBadgeEventoSorte();
+  if(admEventoSorteStatus)admEventoSorteStatus.textContent=ativo?"Evento de sorte ativo: "+eventoSorteGlobal.multiplicador+"x. Termina em breve.":"Nenhum evento de sorte ativo.";
+ },err=>console.error("Erro ao acompanhar evento global de sorte:",err));
+}
+async function ativarEventoSorteGlobal(){
+ if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+ const mult=Number(admEventoSorteMultiplicador.value),minutos=Number(admEventoSorteMinutos.value);
+ if(!Number.isInteger(mult)||mult<2||mult>1000000||!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("Informe sorte de 2x a 1.000.000x e duração de 1 a 10.080 minutos.","erro");return;}
+ const expiraEm=new Date(Date.now()+minutos*60000),id="sorte-"+Date.now()+"-"+usuarioAtual.uid;
+ try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:minutos,admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global de sorte");admResultado("Evento global de sorte de "+mult+"x ativado por "+minutos+" minuto(s).","ok");}
+ catch(error){admResultado("Não foi possível ativar o evento de sorte: "+(error.message||"erro no Firestore"),"erro");}
+}
+async function encerrarEventoSorteGlobal(){
+ if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+ try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoSorteGlobal.multiplicador)||1),expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:nomeDoAdminAtual(),id:"sorte-off-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento de sorte");admResultado("Evento global de sorte encerrado.","ok");}
+ catch(error){admResultado("Não foi possível encerrar o evento de sorte: "+(error.message||"erro no Firestore"),"erro");}
+}
+document.getElementById("admEventoSorteAtivar").addEventListener("click",ativarEventoSorteGlobal);
+document.getElementById("admEventoSorteEncerrar").addEventListener("click",encerrarEventoSorteGlobal);
+document.getElementById("admEventoSortePresets").addEventListener("click",e=>{const b=e.target.closest("button[data-sorte-mult]");if(b)admEventoSorteMultiplicador.value=b.dataset.sorteMult;});
 document.getElementById("admEventoAtivar").addEventListener("click",ativarEventoGlobal);
 document.getElementById("admEventoEncerrar").addEventListener("click",encerrarEventoGlobal);
 document.getElementById("admEventoPresets").addEventListener("click",e=>{const b=e.target.closest("button[data-evento-mult]");if(b)admEventoMultiplicador.value=b.dataset.eventoMult;});
