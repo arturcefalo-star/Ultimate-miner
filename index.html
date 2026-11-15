@@ -256,6 +256,9 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .novo-emoji{width:42px;height:42px;display:grid;place-items:center;border-radius:9px;background:#243653;font-size:25px;flex:0 0 42px}
 .novo-info{flex:1;min-width:0}
 .novo-info strong{display:block;font-size:14px;color:#fff}
+.presenca-tag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:7px;padding:2px 6px;border-radius:5px;font-size:9px;font-weight:1000;letter-spacing:.5px;line-height:1.3}
+.presenca-tag.on{color:#baffd0;background:#145b36;border:1px solid #32c875}
+.presenca-tag.off{color:#ffd0d0;background:#632626;border:1px solid #d84b4b}
 .novo-info small{display:block;color:#aebbd0;font-size:11px;margin-top:3px;line-height:1.35}
 .novo-card button,.novo-acao{border:1px solid #ffffff22;border-radius:9px;padding:9px 10px;background:linear-gradient(180deg,#348ee5,#1d5da5);color:#fff;font-weight:900;font-size:12px;white-space:nowrap;box-shadow:0 2px 5px #0006}
 .novo-card button:disabled{opacity:.45}
@@ -1361,6 +1364,25 @@ function venderPetsSelecionados(){
  salvar();renderizarPets();document.getElementById("venderPetsModal").style.display="none";mostrarAviso(vender.length+" pet(s) vendidos. Você recebeu $ "+formatarDinheiro(total)+".","ok");
 }
 
+function jogadorEstaOnline(registro){
+ const pres=(registro&&registro.presenca)||{};
+ let atualizado=0;
+ try{
+  const valor=pres.atualizadoEm;
+  atualizado=valor&&typeof valor.toMillis==="function"?valor.toMillis():(typeof valor==="number"?valor:0);
+ }catch(e){}
+ // O heartbeat é enviado a cada 20 segundos; 65 segundos toleram pequenos atrasos de rede.
+ return pres.online===true&&atualizado>0&&(Date.now()-atualizado)<65000;
+}
+
+function criarEtiquetaPresenca(online){
+ const tag=document.createElement("span");
+ tag.className="presenca-tag "+(online?"on":"off");
+ tag.textContent=online?"ON":"OFF";
+ tag.setAttribute("aria-label",online?"Jogador online":"Jogador offline");
+ return tag;
+}
+
 function renderizarListaRanking(snap){
  const el=document.getElementById("listaRanking");
  const lista=[];
@@ -1371,7 +1393,7 @@ function renderizarListaRanking(snap){
   const saldo=g.moedas??d.moedas??r.moedas??0;
   const renas=g.renascimentos??d.renascimentos??r.renascimentos??0;
   const moedas=Number(saldo),renascimentos=Number(renas);
-  lista.push({nome:String(d.nome||d.displayName||g.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(moedas)?moedas:0,renascimentos:Number.isFinite(renascimentos)?renascimentos:0,uid:doc.id});
+  lista.push({nome:String(d.nome||d.displayName||g.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(moedas)?moedas:0,renascimentos:Number.isFinite(renascimentos)?renascimentos:0,uid:doc.id,online:jogadorEstaOnline(d)});
  });
  lista.sort((a,b)=>{
   const diferenca=rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos;
@@ -1384,7 +1406,7 @@ function renderizarListaRanking(snap){
   const card=document.createElement("div");card.className="novo-card";
   const n=document.createElement("div");n.className="novo-rank-num";n.textContent=(i+1)+"º";
   const info=document.createElement("div");info.className="novo-info";
-  const nome=document.createElement("strong");nome.textContent=j.nome+(usuarioAtual&&j.uid===usuarioAtual.uid?" (Você)":"");
+  const nome=document.createElement("strong");nome.textContent=j.nome+(usuarioAtual&&j.uid===usuarioAtual.uid?" (Você)":"");nome.appendChild(criarEtiquetaPresenca(j.online));
   const desc=document.createElement("small");desc.textContent=rankingTipo==="dinheiro"?"$ "+formatarDinheiro(j.moedas)+" • "+j.renascimentos+" renascimentos":j.renascimentos+" renascimentos • $ "+formatarDinheiro(j.moedas);
   info.append(nome,desc);card.append(n,info);el.appendChild(card);
  });
@@ -1743,6 +1765,28 @@ tom(620,0.13,0.20,"sine",850,0.07);
 function somFecharLoja(){tom(650,0.10,0.20,"sine",400)}
 
 
+// Remove valores que o Firestore rejeita antes de enviar o progresso.
+// Isso protege o salvamento mesmo quando algum pet/registro antigo tem campo undefined
+// ou uma data inválida. Os dados válidos do jogador são preservados.
+function limparDadosParaFirestore(valor,emArray=false){
+if(valor===undefined||typeof valor==="function"||typeof valor==="symbol")return emArray?null:undefined;
+if(valor===null)return null;
+if(typeof valor==="number")return Number.isFinite(valor)?valor:null;
+if(valor instanceof Date)return Number.isFinite(valor.getTime())?valor:null;
+if(Array.isArray(valor))return valor.map(item=>limparDadosParaFirestore(item,true));
+if(typeof valor==="object"){
+// Mantém objetos especiais do Firebase sem desmontá-los.
+if(typeof valor.toDate==="function"||typeof valor.toMillis==="function")return valor;
+const limpo={};
+for(const chave of Object.keys(valor)){
+const item=limparDadosParaFirestore(valor[chave],false);
+if(item!==undefined)limpo[chave]=item;
+}
+return limpo;
+}
+return valor;
+}
+
 function dadosDoJogo(){
 return{
 moedas,
@@ -1780,7 +1824,7 @@ function agendarSalvamentoNuvem(dados){
 if(!jogoPronto()||carregandoDados)return;
 if(timerSalvamentoNuvem)clearTimeout(timerSalvamentoNuvem);
 const id=usuarioAtual.uid;
-const copia=JSON.parse(JSON.stringify(dados));
+const copia=limparDadosParaFirestore(dados);
 timerSalvamentoNuvem=setTimeout(async()=>{
 if(!usuarioAtual||usuarioAtual.uid!==id)return;
 try{
@@ -2123,10 +2167,11 @@ if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem
 if(cancelarMonitoramentoJogador){try{cancelarMonitoramentoJogador();}catch(e){}cancelarMonitoramentoJogador=null;}
 if(dadosCarregados){
 try{
+const dadosSeguros=limparDadosParaFirestore(dadosDoJogo());
 await db.collection("jogadores").doc(usuarioId).set({
 nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
-dados:dadosDoJogo(),
-ranking:{moedas:Number(moedas)||0,renascimentos:Number(renascimentos)||0},
+dados:dadosSeguros,
+ranking:{moedas:Number(dadosSeguros.moedas)||0,renascimentos:Number(dadosSeguros.renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
 }catch(error){mostrarAviso("Não foi possível salvar seu progresso: "+error.message);return;}
@@ -2176,7 +2221,7 @@ function salvarNuvemAgora(){
 if(!jogoPronto()||carregandoDados||!usuarioAtual)return;
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
 const id=usuarioAtual.uid;
-const dados=dadosDoJogo();
+const dados=limparDadosParaFirestore(dadosDoJogo());
 // Guarda uma cópia local síncrona com inventário, pets equipados e preferências de venda.
 dados._saveUpdatedAt=Date.now();
 try{localStorage.setItem("mining_game_save_"+id,JSON.stringify(dados));}catch(error){console.warn("Não foi possível atualizar o salvamento local:",error);}
@@ -2338,7 +2383,7 @@ const bonus=1+ren;
 const melhoria=1+nivel;
 return [
 ["Jogador",nome||"Jogador"],
-["Status",status||"OFFLINE",status==="ONLINE"?"adm-presenca-online":"adm-presenca-offline"],
+["Status",status==="ONLINE"?"ON":(status==="OFFLINE"?"OFF":(status||"OFF")),status==="ONLINE"?"adm-presenca-online":"adm-presenca-offline"],
 ["Dinheiro","$ "+formatarDinheiro(Math.max(0,Number(d.moedas)||0))],
 ["Renascimentos",String(ren)],
 ["Bônus de renascimento",bonus.toFixed(1)+"x"],
@@ -2540,7 +2585,7 @@ admJogadorAbrir.setAttribute("aria-expanded","false");
 }
 function atualizarSeletorVisualJogadores(){
 const atual=jogadoresAdmin.find(j=>j.uid===admJogador.value);
-admJogadorSelecionado.textContent=atual?atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" • "+(atual.online?"ONLINE":"OFFLINE"):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
+admJogadorSelecionado.textContent=atual?atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" • "+(atual.online?"ON":"OFF"):(admJogador.options.length?"Selecione um jogador":"Nenhum jogador carregado");
 if(atual)criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(atual.nome,atual.dados,atual.online?"ONLINE":"OFFLINE"));
 admJogadorLista.textContent="";
 if(!jogadoresAdmin.length){
@@ -2551,7 +2596,7 @@ const opcao=document.createElement("button");
 opcao.type="button";opcao.className="adm-seletor-opcao"+(jogador.uid===admJogador.value?" selecionada":"");
 opcao.setAttribute("role","option");opcao.setAttribute("aria-selected",jogador.uid===admJogador.value?"true":"false");
 opcao.dataset.uid=jogador.uid;
-opcao.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"ONLINE":"OFFLINE");
+opcao.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"ON":"OFF");
 admJogadorLista.appendChild(opcao);
 }
 }
@@ -2591,10 +2636,8 @@ select.appendChild(carregando);
 try{
 const snapshot=await comTempoLimite(db.collection("jogadores").get(),20000,"listar jogadores");
 jogadoresAdmin=snapshot.docs.map(doc=>{
-const registro=doc.data()||{};const pres=registro.presenca||{};
-let atualizado=0;
-try{atualizado=pres.atualizadoEm&&pres.atualizadoEm.toMillis?pres.atualizadoEm.toMillis():0;}catch(e){}
-const online=pres.online===true&&atualizado>0&&(Date.now()-atualizado)<65000;
+const registro=doc.data()||{};
+const online=jogadorEstaOnline(registro);
 return {uid:doc.id,nome:String(registro.nome||"Jogador"),dados:registro.dados||{},online};
 }).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
 select.textContent="";
