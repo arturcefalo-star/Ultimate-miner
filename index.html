@@ -631,13 +631,13 @@ const CHAVE_CONTAS_SALVAS="ultimate_miner_contas_salvas";
 function lerContasSalvas(){
 try{
 const lista=JSON.parse(localStorage.getItem(CHAVE_CONTAS_SALVAS)||"[]");
-return Array.isArray(lista)?lista.filter(n=>typeof n==="string"&&nomeValido(n)).slice(0,8):[];
+return Array.isArray(lista)?lista.filter((n,i,a)=>typeof n==="string"&&nomeValido(n)&&a.findIndex(x=>String(x).toLowerCase()===n.toLowerCase())===i).slice(0,100):[];
 }catch(e){return [];}
 }
 function salvarContaUsada(nome){
 const lista=lerContasSalvas().filter(n=>n.toLowerCase()!==nome.toLowerCase());
 lista.unshift(nome);
-try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista.slice(0,8)));}catch(e){}
+try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista.slice(0,100)));}catch(e){}
 mostrarContasSalvas();
 }
 function removerContaSalva(nome){
@@ -651,7 +651,7 @@ contasSalvas.innerHTML="";
 const lista=lerContasSalvas();
 if(!lista.length)return;
 const titulo=document.createElement("div");
-titulo.textContent="CONTAS USADAS";
+titulo.textContent="CONTAS SALVAS — TOQUE PARA ENTRAR";
 titulo.style.cssText="font-size:11px;color:#9db9ef;text-align:left;font-weight:bold;margin-bottom:2px";
 contasSalvas.appendChild(titulo);
 lista.forEach(nome=>{
@@ -665,17 +665,14 @@ nomeLogin.value=nome;
 const emailSalvo=usuarioEmail(nome);
 const sessaoAtual=auth.currentUser;
 if(sessaoAtual&&sessaoAtual.email&&sessaoAtual.email.toLowerCase()===emailSalvo.toLowerCase()){
-  senhaLogin.value="";
-  mensagemDeLogin("Conta reconhecida. Entrando sem pedir a senha...",false);
+  mensagemDeLogin("Esta conta já está autenticada. Abrindo seu jogo...",false);
   await entrarNoJogo(sessaoAtual,nome);
   return;
 }
+// Por segurança, o jogo guarda somente o nome. A senha fica no gerenciador
+// de senhas do navegador/dispositivo e nunca é gravada em texto puro no site.
 senhaLogin.value="";
-if(sessaoAtual){
-  mensagemDeLogin("Esta conta não é a sessão conectada. Para trocar de conta, digite a senha dela.",true);
-}else{
-  mensagemDeLogin("A sessão desta conta não está conectada. Digite a senha para entrar.",true);
-}
+mensagemDeLogin("Conta selecionada. Confirme ou preencha a senha para entrar.",false);
 senhaLogin.focus();
 });
 const remover=document.createElement("button");
@@ -801,7 +798,7 @@ console.error("Erro ao sincronizar os dados do jogador em tempo real:",error);
 function textoErroLogin(error){
 const c=error&&error.code;
 if(c==="auth/username-case-mismatch")return "Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas.";
-if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Senha incorreta. Digite a senha atual.";
+if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Esta conta está com a senha incorreta. Digite a senha atual para entrar novamente.";
 if(c==="auth/user-not-found")return "Essa conta não foi encontrada. Confira o nome de usuário.";
 if(c==="auth/user-disabled")return "Esta conta foi banida ou desativada.";
 if(c==="auth/too-many-requests")return "Muitas tentativas seguidas. Aguarde um pouco e tente de novo.";
@@ -1232,21 +1229,22 @@ function renderizarMundos(){
   const info=document.createElement("div");info.className="mundo-info";
   const nome=document.createElement("strong");nome.textContent=m.nome;
   const desc=document.createElement("small");
-  desc.textContent=aberto?visual.tema:("Custo para desbloquear: $ "+formatarDinheiro(m.custo));
+  desc.textContent=aberto?visual.tema:("PREÇO DE COMPRA: $ "+formatarDinheiro(m.custo));
   info.append(nome,desc);
   const rodape=document.createElement("div");rodape.className="mundo-rodape";
   const bonus=document.createElement("span");bonus.className="mundo-bonus";bonus.textContent="BÔNUS "+m.mult+"x";
   const b=document.createElement("button");
   const mundoAnteriorLiberado=i===0||mundosDesbloqueados.includes(i-1);
-  b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":(mundoAnteriorLiberado?"DESBLOQUEAR":"BLOQUEADO"));
-  b.disabled=selecionado||(!aberto&&(!mundoAnteriorLiberado||moedas<m.custo));
+  b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":(mundoAnteriorLiberado?("COMPRAR $"+formatarDinheiro(m.custo)):"BLOQUEADO"));
+  b.disabled=selecionado||(!aberto&&!mundoAnteriorLiberado);
   if(!aberto&&!mundoAnteriorLiberado)b.title="Desbloqueie primeiro o mundo anterior.";
-  else if(!aberto&&moedas<m.custo)b.title="Faltam $ "+formatarDinheiro(m.custo-moedas);
+  else if(!aberto&&moedas<m.custo)b.title="Você precisa de mais $ "+formatarDinheiro(m.custo-moedas)+" para comprar";
   b.addEventListener("click",()=>{
    if(!mundosDesbloqueados.includes(i)){
     if(!mundoAnteriorLiberado){mostrarAviso("Desbloqueie primeiro o mundo anterior.","erro");return;}
-    if(moedas<m.custo){mostrarAviso("Você precisa de $ "+formatarDinheiro(m.custo-moedas)+" a mais para desbloquear este mundo.","erro");return;}
-    moedas=Math.max(0,moedas-m.custo);mundosDesbloqueados.push(i);
+    if(m.custo>0&&moedas<m.custo){mostrarAviso("Dinheiro insuficiente! Faltam $ "+formatarDinheiro(m.custo-moedas)+" para comprar este mundo.","erro");return;}
+    if(m.custo>0){moedas-=m.custo;}
+    mundosDesbloqueados.push(i);
     mostrarAviso("Mundo "+(i+1)+" desbloqueado: "+m.nome+"!","ok");
    }
    mundoAtual=i;salvar();renderizarMundos();
@@ -1999,6 +1997,10 @@ if(picaretasCompradas.includes(picaretaSalva))picaretaAtual=picaretaSalva;
 if(mineriosComprados.includes(minerioSalvo))minerioAtual=minerioSalvo;
 const volumeSalvo=Number(dados.volumeGeral);
 if(Number.isFinite(volumeSalvo))volumeGeral=Math.max(0,Math.min(1,volumeSalvo));
+// Atualiza o ganho de áudio imediatamente ao carregar cada conta, inclusive 0%.
+if(masterGain&&audio){
+ try{masterGain.gain.cancelScheduledValues(audio.currentTime);masterGain.gain.setValueAtTime(volumeGeral*1.8,audio.currentTime);}catch(e){masterGain.gain.value=volumeGeral*1.8;}
+}
 adminDesbloqueado=false;
 codigosUsados=Array.isArray(dados.codigosUsados)?dados.codigosUsados.filter(c=>typeof c==="string"):[];
 multiplicadorCompras=Math.max(0,Math.floor(Number(dados.multiplicadorCompras)||0));
@@ -2103,6 +2105,7 @@ criadoEm:firebase.firestore.FieldValue.serverTimestamp()
 }
 carregandoDados=true;
 aplicarDados(dadosConta);
+if(masterGain&&audio){try{masterGain.gain.cancelScheduledValues(audio.currentTime);masterGain.gain.setValueAtTime(volumeGeral*1.8,audio.currentTime);}catch(e){masterGain.gain.value=volumeGeral*1.8;}}
 try{localStorage.setItem("mining_game_save_"+user.uid,JSON.stringify(dadosConta));}catch(e){}
 carregandoDados=false;
 if(snap.exists&&Number(dadosConta&&dadosConta._saveUpdatedAt)>Number(((snap.data()||{}).dados||{})._saveUpdatedAt||0)){
