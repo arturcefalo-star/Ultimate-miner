@@ -135,15 +135,6 @@ border:2px solid #5689c9;box-shadow:0 0 28px #287bd455
 .adm-chip strong{display:block;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adm-chip strong.adm-presenca-online{display:inline-flex;align-items:center;margin-top:4px;padding:3px 8px;border-radius:5px;color:#baffd0;background:#145b36;border:1px solid #32c875;font-size:11px}
 .adm-chip strong.adm-presenca-offline{display:inline-flex;align-items:center;margin-top:4px;padding:3px 8px;border-radius:5px;color:#ffd0d0;background:#632626;border:1px solid #d84b4b;font-size:11px}
-.adm-mundos-botao{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:5px;padding:7px 9px;border:1px solid #6685ae;border-radius:8px;background:#172b45;color:#eaf3ff;font-weight:900;font-size:11px;cursor:pointer}
-.adm-mundos-modal{position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;padding:16px;background:#000b}
-.adm-mundos-caixa{width:min(420px,100%);max-height:80vh;overflow:auto;padding:16px;border:1px solid #55749a;border-radius:15px;background:#101a2a;box-shadow:0 16px 55px #000b}
-.adm-mundos-cabecalho{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-.adm-mundos-cabecalho h3{margin:0;color:#fff;font-size:17px}
-.adm-mundos-fechar{border:0;border-radius:8px;padding:7px 11px;background:#263a54;color:#fff;font-weight:900}
-.adm-mundo-liberado{display:flex;align-items:center;gap:10px;padding:10px;margin:7px 0;border:1px solid #2e9e66;border-radius:9px;background:#123324;color:#eafff1}
-.adm-mundo-liberado strong{flex:1}
-.adm-mundo-liberado small{color:#a9f2c4;font-weight:800}
 .adm-chip:nth-child(3) strong,.adm-chip:nth-child(4) strong{font-size:18px;color:#ffe17b}
 
 #abaEu{display:none!important}
@@ -354,18 +345,6 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 #listaRanking .novo-card .novo-info small{flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap;}
 #listaRanking .novo-card .novo-info small.valor-renascimentos{font-size:22px;}
 #listaRanking .novo-card .novo-info small.valor-dinheiro{font-size:20px;}
-
-/* Corrige o seletor duplicado do painel: mantém apenas o menu com seta. */
-.adm-select-wrap{position:relative;display:block;width:100%;min-width:0}
-.adm-select-wrap>.adm-select-original{display:none!important;visibility:hidden!important;width:0!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important}
-.adm-select-wrap>.adm-select-trigger{display:flex!important;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:43px;padding:9px 12px;border:1px solid #657acb;border-radius:9px;background:#10101c;color:#fff;font-size:14px;text-align:left;cursor:pointer}
-.adm-select-trigger>span:first-child{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.adm-select-trigger .adm-seta{flex:0 0 auto;color:#b9c7ff;font-size:18px;line-height:1}
-.adm-select-list{position:absolute;z-index:26000;top:calc(100% + 5px);left:0;right:0;max-height:min(280px,45vh);overflow-y:auto;padding:5px;border:1px solid #526cae;border-radius:10px;background:#111827;box-shadow:0 10px 28px #000b}
-.adm-select-list[hidden]{display:none!important}
-.adm-select-option{display:block;width:100%;padding:10px;border:0;border-radius:7px;background:transparent;color:#fff;text-align:left;font-size:13px;cursor:pointer}
-.adm-select-option+.adm-select-option{border-top:1px solid #ffffff12}
-.adm-select-option:hover,.adm-select-option.selecionada{background:#293957}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -481,8 +460,6 @@ background:#10101c;color:#fff;font-size:16px;outline:none
  <div id="adminInventarioLista" class="pet-grade admin-inventario-grade"></div>
  <button id="adminExcluirPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d64a4a,#922323)" disabled>EXCLUIR SELECIONADOS (0)</button>
 </div></div>
-
-<div id="admMundosModal" class="adm-mundos-modal" role="dialog" aria-modal="true" aria-label="Mundos liberados"><div class="adm-mundos-caixa"><div class="adm-mundos-cabecalho"><h3>🌎 MUNDOS LIBERADOS</h3><button id="admMundosFechar" class="adm-mundos-fechar" type="button">FECHAR</button></div><div id="admMundosLista"></div></div></div>
 
 <div id="eventoGlobalBadge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">00:00</span></div>
 <div id="eventoSorteBadge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span id="eventoSorteTempo">SORTE</span></div>
@@ -651,19 +628,33 @@ const botaoAtualizarSenha=document.getElementById("botaoAtualizarSenha");
 const botaoCancelarSenha=document.getElementById("botaoCancelarSenha");
 
 const CHAVE_CONTAS_SALVAS="ultimate_miner_contas_salvas";
+// Credenciais lembradas somente neste aparelho, conforme autorizado pelo usuário.
+const CHAVE_CREDENCIAIS_CONTAS="ultimate_miner_credenciais_locais_v1";
+function lerCredenciaisLocais(){
+try{const obj=JSON.parse(localStorage.getItem(CHAVE_CREDENCIAIS_CONTAS)||"{}");return obj&&typeof obj==="object"&&!Array.isArray(obj)?obj:{};}catch(e){return {};}
+}
+function salvarCredencialLocal(nome,senha){
+if(!nome||typeof senha!=="string"||!senha)return;
+const obj=lerCredenciaisLocais();
+obj[String(nome).toLowerCase()]=senha;
+try{localStorage.setItem(CHAVE_CREDENCIAIS_CONTAS,JSON.stringify(obj));}catch(e){console.warn("Não foi possível lembrar a senha neste aparelho:",e);}
+}
+function obterCredencialLocal(nome){return lerCredenciaisLocais()[String(nome||"").toLowerCase()]||"";}
+function removerCredencialLocal(nome){const obj=lerCredenciaisLocais();delete obj[String(nome||"").toLowerCase()];try{localStorage.setItem(CHAVE_CREDENCIAIS_CONTAS,JSON.stringify(obj));}catch(e){}}
 function lerContasSalvas(){
 try{
 const lista=JSON.parse(localStorage.getItem(CHAVE_CONTAS_SALVAS)||"[]");
-return Array.isArray(lista)?lista.filter((n,i,a)=>typeof n==="string"&&nomeValido(n)&&a.findIndex(x=>String(x).toLowerCase()===n.toLowerCase())===i).slice(0,100):[];
+return Array.isArray(lista)?lista.filter(n=>typeof n==="string"&&nomeValido(n)).slice(0,8):[];
 }catch(e){return [];}
 }
 function salvarContaUsada(nome){
 const lista=lerContasSalvas().filter(n=>n.toLowerCase()!==nome.toLowerCase());
 lista.unshift(nome);
-try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista.slice(0,100)));}catch(e){}
+try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista.slice(0,8)));}catch(e){}
 mostrarContasSalvas();
 }
 function removerContaSalva(nome){
+removerCredencialLocal(nome);
 const lista=lerContasSalvas().filter(n=>n.toLowerCase()!==nome.toLowerCase());
 try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista));}catch(e){}
 mostrarContasSalvas();
@@ -674,7 +665,7 @@ contasSalvas.innerHTML="";
 const lista=lerContasSalvas();
 if(!lista.length)return;
 const titulo=document.createElement("div");
-titulo.textContent="CONTAS SALVAS — TOQUE PARA ENTRAR";
+titulo.textContent="CONTAS USADAS";
 titulo.style.cssText="font-size:11px;color:#9db9ef;text-align:left;font-weight:bold;margin-bottom:2px";
 contasSalvas.appendChild(titulo);
 lista.forEach(nome=>{
@@ -688,14 +679,39 @@ nomeLogin.value=nome;
 const emailSalvo=usuarioEmail(nome);
 const sessaoAtual=auth.currentUser;
 if(sessaoAtual&&sessaoAtual.email&&sessaoAtual.email.toLowerCase()===emailSalvo.toLowerCase()){
-  mensagemDeLogin("Esta conta já está autenticada. Abrindo seu jogo...",false);
+  senhaLogin.value="";
+  mensagemDeLogin("Conta reconhecida. Entrando sem pedir a senha...",false);
   await entrarNoJogo(sessaoAtual,nome);
   return;
 }
-// Por segurança, o jogo guarda somente o nome. A senha fica no gerenciador
-// de senhas do navegador/dispositivo e nunca é gravada em texto puro no site.
+const senhaLembrada=obterCredencialLocal(nome);
+if(senhaLembrada){
+  escolher.disabled=true;
+  operacaoManualDeConta=true;
+  mensagemDeLogin("Entrando na conta salva...",false);
+  try{
+    await comTempoLimite(auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL),10000,"manter as contas neste aparelho");
+    const cred=await comTempoLimite(auth.signInWithEmailAndPassword(emailSalvo,senhaLembrada),20000,"alternar para a conta salva");
+    const snap=await comTempoLimite(db.collection("jogadores").doc(cred.user.uid).get(),15000,"conferir a conta salva");
+    const nomeReal=cred.user.uid===ADMIN_UID?"Artur":String((snap.exists&&(snap.data()||{}).nome)||cred.user.displayName||"");
+    if(nomeReal!==nome)throw {code:"auth/username-case-mismatch"};
+    const ok=await entrarNoJogo(cred.user,nomeReal);
+    if(!ok&&auth.currentUser)await auth.signOut();
+    if(ok)senhaLogin.value="";
+  }catch(error){
+    console.error("Erro ao abrir conta lembrada:",error);
+    if(auth.currentUser&&auth.currentUser.email&&auth.currentUser.email.toLowerCase()===emailSalvo.toLowerCase()){
+      try{await auth.signOut();}catch(e){console.warn("Não foi possível encerrar a sessão inválida:",e);}
+    }
+    if(error.code==="auth/wrong-password"||error.code==="auth/invalid-credential"||error.code==="auth/invalid-login-credentials")removerCredencialLocal(nome);
+    mensagemDeLogin(textoErroLogin(error)+" Digite a senha novamente para atualizar o acesso salvo.");
+    senhaLogin.value="";
+    senhaLogin.focus();
+  }finally{operacaoManualDeConta=false;escolher.disabled=false;}
+  return;
+}
 senhaLogin.value="";
-mensagemDeLogin("Conta selecionada. Confirme ou preencha a senha para entrar.",false);
+mensagemDeLogin("Esta conta ainda não tem senha lembrada neste aparelho. Digite a senha uma vez para salvá-la.",true);
 senhaLogin.focus();
 });
 const remover=document.createElement("button");
@@ -821,7 +837,7 @@ console.error("Erro ao sincronizar os dados do jogador em tempo real:",error);
 function textoErroLogin(error){
 const c=error&&error.code;
 if(c==="auth/username-case-mismatch")return "Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas.";
-if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Esta conta está com a senha incorreta. Digite a senha atual para entrar novamente.";
+if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Senha incorreta. Digite a senha atual.";
 if(c==="auth/user-not-found")return "Essa conta não foi encontrada. Confira o nome de usuário.";
 if(c==="auth/user-disabled")return "Esta conta foi banida ou desativada.";
 if(c==="auth/too-many-requests")return "Muitas tentativas seguidas. Aguarde um pouco e tente de novo.";
@@ -1252,22 +1268,21 @@ function renderizarMundos(){
   const info=document.createElement("div");info.className="mundo-info";
   const nome=document.createElement("strong");nome.textContent=m.nome;
   const desc=document.createElement("small");
-  desc.textContent=aberto?visual.tema:("PREÇO DE COMPRA: $ "+formatarDinheiro(m.custo));
+  desc.textContent=aberto?visual.tema:("Custo para desbloquear: $ "+formatarDinheiro(m.custo));
   info.append(nome,desc);
   const rodape=document.createElement("div");rodape.className="mundo-rodape";
   const bonus=document.createElement("span");bonus.className="mundo-bonus";bonus.textContent="BÔNUS "+m.mult+"x";
   const b=document.createElement("button");
   const mundoAnteriorLiberado=i===0||mundosDesbloqueados.includes(i-1);
-  b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":(mundoAnteriorLiberado?("COMPRAR $"+formatarDinheiro(m.custo)):"BLOQUEADO"));
-  b.disabled=selecionado||(!aberto&&!mundoAnteriorLiberado);
+  b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":(mundoAnteriorLiberado?"DESBLOQUEAR":"BLOQUEADO"));
+  b.disabled=selecionado||(!aberto&&(!mundoAnteriorLiberado||moedas<m.custo));
   if(!aberto&&!mundoAnteriorLiberado)b.title="Desbloqueie primeiro o mundo anterior.";
-  else if(!aberto&&moedas<m.custo)b.title="Você precisa de mais $ "+formatarDinheiro(m.custo-moedas)+" para comprar";
+  else if(!aberto&&moedas<m.custo)b.title="Faltam $ "+formatarDinheiro(m.custo-moedas);
   b.addEventListener("click",()=>{
    if(!mundosDesbloqueados.includes(i)){
     if(!mundoAnteriorLiberado){mostrarAviso("Desbloqueie primeiro o mundo anterior.","erro");return;}
-    if(m.custo>0&&moedas<m.custo){mostrarAviso("Dinheiro insuficiente! Faltam $ "+formatarDinheiro(m.custo-moedas)+" para comprar este mundo.","erro");return;}
-    if(m.custo>0){moedas-=m.custo;}
-    mundosDesbloqueados.push(i);
+    if(moedas<m.custo){mostrarAviso("Você precisa de $ "+formatarDinheiro(m.custo-moedas)+" a mais para desbloquear este mundo.","erro");return;}
+    moedas=Math.max(0,moedas-m.custo);mundosDesbloqueados.push(i);
     mostrarAviso("Mundo "+(i+1)+" desbloqueado: "+m.nome+"!","ok");
    }
    mundoAtual=i;salvar();renderizarMundos();
@@ -1507,11 +1522,13 @@ function renderizarListaRanking(snap){
  const el=document.getElementById("listaRanking");
  const lista=[];
  snap.forEach(doc=>{
-  const d=doc.data()||{};
-  // A coleção pública contém somente os campos necessários ao ranking.
-  const valorDinheiro=Number(d.moedas)||0;
-  const valorRenascimentos=Number(d.renascimentos)||0;
-  lista.push({nome:String(d.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(valorDinheiro)?valorDinheiro:0,renascimentos:Number.isFinite(valorRenascimentos)?valorRenascimentos:0,uid:doc.id,online:d.online===true});
+  const d=doc.data()||{},g=d.dados||{},r=d.ranking||{};
+  // O progresso dentro de dados é a fonte primária. O resumo ranking é apenas fallback,
+  // pois pode ficar atrasado em relação ao saldo real salvo no jogo.
+  // Cada ranking lê e apresenta somente seu próprio campo; nunca mistura moedas e renascimentos.
+  const valorDinheiro=Number(g.moedas??d.moedas??r.moedas??0);
+  const valorRenascimentos=Number(g.renascimentos??d.renascimentos??r.renascimentos??0);
+  lista.push({nome:String(d.nome||d.displayName||g.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(valorDinheiro)?valorDinheiro:0,renascimentos:Number.isFinite(valorRenascimentos)?valorRenascimentos:0,uid:doc.id,online:jogadorEstaOnline(d)});
  });
  lista.sort((a,b)=>{
   const diferenca=rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos;
@@ -1555,13 +1572,13 @@ async function carregarRanking(forcar=false){
  const el=document.getElementById("listaRanking");
  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Carregando ranking...";}
  try{
-  const snap=await comTempoLimite(db.collection("rankingGlobal").get(),20000,"atualizar ranking");
+  const snap=await comTempoLimite(db.collection("jogadores").get(),20000,"atualizar ranking");
   rankingUltimoSnapshot=snap;
   rankingUltimaBusca=Date.now();
   renderizarListaRanking(snap);
  }catch(error){
   console.error("Falha ao atualizar ranking:",error);
-  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent=(error&&error.code==="permission-denied")?"O ranking global está bloqueado pelas regras de leitura do Firestore. Libere a leitura autenticada da coleção rankingGlobal.":"Não foi possível carregar o ranking. Verifique a conexão e tente novamente.";}
+  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Não foi possível carregar o ranking. Verifique a conexão e as permissões de leitura.";}
  }finally{rankingBuscaEmAndamento=false;}
 }
 
@@ -1950,13 +1967,6 @@ ovosAbertos:ovosAbertos
 };
 }
 
-async function publicarResumoRanking(uid,nome,dados,online=true){
- if(!uid||!dados)return;
- const resumo={nome:String(nome||"Jogador"),moedas:Math.max(0,Number(dados.moedas)||0),renascimentos:Math.max(0,Number(dados.renascimentos)||0),online:online===true,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
- try{await db.collection("rankingGlobal").doc(uid).set(resumo,{merge:true});}
- catch(error){console.warn("Não foi possível atualizar o ranking público:",error);}
-}
-
 function agendarSalvamentoNuvem(dados){
 if(!jogoPronto()||carregandoDados||!usuarioAtual)return;
 // Não reinicia o temporizador em cada mineração: isso impedia o envio
@@ -1969,14 +1979,12 @@ if(!usuarioAtual||usuarioAtual.uid!==id||!jogoPronto()||carregandoDados)return;
 // Lê o estado atual no momento do envio, não uma cópia antiga capturada antes.
 const copia=limparDadosParaFirestore(dadosDoJogo());
 try{
-const nomeRanking=usuarioAtual.displayName||usuarioAtual.email.split("@")[0];
 await db.collection("jogadores").doc(id).set({
-nome:nomeRanking,
+nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados:copia,
 ranking:{moedas:Number(copia.moedas)||0,renascimentos:Number(copia.renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
-await publicarResumoRanking(id,nomeRanking,copia,true);
 }catch(error){console.error("Erro ao salvar no Firebase:",error);}
 },500);
 }
@@ -2027,10 +2035,6 @@ if(picaretasCompradas.includes(picaretaSalva))picaretaAtual=picaretaSalva;
 if(mineriosComprados.includes(minerioSalvo))minerioAtual=minerioSalvo;
 const volumeSalvo=Number(dados.volumeGeral);
 if(Number.isFinite(volumeSalvo))volumeGeral=Math.max(0,Math.min(1,volumeSalvo));
-// Atualiza o ganho de áudio imediatamente ao carregar cada conta, inclusive 0%.
-if(masterGain&&audio){
- try{masterGain.gain.cancelScheduledValues(audio.currentTime);masterGain.gain.setValueAtTime(volumeGeral*1.8,audio.currentTime);}catch(e){masterGain.gain.value=volumeGeral*1.8;}
-}
 adminDesbloqueado=false;
 codigosUsados=Array.isArray(dados.codigosUsados)?dados.codigosUsados.filter(c=>typeof c==="string"):[];
 multiplicadorCompras=Math.max(0,Math.floor(Number(dados.multiplicadorCompras)||0));
@@ -2135,7 +2139,6 @@ criadoEm:firebase.firestore.FieldValue.serverTimestamp()
 }
 carregandoDados=true;
 aplicarDados(dadosConta);
-if(masterGain&&audio){try{masterGain.gain.cancelScheduledValues(audio.currentTime);masterGain.gain.setValueAtTime(volumeGeral*1.8,audio.currentTime);}catch(e){masterGain.gain.value=volumeGeral*1.8;}}
 try{localStorage.setItem("mining_game_save_"+user.uid,JSON.stringify(dadosConta));}catch(e){}
 carregandoDados=false;
 if(snap.exists&&Number(dadosConta&&dadosConta._saveUpdatedAt)>Number(((snap.data()||{}).dados||{})._saveUpdatedAt||0)){
@@ -2147,7 +2150,6 @@ dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
 iniciarMonitoramentoEventoGlobal();
 iniciarPresenca(user.uid);
-await publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true);
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
@@ -2196,6 +2198,7 @@ throw {code:"auth/username-case-mismatch",message:"Nome de usuário incorreto. D
 }
 mensagemDeLogin("ETAPA 2/2: conta reconhecida; carregando progresso...",false);
 const ok=await entrarNoJogo(cred.user,nomeCadastrado);
+if(ok)salvarCredencialLocal(nomeCadastrado,senha);
 if(!ok&&auth.currentUser)await auth.signOut();
 }catch(error){
 console.error("Erro no login:",error);
@@ -2229,7 +2232,7 @@ criadoEm:firebase.firestore.FieldValue.serverTimestamp()
 }),15000,"salvar os dados iniciais no Firestore");
 if(legado){try{localStorage.removeItem("mining_game_save");}catch(e){}}
 const entrou=await entrarNoJogo(cred.user,nome);
-if(entrou)mensagemDeLogin("",false);
+if(entrou){salvarCredencialLocal(nome,senha);mensagemDeLogin("",false);}
 else mensagemDeLogin("Sua conta foi criada, mas não foi possível carregar os dados. Entre novamente ou verifique as regras do Firestore.");
 }catch(error){
 console.error("Erro ao criar conta:",error);
@@ -2279,6 +2282,7 @@ auth.currentUser.email,atual
 );
 await comTempoLimite(auth.currentUser.reauthenticateWithCredential(credencial),20000,"confirmar a senha atual");
 await comTempoLimite(auth.currentUser.updatePassword(nova),20000,"atualizar a senha");
+salvarCredencialLocal(usuarioAtual.displayName||auth.currentUser.email.split("@")[0],nova);
 mensagemSenha.style.color="#9dffb0";
 mensagemSenha.textContent="Senha atualizada com sucesso!";
 senhaAtualInput.value="";
@@ -2310,14 +2314,13 @@ senhaConfirmarInput.addEventListener("keydown",e=>{if(e.key==="Enter")atualizarS
 async function sairDaConta(){
 if(!usuarioAtual||saindoDaConta)return;
 saindoDaConta=true;
-let dadosSeguros=null;
 try{
 const usuarioId=usuarioAtual.uid;
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
 if(cancelarMonitoramentoJogador){try{cancelarMonitoramentoJogador();}catch(e){}cancelarMonitoramentoJogador=null;}
 if(dadosCarregados){
 try{
-dadosSeguros=limparDadosParaFirestore(dadosDoJogo());
+const dadosSeguros=limparDadosParaFirestore(dadosDoJogo());
 await db.collection("jogadores").doc(usuarioId).set({
 nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados:dadosSeguros,
@@ -2326,19 +2329,10 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
 }catch(error){mostrarAviso("Não foi possível salvar seu progresso: "+error.message);return;}
 }
-// Encerra também a sessão do Firebase. Antes, apenas escondíamos o jogo,
-// deixando a conta anterior autenticada; isso podia fazer o Firebase
-// reabrir a conta antiga automaticamente ao tentar trocar de usuário.
+// Mantém a sessão autenticada no Firebase neste aparelho.
+// Assim, ao tocar novamente no nome salvo, a conta abre sem pedir a senha.
 dadosCarregados=false;
-try{if(dadosSeguros)await publicarResumoRanking(usuarioId,usuarioAtual.displayName||usuarioAtual.email.split("@")[0],dadosSeguros,false);}catch(e){}
-pararPresenca(usuarioId);
-try{
-  await comTempoLimite(auth.signOut(),10000,"desconectar a conta atual");
-}catch(erroSaida){
-  mostrarAviso("Não foi possível desconectar a conta do Firebase. Verifique a conexão e tente novamente.","erro");
-  dadosCarregados=true;
-  return;
-}
+pararPresenca(usuarioAtual&&usuarioAtual.uid);
 usuarioAtual=null;
 codigoAdminSessao="";
 adminDesbloqueado=false;
@@ -2352,7 +2346,7 @@ carregandoDados=false;
 loginModal.style.display="flex";
 nomeLogin.value="";
 senhaLogin.value="";
-mensagemDeLogin("Conta desconectada. As contas continuam salvas nesta lista. Para entrar novamente, selecione a conta e digite sua senha.",false);
+mensagemDeLogin("Conta desconectada do jogo, mas continua lembrada neste aparelho. Toque no nome para entrar direto.",false);
 }finally{
 saindoDaConta=false;
 }
@@ -2389,7 +2383,7 @@ nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados,
 ranking:{moedas:Number(moedas)||0,renascimentos:Number(renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
-},{merge:true}).then(()=>publicarResumoRanking(id,usuarioAtual&&usuarioAtual.uid===id?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"Jogador",dados,true)).catch(error=>console.error("Erro ao salvar:",error));
+},{merge:true}).catch(error=>console.error("Erro ao salvar:",error));
 }
 
 document.addEventListener("visibilitychange",()=>{
@@ -2522,32 +2516,14 @@ renderizarLogAdmin();
 mostrarAviso(texto,tipo);
 }
 
-function abrirResumoMundos(indices){
- const modal=document.getElementById("admMundosModal"),lista=document.getElementById("admMundosLista");
- if(!modal||!lista)return;
- const validos=[...new Set([0,...(Array.isArray(indices)?indices:[])].map(Number))].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b);
- lista.textContent="";
- if(!validos.length){lista.textContent="Nenhum mundo liberado.";}
- validos.forEach(i=>{const linha=document.createElement("div");linha.className="adm-mundo-liberado";const nome=document.createElement("strong");nome.textContent="Mundo "+(i+1)+" — "+mundosJogo[i].nome;const status=document.createElement("small");status.textContent="LIBERADO";linha.append(nome,status);lista.appendChild(linha);});
- modal.style.display="flex";
-}
 function criarResumoAdmin(container,itens){
 if(!container)return;
 container.textContent="";
 for(const [rotulo,valor,classe] of itens){
 const chip=document.createElement("div");chip.className="adm-chip";
 const r=document.createElement("span");r.textContent=rotulo;
-if(classe==="mundos"){
- const b=document.createElement("button");b.type="button";b.className="adm-mundos-botao";
- const quantidade=Array.isArray(valor)?valor.length:0;
- b.textContent="Ver mundos liberados ("+quantidade+")  ⋯";
- b.addEventListener("click",()=>abrirResumoMundos(valor));
- chip.append(r,b);
-}else{
- const v=document.createElement("strong");v.textContent=valor;if(classe)v.className=classe;
- chip.append(r,v);
-}
-container.appendChild(chip);
+const v=document.createElement("strong");v.textContent=valor;if(classe)v.className=classe;
+chip.appendChild(r);chip.appendChild(v);container.appendChild(chip);
 }
 }
 function estatisticasDadosAdmin(nome,dados,status){
@@ -2575,7 +2551,7 @@ return [
 ["Minérios liberados",mrs.length+"/"+minerios.length],
 ["Mundo atual","Mundo "+(Math.max(0,Math.min(mundosJogo.length-1,Number(d.mundoAtual)||0))+1)+" — "+(mundosJogo[Math.max(0,Math.min(mundosJogo.length-1,Number(d.mundoAtual)||0))]?.nome||"Superfície")],
 ["Mundos desbloqueados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).length:1)+"/"+mundosJogo.length],
-["Mundos liberados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b):[0]),"mundos"],
+["Mundos liberados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b):[0]).map(i=>"Mundo "+(i+1)).join(", ")],
 ["Auto clicker",d.autoClickerProComprado?"Pro":(d.autoClickerComprado?"Normal":"Nenhum")]
 ];
 }
@@ -3126,30 +3102,7 @@ else if(acao==="givePro")textoAviso="O admin "+nomeDoAdminAtual()+" liberou o Au
 else if(acao==="removePro")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o Auto Clicker Pro da sua conta.";
 else if(acao==="setMultiplier")textoAviso="O admin "+nomeDoAdminAtual()+" definiu sua melhoria de dinheiro no nível "+valor+".";
 else if(acao==="givePet")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o pet "+itemNome+".";
-const avisoRemoto={id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()};
-if(acao==="giveWorld"||acao==="removeWorld"){
- await comTempoLimite(db.runTransaction(async tx=>{
-  const atualSnap=await tx.get(ref);
-  if(!atualSnap.exists)throw new Error("Essa conta não existe mais.");
-  const registroAtual=atualSnap.data()||{};
-  const dadosAtuais=Object.assign({},registroAtual.dados||{});
-  let listaAtual=Array.isArray(dadosAtuais.mundosDesbloqueados)?dadosAtuais.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
-  listaAtual=[...new Set([0,...listaAtual])];
-  if(acao==="giveWorld"){
-   if(!listaAtual.includes(valor))listaAtual.push(valor);
-  }else{
-   if(valor===0)throw new Error("O mundo inicial não pode ser removido.");
-   listaAtual=listaAtual.filter(i=>i!==valor);
-   if(Number(dadosAtuais.mundoAtual)===valor)dadosAtuais.mundoAtual=0;
-  }
-  dadosAtuais.mundosDesbloqueados=listaAtual.sort((a,b)=>a-b);
-  Object.assign(dados,dadosAtuais);
-  tx.set(ref,{dados:dadosAtuais,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
- }),20000,"salvar mundo do jogador");
-}else{
- await comTempoLimite(ref.set({dados,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
-}
-await publicarResumoRanking(uid,nome,dados,jogadorEstaOnline(registro));
+await comTempoLimite(ref.set({dados,avisoAdmin:{id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
 aplicarDadosDoServidor(dados);
@@ -3165,9 +3118,6 @@ admResultado("Não foi possível alterar a conta: "+(error.message||"erro no Fir
 admExecutando=false;botao.disabled=false;botao.textContent=admAcao.value==="viewInventory"?"VER INVENTÁRIO":"Executar";
 }
 }
-
-document.getElementById("admMundosFechar").addEventListener("click",()=>{document.getElementById("admMundosModal").style.display="none";});
-document.getElementById("admMundosModal").addEventListener("click",e=>{if(e.target.id==="admMundosModal")e.currentTarget.style.display="none";});
 
 // EVENTOS GLOBAIS
 const admEventoMultiplicador=document.getElementById("admEventoMultiplicador");
@@ -3909,7 +3859,7 @@ retangulo(45,246,190,28,"#7134bd",7);
 texto("CODIGOS",140,265,13,"#fff","center");
 
 retangulo(255,246,200,28,"#a83232",7);
-texto("SAIR",355,265,13,"#fff","center");
+texto("VOLTAR ÀS CONTAS",355,265,13,"#fff","center");
 }
 
 // ENGRENAGEM
