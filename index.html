@@ -133,8 +133,8 @@ border:2px solid #5689c9;box-shadow:0 0 28px #287bd455
 .adm-chip{background:linear-gradient(135deg,#17263b,#0d1421);border:1px solid #405777;border-radius:10px;padding:8px 9px;min-width:0;box-shadow:0 2px 7px #0004}
 .adm-chip span{display:block;font-size:11px;color:#b8c8dc}
 .adm-chip strong{display:block;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.adm-chip strong.adm-presenca-online{display:inline-flex;margin-top:4px;padding:3px 8px;border-radius:5px;color:#baffd0;background:#145b36;border:1px solid #32c875;font-size:11px}
-.adm-chip strong.adm-presenca-offline{display:inline-flex;margin-top:4px;padding:3px 8px;border-radius:5px;color:#ffd0d0;background:#632626;border:1px solid #d84b4b;font-size:11px}
+.adm-chip strong.adm-presenca-online{display:inline-flex;align-items:center;margin-top:4px;padding:3px 8px;border-radius:5px;color:#baffd0;background:#145b36;border:1px solid #32c875;font-size:11px}
+.adm-chip strong.adm-presenca-offline{display:inline-flex;align-items:center;margin-top:4px;padding:3px 8px;border-radius:5px;color:#ffd0d0;background:#632626;border:1px solid #d84b4b;font-size:11px}
 .adm-chip:nth-child(3) strong,.adm-chip:nth-child(4) strong{font-size:18px;color:#ffe17b}
 
 #abaEu{display:none!important}
@@ -1109,6 +1109,9 @@ let rankingCarregando=false;
 let rankingProximaAtualizacao=Date.now()+60000;
 let cancelarRankingAoVivo=null;
 let rankingUltimaLista=[];
+let rankingUltimoSnapshot=null;
+let rankingUltimaBusca=0;
+let rankingBuscaEmAndamento=false;
 const catalogoPets=[
  {nome:"Slime",sigla:"SL",raridade:"Comum",peso:45,mult:1.10,cor:"#d1d5db"},
  {nome:"Coelhinho",sigla:"CO",raridade:"Incomum",peso:25,mult:1.15,cor:"#45d36b"},
@@ -1436,35 +1439,40 @@ function renderizarListaRanking(snap){
 }
 
 function pararRankingAoVivo(){
- if(cancelarRankingAoVivo){try{cancelarRankingAoVivo();}catch(e){}cancelarRankingAoVivo=null;}
+ // Mantido por compatibilidade com os botões existentes; o ranking agora usa
+ // consultas pontuais, nunca um listener em tempo real.
+ cancelarRankingAoVivo=null;
 }
 
-function carregarRanking(){
+async function carregarRanking(forcar=false){
  const modal=document.getElementById("rankingModal");
- if(!modal||modal.style.display!=="flex")return;
- // O listener do Firestore mantém o ranking sincronizado sempre que qualquer jogador salva.
- if(cancelarRankingAoVivo)return;
+ if(!modal||modal.style.display!=="flex"||rankingBuscaEmAndamento)return;
+ const expirou=(Date.now()-rankingUltimaBusca)>=60000;
+ if(!forcar&&rankingUltimoSnapshot&&!expirou){
+  renderizarListaRanking(rankingUltimoSnapshot);
+  return;
+ }
+ rankingBuscaEmAndamento=true;
  const el=document.getElementById("listaRanking");
- el.className="novo-vazio";el.textContent="Conectando ao ranking em tempo real...";
- cancelarRankingAoVivo=db.collection("jogadores").onSnapshot(snap=>{
+ if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Carregando ranking...";}
+ try{
+  const snap=await comTempoLimite(db.collection("jogadores").get(),20000,"atualizar ranking");
+  rankingUltimoSnapshot=snap;
+  rankingUltimaBusca=Date.now();
   renderizarListaRanking(snap);
- },error=>{
-  console.error("Falha no ranking em tempo real:",error);
-  el.className="novo-vazio";el.textContent="Não foi possível atualizar o ranking em tempo real. Verifique a conexão e as permissões de leitura.";
-  pararRankingAoVivo();
- });
+ }catch(error){
+  console.error("Falha ao atualizar ranking:",error);
+  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Não foi possível carregar o ranking. Verifique a conexão e as permissões de leitura.";}
+ }finally{rankingBuscaEmAndamento=false;}
 }
 
 function atualizarContagemRanking(){
  const texto=document.getElementById("rankingContagem");
  const modal=document.getElementById("rankingModal");
- // O prazo é global à página: abrir/fechar o ranking nunca reinicia os 60 segundos.
  const agora=Date.now();
  if(agora>=rankingProximaAtualizacao){
-  // Avança o relógio mesmo quando o painel está fechado.
-  // Se a aba ficou suspensa, calcula o próximo ciclo a partir do horário atual.
   rankingProximaAtualizacao=agora+60000;
-  if(modal&&modal.style.display==="flex"&&!cancelarRankingAoVivo)carregarRanking();
+  if(modal&&modal.style.display==="flex")carregarRanking(true);
  }
  const restante=Math.max(0,Math.ceil((rankingProximaAtualizacao-Date.now())/1000));
  if(texto)texto.textContent=String(Math.floor(restante/60)).padStart(2,"0")+":"+String(restante%60).padStart(2,"0");
@@ -2678,7 +2686,7 @@ select.textContent="";
 for(const jogador of jogadoresAdmin){
 const op=document.createElement("option");
 op.value=jogador.uid;
-op.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"ON":"OFF");
+op.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"🟢 ON":"🔴 OFF");
 select.appendChild(op);
 }
 if(!jogadoresAdmin.length){const op=document.createElement("option");op.value="";op.textContent="Nenhum jogador encontrado";select.appendChild(op);}
@@ -4201,8 +4209,8 @@ somClique();
  document.getElementById("fundirTodosDourados").addEventListener("click",fundirTodosPetsDourados);
  document.getElementById("desequiparPets").addEventListener("click",()=>{petsEquipados=[];salvar();renderizarPets();mostrarAviso("Todos os pets foram desequipados.","ok");});
  document.getElementById("venderPetsSelecionados").addEventListener("click",venderPetsSelecionados);
- document.getElementById("rankDinheiro").addEventListener("click",()=>{rankingTipo="dinheiro";document.getElementById("rankDinheiro").classList.add("ativa");document.getElementById("rankRenascimentos").classList.remove("ativa");pararRankingAoVivo();carregarRanking();});
- document.getElementById("rankRenascimentos").addEventListener("click",()=>{rankingTipo="renascimentos";document.getElementById("rankRenascimentos").classList.add("ativa");document.getElementById("rankDinheiro").classList.remove("ativa");pararRankingAoVivo();carregarRanking();});
+ document.getElementById("rankDinheiro").addEventListener("click",()=>{rankingTipo="dinheiro";document.getElementById("rankDinheiro").classList.add("ativa");document.getElementById("rankRenascimentos").classList.remove("ativa");if(rankingUltimoSnapshot)renderizarListaRanking(rankingUltimoSnapshot);else carregarRanking();});
+ document.getElementById("rankRenascimentos").addEventListener("click",()=>{rankingTipo="renascimentos";document.getElementById("rankRenascimentos").classList.add("ativa");document.getElementById("rankDinheiro").classList.remove("ativa");if(rankingUltimoSnapshot)renderizarListaRanking(rankingUltimoSnapshot);else carregarRanking();});
  setInterval(atualizarContagemRanking,1000);
 
 // INICIAR JOGO
