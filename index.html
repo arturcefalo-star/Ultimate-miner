@@ -135,6 +135,15 @@ border:2px solid #5689c9;box-shadow:0 0 28px #287bd455
 .adm-chip strong{display:block;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adm-chip strong.adm-presenca-online{display:inline-flex;align-items:center;margin-top:4px;padding:3px 8px;border-radius:5px;color:#baffd0;background:#145b36;border:1px solid #32c875;font-size:11px}
 .adm-chip strong.adm-presenca-offline{display:inline-flex;align-items:center;margin-top:4px;padding:3px 8px;border-radius:5px;color:#ffd0d0;background:#632626;border:1px solid #d84b4b;font-size:11px}
+.adm-mundos-botao{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:5px;padding:7px 9px;border:1px solid #6685ae;border-radius:8px;background:#172b45;color:#eaf3ff;font-weight:900;font-size:11px;cursor:pointer}
+.adm-mundos-modal{position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;padding:16px;background:#000b}
+.adm-mundos-caixa{width:min(420px,100%);max-height:80vh;overflow:auto;padding:16px;border:1px solid #55749a;border-radius:15px;background:#101a2a;box-shadow:0 16px 55px #000b}
+.adm-mundos-cabecalho{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.adm-mundos-cabecalho h3{margin:0;color:#fff;font-size:17px}
+.adm-mundos-fechar{border:0;border-radius:8px;padding:7px 11px;background:#263a54;color:#fff;font-weight:900}
+.adm-mundo-liberado{display:flex;align-items:center;gap:10px;padding:10px;margin:7px 0;border:1px solid #2e9e66;border-radius:9px;background:#123324;color:#eafff1}
+.adm-mundo-liberado strong{flex:1}
+.adm-mundo-liberado small{color:#a9f2c4;font-weight:800}
 .adm-chip:nth-child(3) strong,.adm-chip:nth-child(4) strong{font-size:18px;color:#ffe17b}
 
 #abaEu{display:none!important}
@@ -234,6 +243,20 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 #botaoAFKOvos{background:linear-gradient(180deg,#2864c8,#173c7a)}
 #painelAFKOvos{max-height:150px;overflow:auto}
 #listaAFKOvos{white-space:pre-line;color:#e5edf8;font-size:12px}
+
+.pet-slot.mutacao-anjo{border-color:#fff1a8!important;box-shadow:0 0 14px #fff1a899!important}
+.pet-slot.mutacao-anjo .pet-iniciais{background:linear-gradient(135deg,#fff8d8,#e7c75d,#fff)!important;color:#76540b!important;border-color:#fff1a8!important}
+.pet-slot.mutacao-hacker{border-color:#36ff83!important;box-shadow:0 0 14px #20ff6b99!important}
+.pet-slot.mutacao-hacker .pet-iniciais{background:linear-gradient(135deg,#031b0b,#087a37,#06140b)!important;color:#6dff9f!important;border-color:#36ff83!important}
+.pet-slot.mutacao-galaxia{border-color:#bd79ff!important;box-shadow:0 0 14px #a34cffaa!important}
+.pet-slot.mutacao-galaxia .pet-iniciais{background:linear-gradient(135deg,#14052d,#5624a0,#d45bff)!important;color:#fff!important;border-color:#d2a2ff!important}
+.pet-mutacao-tag{display:inline-block;margin:3px 3px 0 0;padding:2px 6px;border:1px solid currentColor;border-radius:9px;font-size:9px;font-weight:900}
+.adm-evento-card{border:1px solid #526985;border-radius:10px;background:#111b2b;margin:9px 0;overflow:hidden}
+.adm-evento-card>summary{cursor:pointer;list-style:none;padding:12px 13px;font-size:13px;font-weight:900;color:#fff;background:linear-gradient(110deg,#263b59,#18263b);display:flex;align-items:center;justify-content:space-between}
+.adm-evento-card>summary::-webkit-details-marker{display:none}
+.adm-evento-card>summary:after{content:'＋';font-size:18px;color:#a9caff}
+.adm-evento-card[open]>summary:after{content:'−'}
+.adm-evento-conteudo{padding:10px}.adm-mutacao-evento{padding:10px;border:1px solid #53627a;border-radius:9px;margin:8px 0;background:#0d1726}.adm-mutacao-evento strong{display:block;margin-bottom:8px;font-size:13px}.adm-mutacao-evento .adm-in{margin:5px 0}.adm-mutacao-evento .adm-b{margin-top:5px}
 .pet-slot.dourado{border-color:#f4cf55!important;box-shadow:0 0 12px #f4cf5544}
 .pet-slot.dourado .pet-iniciais{border-color:#f4cf55!important;color:#ffe27a!important;background:#4b3b12!important}
 .pet-slot.diamante{border-color:#55dfff!important;box-shadow:0 0 12px #55dfff55}
@@ -345,6 +368,18 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 #listaRanking .novo-card .novo-info small{flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap;}
 #listaRanking .novo-card .novo-info small.valor-renascimentos{font-size:22px;}
 #listaRanking .novo-card .novo-info small.valor-dinheiro{font-size:20px;}
+
+/* Corrige o seletor duplicado do painel: mantém apenas o menu com seta. */
+.adm-select-wrap{position:relative;display:block;width:100%;min-width:0}
+.adm-select-wrap>.adm-select-original{display:none!important;visibility:hidden!important;width:0!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important}
+.adm-select-wrap>.adm-select-trigger{display:flex!important;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:43px;padding:9px 12px;border:1px solid #657acb;border-radius:9px;background:#10101c;color:#fff;font-size:14px;text-align:left;cursor:pointer}
+.adm-select-trigger>span:first-child{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-select-trigger .adm-seta{flex:0 0 auto;color:#b9c7ff;font-size:18px;line-height:1}
+.adm-select-list{position:absolute;z-index:26000;top:calc(100% + 5px);left:0;right:0;max-height:min(280px,45vh);overflow-y:auto;padding:5px;border:1px solid #526cae;border-radius:10px;background:#111827;box-shadow:0 10px 28px #000b}
+.adm-select-list[hidden]{display:none!important}
+.adm-select-option{display:block;width:100%;padding:10px;border:0;border-radius:7px;background:transparent;color:#fff;text-align:left;font-size:13px;cursor:pointer}
+.adm-select-option+.adm-select-option{border-top:1px solid #ffffff12}
+.adm-select-option:hover,.adm-select-option.selecionada{background:#293957}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -461,6 +496,8 @@ background:#10101c;color:#fff;font-size:16px;outline:none
  <button id="adminExcluirPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d64a4a,#922323)" disabled>EXCLUIR SELECIONADOS (0)</button>
 </div></div>
 
+<div id="admMundosModal" class="adm-mundos-modal" role="dialog" aria-modal="true" aria-label="Mundos liberados"><div class="adm-mundos-caixa"><div class="adm-mundos-cabecalho"><h3>🌎 MUNDOS LIBERADOS</h3><button id="admMundosFechar" class="adm-mundos-fechar" type="button">FECHAR</button></div><div id="admMundosLista"></div></div></div>
+
 <div id="eventoGlobalBadge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">00:00</span></div>
 <div id="eventoSorteBadge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span id="eventoSorteTempo">SORTE</span></div>
 
@@ -556,31 +593,24 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div>
 
 <div id="abaEvento" class="adm-aba" hidden>
-<h3>EVENTO GLOBAL DE MULTIPLICADOR</h3>
+<details class="adm-evento-card"><summary>💰 EVENTO DE DINHEIRO</summary><div class="adm-evento-conteudo">
 <p class="adm-dica">O evento aumenta o dinheiro recebido por todos os jogadores enquanto estiver ativo.</p>
-<div class="adm-linha" id="admEventoPresets">
-<button type="button" class="adm-b azul" data-evento-mult="2">2x dinheiro</button>
-<button type="button" class="adm-b azul" data-evento-mult="4">4x dinheiro</button>
-<button type="button" class="adm-b azul" data-evento-mult="8">8x dinheiro</button>
-<button type="button" class="adm-b azul" data-evento-mult="16">16x dinheiro</button>
-<button type="button" class="adm-b azul" data-evento-mult="64">64x dinheiro</button>
-</div>
-<label for="admEventoMultiplicador" class="adm-dica" style="display:block;margin-top:10px">Multiplicador personalizado</label>
-<input id="admEventoMultiplicador" class="adm-in" type="number" min="2" max="1000000" step="1" value="2" placeholder="Ex.: 50">
-<label for="admEventoMinutos" class="adm-dica" style="display:block">Duração em minutos</label>
-<input id="admEventoMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Ex.: 10 minutos">
-<button id="admEventoAtivar" type="button" class="adm-b verde grande">Ativar evento global</button>
-<button id="admEventoEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento</button>
-<div id="admEventoStatus" class="adm-dica" style="margin-top:8px">Nenhum evento ativo.</div>
-<hr style="border:0;border-top:1px solid #ffffff22;margin:16px 0">
-<h3>EVENTO GLOBAL DE SORTE</h3>
-<p class="adm-dica">Aumenta a chance de conseguir pets raros para todos os jogadores.</p>
+<div class="adm-linha" id="admEventoPresets"><button type="button" class="adm-b azul" data-evento-mult="2">2x dinheiro</button><button type="button" class="adm-b azul" data-evento-mult="4">4x dinheiro</button><button type="button" class="adm-b azul" data-evento-mult="8">8x dinheiro</button><button type="button" class="adm-b azul" data-evento-mult="16">16x dinheiro</button><button type="button" class="adm-b azul" data-evento-mult="64">64x dinheiro</button></div>
+<label for="admEventoMultiplicador" class="adm-dica" style="display:block;margin-top:10px">Multiplicador personalizado</label><input id="admEventoMultiplicador" class="adm-in" type="number" min="2" max="1000000" step="1" value="2" placeholder="Ex.: 50">
+<label for="admEventoMinutos" class="adm-dica" style="display:block">Duração em minutos</label><input id="admEventoMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Ex.: 10 minutos">
+<button id="admEventoAtivar" type="button" class="adm-b verde grande">Ativar evento global</button><button id="admEventoEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento</button><div id="admEventoStatus" class="adm-dica" style="margin-top:8px">Nenhum evento ativo.</div>
+</div></details>
+<details class="adm-evento-card"><summary>🍀 EVENTO DE SORTE</summary><div class="adm-evento-conteudo"><p class="adm-dica">Aumenta a chance de conseguir pets raros para todos os jogadores.</p>
 <div class="adm-linha" id="admEventoSortePresets"><button type="button" class="adm-b azul" data-sorte-mult="2">2x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="4">4x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="8">8x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="16">16x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="64">64x sorte</button></div>
-<input id="admEventoSorteMultiplicador" class="adm-in" type="number" min="2" max="1000000" step="1" value="2" placeholder="Multiplicador de sorte">
-<input id="admEventoSorteMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Duração em minutos">
-<button id="admEventoSorteAtivar" type="button" class="adm-b verde grande">Ativar evento de sorte</button>
-<button id="admEventoSorteEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento de sorte</button>
-<div id="admEventoSorteStatus" class="adm-dica" style="margin-top:8px">Nenhum evento de sorte ativo.</div>
+<label for="admEventoSorteMultiplicador" class="adm-dica" style="display:block;margin-top:10px">Multiplicador personalizado</label><input id="admEventoSorteMultiplicador" class="adm-in" type="number" min="2" max="1000000" step="1" value="2" placeholder="Multiplicador de sorte">
+<label for="admEventoSorteMinutos" class="adm-dica" style="display:block">Duração em minutos</label><input id="admEventoSorteMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Duração em minutos">
+<button id="admEventoSorteAtivar" type="button" class="adm-b verde grande">Ativar evento de sorte</button><button id="admEventoSorteEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento de sorte</button><div id="admEventoSorteStatus" class="adm-dica" style="margin-top:8px">Nenhum evento de sorte ativo.</div>
+</div></details>
+<div class="adm-evento-card"><div style="padding:12px 13px;font-size:13px;font-weight:900;color:#fff;background:linear-gradient(110deg,#263b59,#18263b)">✨ EVENTOS DE MUTAÇÃO DOS PETS</div><div class="adm-evento-conteudo"><p class="adm-dica">Enquanto um evento estiver ativo, todos os pets gerados por qualquer ovo receberão a mutação correspondente. Os eventos podem funcionar ao mesmo tempo.</p>
+<div class="adm-mutacao-evento" data-mutacao-evento="anjo"><strong>😇 EVENTO DE ANJO</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoAnjoMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoAnjoAtivar" type="button">Ativar evento de Anjo</button><button class="adm-b vermelho grande" id="admMutacaoAnjoEncerrar" type="button">Encerrar evento de Anjo</button><div class="adm-dica" id="admMutacaoAnjoStatus">Nenhum evento ativo.</div></div>
+<div class="adm-mutacao-evento" data-mutacao-evento="hacker"><strong>💻 EVENTO HACKER</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoHackerMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoHackerAtivar" type="button">Ativar evento Hacker</button><button class="adm-b vermelho grande" id="admMutacaoHackerEncerrar" type="button">Encerrar evento Hacker</button><div class="adm-dica" id="admMutacaoHackerStatus">Nenhum evento ativo.</div></div>
+<div class="adm-mutacao-evento" data-mutacao-evento="galaxia"><strong>🌌 EVENTO DE GALÁXIA</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoGalaxiaMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoGalaxiaAtivar" type="button">Ativar evento de Galáxia</button><button class="adm-b vermelho grande" id="admMutacaoGalaxiaEncerrar" type="button">Encerrar evento de Galáxia</button><div class="adm-dica" id="admMutacaoGalaxiaStatus">Nenhum evento ativo.</div></div>
+</div></div>
 </div>
 
 <h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">HISTORICO DA SESSAO</h3>
@@ -628,33 +658,19 @@ const botaoAtualizarSenha=document.getElementById("botaoAtualizarSenha");
 const botaoCancelarSenha=document.getElementById("botaoCancelarSenha");
 
 const CHAVE_CONTAS_SALVAS="ultimate_miner_contas_salvas";
-// Credenciais lembradas somente neste aparelho, conforme autorizado pelo usuário.
-const CHAVE_CREDENCIAIS_CONTAS="ultimate_miner_credenciais_locais_v1";
-function lerCredenciaisLocais(){
-try{const obj=JSON.parse(localStorage.getItem(CHAVE_CREDENCIAIS_CONTAS)||"{}");return obj&&typeof obj==="object"&&!Array.isArray(obj)?obj:{};}catch(e){return {};}
-}
-function salvarCredencialLocal(nome,senha){
-if(!nome||typeof senha!=="string"||!senha)return;
-const obj=lerCredenciaisLocais();
-obj[String(nome).toLowerCase()]=senha;
-try{localStorage.setItem(CHAVE_CREDENCIAIS_CONTAS,JSON.stringify(obj));}catch(e){console.warn("Não foi possível lembrar a senha neste aparelho:",e);}
-}
-function obterCredencialLocal(nome){return lerCredenciaisLocais()[String(nome||"").toLowerCase()]||"";}
-function removerCredencialLocal(nome){const obj=lerCredenciaisLocais();delete obj[String(nome||"").toLowerCase()];try{localStorage.setItem(CHAVE_CREDENCIAIS_CONTAS,JSON.stringify(obj));}catch(e){}}
 function lerContasSalvas(){
 try{
 const lista=JSON.parse(localStorage.getItem(CHAVE_CONTAS_SALVAS)||"[]");
-return Array.isArray(lista)?lista.filter(n=>typeof n==="string"&&nomeValido(n)).slice(0,8):[];
+return Array.isArray(lista)?lista.filter((n,i,a)=>typeof n==="string"&&nomeValido(n)&&a.findIndex(x=>String(x).toLowerCase()===n.toLowerCase())===i).slice(0,100):[];
 }catch(e){return [];}
 }
 function salvarContaUsada(nome){
 const lista=lerContasSalvas().filter(n=>n.toLowerCase()!==nome.toLowerCase());
 lista.unshift(nome);
-try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista.slice(0,8)));}catch(e){}
+try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista.slice(0,100)));}catch(e){}
 mostrarContasSalvas();
 }
 function removerContaSalva(nome){
-removerCredencialLocal(nome);
 const lista=lerContasSalvas().filter(n=>n.toLowerCase()!==nome.toLowerCase());
 try{localStorage.setItem(CHAVE_CONTAS_SALVAS,JSON.stringify(lista));}catch(e){}
 mostrarContasSalvas();
@@ -665,7 +681,7 @@ contasSalvas.innerHTML="";
 const lista=lerContasSalvas();
 if(!lista.length)return;
 const titulo=document.createElement("div");
-titulo.textContent="CONTAS USADAS";
+titulo.textContent="CONTAS SALVAS — TOQUE PARA ENTRAR";
 titulo.style.cssText="font-size:11px;color:#9db9ef;text-align:left;font-weight:bold;margin-bottom:2px";
 contasSalvas.appendChild(titulo);
 lista.forEach(nome=>{
@@ -679,39 +695,14 @@ nomeLogin.value=nome;
 const emailSalvo=usuarioEmail(nome);
 const sessaoAtual=auth.currentUser;
 if(sessaoAtual&&sessaoAtual.email&&sessaoAtual.email.toLowerCase()===emailSalvo.toLowerCase()){
-  senhaLogin.value="";
-  mensagemDeLogin("Conta reconhecida. Entrando sem pedir a senha...",false);
+  mensagemDeLogin("Esta conta já está autenticada. Abrindo seu jogo...",false);
   await entrarNoJogo(sessaoAtual,nome);
   return;
 }
-const senhaLembrada=obterCredencialLocal(nome);
-if(senhaLembrada){
-  escolher.disabled=true;
-  operacaoManualDeConta=true;
-  mensagemDeLogin("Entrando na conta salva...",false);
-  try{
-    await comTempoLimite(auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL),10000,"manter as contas neste aparelho");
-    const cred=await comTempoLimite(auth.signInWithEmailAndPassword(emailSalvo,senhaLembrada),20000,"alternar para a conta salva");
-    const snap=await comTempoLimite(db.collection("jogadores").doc(cred.user.uid).get(),15000,"conferir a conta salva");
-    const nomeReal=cred.user.uid===ADMIN_UID?"Artur":String((snap.exists&&(snap.data()||{}).nome)||cred.user.displayName||"");
-    if(nomeReal!==nome)throw {code:"auth/username-case-mismatch"};
-    const ok=await entrarNoJogo(cred.user,nomeReal);
-    if(!ok&&auth.currentUser)await auth.signOut();
-    if(ok)senhaLogin.value="";
-  }catch(error){
-    console.error("Erro ao abrir conta lembrada:",error);
-    if(auth.currentUser&&auth.currentUser.email&&auth.currentUser.email.toLowerCase()===emailSalvo.toLowerCase()){
-      try{await auth.signOut();}catch(e){console.warn("Não foi possível encerrar a sessão inválida:",e);}
-    }
-    if(error.code==="auth/wrong-password"||error.code==="auth/invalid-credential"||error.code==="auth/invalid-login-credentials")removerCredencialLocal(nome);
-    mensagemDeLogin(textoErroLogin(error)+" Digite a senha novamente para atualizar o acesso salvo.");
-    senhaLogin.value="";
-    senhaLogin.focus();
-  }finally{operacaoManualDeConta=false;escolher.disabled=false;}
-  return;
-}
+// Por segurança, o jogo guarda somente o nome. A senha fica no gerenciador
+// de senhas do navegador/dispositivo e nunca é gravada em texto puro no site.
 senhaLogin.value="";
-mensagemDeLogin("Esta conta ainda não tem senha lembrada neste aparelho. Digite a senha uma vez para salvá-la.",true);
+mensagemDeLogin("Conta selecionada. Confirme ou preencha a senha para entrar.",false);
 senhaLogin.focus();
 });
 const remover=document.createElement("button");
@@ -837,7 +828,7 @@ console.error("Erro ao sincronizar os dados do jogador em tempo real:",error);
 function textoErroLogin(error){
 const c=error&&error.code;
 if(c==="auth/username-case-mismatch")return "Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas.";
-if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Senha incorreta. Digite a senha atual.";
+if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Esta conta está com a senha incorreta. Digite a senha atual para entrar novamente.";
 if(c==="auth/user-not-found")return "Essa conta não foi encontrada. Confira o nome de usuário.";
 if(c==="auth/user-disabled")return "Esta conta foi banida ou desativada.";
 if(c==="auth/too-many-requests")return "Muitas tentativas seguidas. Aguarde um pouco e tente de novo.";
@@ -1167,6 +1158,9 @@ const CUSTO_OVO_PET=100000,INTERVALO_AUTO_OVO=1000;
 // Evento global de dinheiro sincronizado pelo Firestore.
 let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
 let eventoSorteGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
+const eventosMutacao={anjo:{ativo:false,expiraEm:0,id:""},hacker:{ativo:false,expiraEm:0,id:""},galaxia:{ativo:false,expiraEm:0,id:""}};
+const nomesMutacaoEvento={anjo:"Anjo",hacker:"Hacker",galaxia:"Galáxia"};
+function obterMutacoesEventoAtivas(){const agora=Date.now();return Object.keys(eventosMutacao).filter(k=>eventosMutacao[k].ativo&&eventosMutacao[k].expiraEm>agora);}
 let cancelarMonitoramentoEvento=null;
 let ultimoAvisoAdminId="";
 
@@ -1268,21 +1262,22 @@ function renderizarMundos(){
   const info=document.createElement("div");info.className="mundo-info";
   const nome=document.createElement("strong");nome.textContent=m.nome;
   const desc=document.createElement("small");
-  desc.textContent=aberto?visual.tema:("Custo para desbloquear: $ "+formatarDinheiro(m.custo));
+  desc.textContent=aberto?visual.tema:("PREÇO DE COMPRA: $ "+formatarDinheiro(m.custo));
   info.append(nome,desc);
   const rodape=document.createElement("div");rodape.className="mundo-rodape";
   const bonus=document.createElement("span");bonus.className="mundo-bonus";bonus.textContent="BÔNUS "+m.mult+"x";
   const b=document.createElement("button");
   const mundoAnteriorLiberado=i===0||mundosDesbloqueados.includes(i-1);
-  b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":(mundoAnteriorLiberado?"DESBLOQUEAR":"BLOQUEADO"));
-  b.disabled=selecionado||(!aberto&&(!mundoAnteriorLiberado||moedas<m.custo));
+  b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":(mundoAnteriorLiberado?("COMPRAR $"+formatarDinheiro(m.custo)):"BLOQUEADO"));
+  b.disabled=selecionado||(!aberto&&!mundoAnteriorLiberado);
   if(!aberto&&!mundoAnteriorLiberado)b.title="Desbloqueie primeiro o mundo anterior.";
-  else if(!aberto&&moedas<m.custo)b.title="Faltam $ "+formatarDinheiro(m.custo-moedas);
+  else if(!aberto&&moedas<m.custo)b.title="Você precisa de mais $ "+formatarDinheiro(m.custo-moedas)+" para comprar";
   b.addEventListener("click",()=>{
    if(!mundosDesbloqueados.includes(i)){
     if(!mundoAnteriorLiberado){mostrarAviso("Desbloqueie primeiro o mundo anterior.","erro");return;}
-    if(moedas<m.custo){mostrarAviso("Você precisa de $ "+formatarDinheiro(m.custo-moedas)+" a mais para desbloquear este mundo.","erro");return;}
-    moedas=Math.max(0,moedas-m.custo);mundosDesbloqueados.push(i);
+    if(m.custo>0&&moedas<m.custo){mostrarAviso("Dinheiro insuficiente! Faltam $ "+formatarDinheiro(m.custo-moedas)+" para comprar este mundo.","erro");return;}
+    if(m.custo>0){moedas-=m.custo;}
+    mundosDesbloqueados.push(i);
     mostrarAviso("Mundo "+(i+1)+" desbloqueado: "+m.nome+"!","ok");
    }
    mundoAtual=i;salvar();renderizarMundos();
@@ -1315,11 +1310,12 @@ function abrirOvosQuantidade(quantidade=1,automatico=false){
  moedas-=custo;
  const encontrados=[],vendidos=[];
  sorteios.forEach((base)=>{
-  const pet={id:"pet_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:base.mult,cor:base.cor,borda:base.borda||"",dourado:false};
+  const mutacoesEvento=obterMutacoesEventoAtivas();
+  const pet={id:"pet_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:base.mult,cor:base.cor,borda:base.borda||"",dourado:false,mutacoesEvento};
   ovosAbertos++;
   if(petsVendaAutomatica.includes(base.nome)){
    const valor=VALOR_VENDA_PET[pet.raridade]||0;moedas+=valor;vendidos.push({pet,valor});
-  }else{petsInventario.push(pet);encontrados.push(pet);petsConseguidosSessao.push({nome:pet.nome,raridade:pet.raridade,dourado:false,diamante:false,rainbow:false});}
+  }else{petsInventario.push(pet);encontrados.push(pet);petsConseguidosSessao.push({nome:pet.nome,raridade:pet.raridade,dourado:false,diamante:false,rainbow:false,mutacoesEvento});}
  });
  atualizarPainelAFK();
  salvar();renderizarChancesOvo();renderizarResumoPets();
@@ -1340,7 +1336,7 @@ function atualizarPainelAFK(){
  botao.hidden=!(autoOvoComprado&&autoOvoAtivo);
  painel.hidden=!painelAFKAberto||botao.hidden;
  if(!petsConseguidosSessao.length)lista.textContent="Nenhum pet conseguido ainda.";
- else lista.textContent=petsConseguidosSessao.map((p,i)=>(i+1)+". "+p.nome+(p.void?" VOID":p.rainbow?" RAINBOW":p.diamante?" DIAMANTE":p.dourado?" DOURADO":"")+" — "+p.raridade).join("\n");
+ else lista.textContent=petsConseguidosSessao.map((p,i)=>(i+1)+". "+p.nome+(p.void?" VOID":p.rainbow?" RAINBOW":p.diamante?" DIAMANTE":p.dourado?" DOURADO":"")+(p.mutacoesEvento&&p.mutacoesEvento.length?" | "+p.mutacoesEvento.map(k=>nomesMutacaoEvento[k]).join(" + "):"")+" — "+p.raridade).join("\n");
 }
 function atualizarControlesOvo(){
  const triplo=document.getElementById("abrirTresOvosPet");
@@ -1404,7 +1400,7 @@ function criarPetEvoluido(id,nivelDestino){
  petsInventario=petsInventario.filter(x=>!ids.has(x.id));
  petsEquipados=petsEquipados.filter(x=>!ids.has(x));
  const base=catalogoPets.find(x=>x.nome===selecionado.nome)||selecionado;
- const evoluido={id:"pet_"+nomeNivelPet(nivelDestino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,nivelDestino),cor:base.cor,borda:base.borda||"",dourado:nivelDestino>=1,diamante:nivelDestino>=2,rainbow:nivelDestino>=3,void:nivelDestino>=4};
+ const evoluido={id:"pet_"+nomeNivelPet(nivelDestino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,nivelDestino),cor:base.cor,borda:base.borda||"",dourado:nivelDestino>=1,diamante:nivelDestino>=2,rainbow:nivelDestino>=3,void:nivelDestino>=4,mutacoesEvento:[...new Set(iguais.flatMap(x=>Array.isArray(x.mutacoesEvento)?x.mutacoesEvento:[]))]};
  petsInventario.push(evoluido);
  if(eraEquipado&&petsEquipados.length<3)petsEquipados.push(evoluido.id);
  petSelecionadoId=evoluido.id;salvar();renderizarPets();somRaro();
@@ -1429,7 +1425,7 @@ function fundirTodosPetsDourados(){
   const deveEquipar=usados.some(p=>petsEquipados.includes(p.id));
   for(let i=0;i<grupos;i++){
    const destino=nivelAlvo+1;
-   const novo={id:"pet_"+nomeNivelPet(destino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9)+"_"+totalGrupos,nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,destino),cor:base.cor,borda:base.borda||"",dourado:destino>=1,diamante:destino>=2,rainbow:destino>=3,void:destino>=4};
+   const novo={id:"pet_"+nomeNivelPet(destino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9)+"_"+totalGrupos,nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,destino),cor:base.cor,borda:base.borda||"",dourado:destino>=1,diamante:destino>=2,rainbow:destino>=3,void:destino>=4,mutacoesEvento:[...new Set(usados.flatMap(x=>Array.isArray(x.mutacoesEvento)?x.mutacoesEvento:[]))]};
    novos.push(novo);if(deveEquipar&&i===0)equiparNovos.push(novo.id);totalGrupos++;
   }
  }
@@ -1454,6 +1450,7 @@ function renderizarStatusPet(){
  const chance=document.createElement("p");chance.textContent="Chance no ovo: "+(base?(base.peso/total*100).toFixed(base.peso<1?2:1):"-")+"%";
  const acao=document.createElement("button");acao.className="novo-acao";acao.type="button";acao.textContent=petsEquipados.includes(p.id)?"DESEQUIPAR":"EQUIPAR PET";if(petsEquipados.includes(p.id))acao.style.background="linear-gradient(180deg,#e34b4b,#9d2020)";acao.addEventListener("click",()=>alternarPet(p.id));
  painel.append(nome,rar,mult,equipado,chance,acao);
+ if((p.mutacoesEvento||[]).length){const tag=document.createElement("p");tag.textContent="MUTAÇÃO DE EVENTO: "+p.mutacoesEvento.map(k=>nomesMutacaoEvento[k]||k).join(" + ");tag.className="pet-mutacao-tag";tag.style.color=p.mutacoesEvento.includes("hacker")?"#54ff91":p.mutacoesEvento.includes("anjo")?"#fff1a8":"#d2a2ff";painel.appendChild(tag);}
  if(nivel<4){
   const proximo=nivel+1,qtd=contarPetsMesmoNivel(p,nivel);
   const evoluir=document.createElement("button");evoluir.id=proximo===1?"fazerPetDourado":proximo===2?"fazerPetDiamante":proximo===3?"fazerPetRainbow":"fazerPetVoid";evoluir.className="novo-acao";evoluir.type="button";evoluir.textContent="FUNDIR PARA "+nomeNivelPet(proximo)+" ("+qtd+"/3)";evoluir.disabled=qtd<3;evoluir.style.opacity=qtd<3?".55":"1";evoluir.addEventListener("click",()=>criarPetEvoluido(p.id,proximo));painel.appendChild(evoluir);
@@ -1473,10 +1470,10 @@ function renderizarPets(){
  if(!petsInventario.length){const v=document.createElement("div");v.className="novo-vazio";v.textContent="INVENTARIO VAZIO - ABRA UM OVO PARA CONSEGUIR PETS";el.appendChild(v);petSelecionadoId=null;renderizarStatusPet();return;}
  if(!petsInventario.some(p=>p.id===petSelecionadoId))petSelecionadoId=petsInventario[0].id;
  petsInventario.slice().sort(ordenar).forEach(p=>{
-  const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(p.void?" void":p.rainbow?" rainbow":p.diamante?" diamante":p.dourado?" dourado":"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":(p.void?"#b58aff":p.rainbow?"#ff75e8":p.diamante?"#55dfff":p.dourado?"#f4cf55":cor);card.addEventListener("click",()=>selecionarPetInventario(p.id));
+  const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(p.void?" void":p.rainbow?" rainbow":p.diamante?" diamante":p.dourado?" dourado":"")+((p.mutacoesEvento||[]).length?" mutacao-"+p.mutacoesEvento[0]:"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":(p.void?"#b58aff":p.rainbow?"#ff75e8":p.diamante?"#55dfff":p.dourado?"#f4cf55":cor);card.addEventListener("click",()=>selecionarPetInventario(p.id));
   const sigla=document.createElement("span");sigla.className="pet-iniciais";sigla.textContent=p.sigla||p.nome.slice(0,2).toUpperCase();sigla.style.color=cor;sigla.style.borderColor=cor;sigla.style.background=p.raridade==="Secreto"?"#050505":"#202d40";
   const nome=document.createElement("strong");nome.textContent=p.nome;
-  const rar=document.createElement("small");rar.textContent=p.raridade+(nivelEvolucaoPet(p)?" | "+nomeNivelPet(nivelEvolucaoPet(p)):"")+(petsEquipados.includes(p.id)?" | EQUIPADO":"");
+  const rar=document.createElement("small");rar.textContent=p.raridade+(nivelEvolucaoPet(p)?" | "+nomeNivelPet(nivelEvolucaoPet(p)):"")+((p.mutacoesEvento||[]).length?" | "+p.mutacoesEvento.map(k=>nomesMutacaoEvento[k]||k).join(" + "):"")+(petsEquipados.includes(p.id)?" | EQUIPADO":"");
   card.append(sigla,nome,rar);el.appendChild(card);
  });
  renderizarStatusPet();
@@ -1522,13 +1519,11 @@ function renderizarListaRanking(snap){
  const el=document.getElementById("listaRanking");
  const lista=[];
  snap.forEach(doc=>{
-  const d=doc.data()||{},g=d.dados||{},r=d.ranking||{};
-  // O progresso dentro de dados é a fonte primária. O resumo ranking é apenas fallback,
-  // pois pode ficar atrasado em relação ao saldo real salvo no jogo.
-  // Cada ranking lê e apresenta somente seu próprio campo; nunca mistura moedas e renascimentos.
-  const valorDinheiro=Number(g.moedas??d.moedas??r.moedas??0);
-  const valorRenascimentos=Number(g.renascimentos??d.renascimentos??r.renascimentos??0);
-  lista.push({nome:String(d.nome||d.displayName||g.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(valorDinheiro)?valorDinheiro:0,renascimentos:Number.isFinite(valorRenascimentos)?valorRenascimentos:0,uid:doc.id,online:jogadorEstaOnline(d)});
+  const d=doc.data()||{};
+  // A coleção pública contém somente os campos necessários ao ranking.
+  const valorDinheiro=Number(d.moedas)||0;
+  const valorRenascimentos=Number(d.renascimentos)||0;
+  lista.push({nome:String(d.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(valorDinheiro)?valorDinheiro:0,renascimentos:Number.isFinite(valorRenascimentos)?valorRenascimentos:0,uid:doc.id,online:d.online===true});
  });
  lista.sort((a,b)=>{
   const diferenca=rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos;
@@ -1572,13 +1567,13 @@ async function carregarRanking(forcar=false){
  const el=document.getElementById("listaRanking");
  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Carregando ranking...";}
  try{
-  const snap=await comTempoLimite(db.collection("jogadores").get(),20000,"atualizar ranking");
+  const snap=await comTempoLimite(db.collection("rankingGlobal").get(),20000,"atualizar ranking");
   rankingUltimoSnapshot=snap;
   rankingUltimaBusca=Date.now();
   renderizarListaRanking(snap);
  }catch(error){
   console.error("Falha ao atualizar ranking:",error);
-  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Não foi possível carregar o ranking. Verifique a conexão e as permissões de leitura.";}
+  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent=(error&&error.code==="permission-denied")?"O ranking global está bloqueado pelas regras de leitura do Firestore. Libere a leitura autenticada da coleção rankingGlobal.":"Não foi possível carregar o ranking. Verifique a conexão e tente novamente.";}
  }finally{rankingBuscaEmAndamento=false;}
 }
 
@@ -1967,6 +1962,13 @@ ovosAbertos:ovosAbertos
 };
 }
 
+async function publicarResumoRanking(uid,nome,dados,online=true){
+ if(!uid||!dados)return;
+ const resumo={nome:String(nome||"Jogador"),moedas:Math.max(0,Number(dados.moedas)||0),renascimentos:Math.max(0,Number(dados.renascimentos)||0),online:online===true,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
+ try{await db.collection("rankingGlobal").doc(uid).set(resumo,{merge:true});}
+ catch(error){console.warn("Não foi possível atualizar o ranking público:",error);}
+}
+
 function agendarSalvamentoNuvem(dados){
 if(!jogoPronto()||carregandoDados||!usuarioAtual)return;
 // Não reinicia o temporizador em cada mineração: isso impedia o envio
@@ -1979,12 +1981,14 @@ if(!usuarioAtual||usuarioAtual.uid!==id||!jogoPronto()||carregandoDados)return;
 // Lê o estado atual no momento do envio, não uma cópia antiga capturada antes.
 const copia=limparDadosParaFirestore(dadosDoJogo());
 try{
+const nomeRanking=usuarioAtual.displayName||usuarioAtual.email.split("@")[0];
 await db.collection("jogadores").doc(id).set({
-nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
+nome:nomeRanking,
 dados:copia,
 ranking:{moedas:Number(copia.moedas)||0,renascimentos:Number(copia.renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
+await publicarResumoRanking(id,nomeRanking,copia,true);
 }catch(error){console.error("Erro ao salvar no Firebase:",error);}
 },500);
 }
@@ -2035,6 +2039,10 @@ if(picaretasCompradas.includes(picaretaSalva))picaretaAtual=picaretaSalva;
 if(mineriosComprados.includes(minerioSalvo))minerioAtual=minerioSalvo;
 const volumeSalvo=Number(dados.volumeGeral);
 if(Number.isFinite(volumeSalvo))volumeGeral=Math.max(0,Math.min(1,volumeSalvo));
+// Atualiza o ganho de áudio imediatamente ao carregar cada conta, inclusive 0%.
+if(masterGain&&audio){
+ try{masterGain.gain.cancelScheduledValues(audio.currentTime);masterGain.gain.setValueAtTime(volumeGeral*1.8,audio.currentTime);}catch(e){masterGain.gain.value=volumeGeral*1.8;}
+}
 adminDesbloqueado=false;
 codigosUsados=Array.isArray(dados.codigosUsados)?dados.codigosUsados.filter(c=>typeof c==="string"):[];
 multiplicadorCompras=Math.max(0,Math.floor(Number(dados.multiplicadorCompras)||0));
@@ -2054,7 +2062,7 @@ if(autoClickerAtivo&&autoClickerProAtivo)autoClickerAtivo=false;
 mundoAtual=Math.max(0,Math.min(mundosJogo.length-1,Math.floor(Number(dados.mundoAtual)||0)));
 mundosDesbloqueados=Array.isArray(dados.mundosDesbloqueados)?dados.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
 if(!mundosDesbloqueados.includes(0))mundosDesbloqueados.push(0);
-petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,50).map(p=>{const base=catalogoPets.find(c=>c.nome===p.nome);const voidPet=!!p.void,rainbow=!!p.rainbow&&!voidPet,diamante=!!p.diamante&&!rainbow&&!voidPet,dourado=!!p.dourado||diamante||rainbow||voidPet,nivel=voidPet?4:rainbow?3:diamante?2:dourado?1:0;return {...p,sigla:p.sigla||base.sigla,dourado,diamante,rainbow,void:voidPet,mult:Number(p.mult)||multiplicadorNivelPet(base,nivel),emoji:undefined};}):[];
+petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,50).map(p=>{const base=catalogoPets.find(c=>c.nome===p.nome);const voidPet=!!p.void,rainbow=!!p.rainbow&&!voidPet,diamante=!!p.diamante&&!rainbow&&!voidPet,dourado=!!p.dourado||diamante||rainbow||voidPet,nivel=voidPet?4:rainbow?3:diamante?2:dourado?1:0;return {...p,sigla:p.sigla||base.sigla,dourado,diamante,rainbow,void:voidPet,mutacoesEvento:Array.isArray(p.mutacoesEvento)?p.mutacoesEvento.filter(k=>["anjo","hacker","galaxia"].includes(k)):[],mult:Number(p.mult)||multiplicadorNivelPet(base,nivel),emoji:undefined};}):[];
 petsEquipados=Array.isArray(dados.petsEquipados)?dados.petsEquipados.filter(id=>petsInventario.some(p=>p.id===id)).slice(0,3):[];
 ovosAbertos=Math.max(0,Math.floor(Number(dados.ovosAbertos)||0));
 atualizarMundosDesbloqueados();
@@ -2139,6 +2147,7 @@ criadoEm:firebase.firestore.FieldValue.serverTimestamp()
 }
 carregandoDados=true;
 aplicarDados(dadosConta);
+if(masterGain&&audio){try{masterGain.gain.cancelScheduledValues(audio.currentTime);masterGain.gain.setValueAtTime(volumeGeral*1.8,audio.currentTime);}catch(e){masterGain.gain.value=volumeGeral*1.8;}}
 try{localStorage.setItem("mining_game_save_"+user.uid,JSON.stringify(dadosConta));}catch(e){}
 carregandoDados=false;
 if(snap.exists&&Number(dadosConta&&dadosConta._saveUpdatedAt)>Number(((snap.data()||{}).dados||{})._saveUpdatedAt||0)){
@@ -2150,6 +2159,7 @@ dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
 iniciarMonitoramentoEventoGlobal();
 iniciarPresenca(user.uid);
+await publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true);
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
@@ -2198,7 +2208,6 @@ throw {code:"auth/username-case-mismatch",message:"Nome de usuário incorreto. D
 }
 mensagemDeLogin("ETAPA 2/2: conta reconhecida; carregando progresso...",false);
 const ok=await entrarNoJogo(cred.user,nomeCadastrado);
-if(ok)salvarCredencialLocal(nomeCadastrado,senha);
 if(!ok&&auth.currentUser)await auth.signOut();
 }catch(error){
 console.error("Erro no login:",error);
@@ -2232,7 +2241,7 @@ criadoEm:firebase.firestore.FieldValue.serverTimestamp()
 }),15000,"salvar os dados iniciais no Firestore");
 if(legado){try{localStorage.removeItem("mining_game_save");}catch(e){}}
 const entrou=await entrarNoJogo(cred.user,nome);
-if(entrou){salvarCredencialLocal(nome,senha);mensagemDeLogin("",false);}
+if(entrou)mensagemDeLogin("",false);
 else mensagemDeLogin("Sua conta foi criada, mas não foi possível carregar os dados. Entre novamente ou verifique as regras do Firestore.");
 }catch(error){
 console.error("Erro ao criar conta:",error);
@@ -2282,7 +2291,6 @@ auth.currentUser.email,atual
 );
 await comTempoLimite(auth.currentUser.reauthenticateWithCredential(credencial),20000,"confirmar a senha atual");
 await comTempoLimite(auth.currentUser.updatePassword(nova),20000,"atualizar a senha");
-salvarCredencialLocal(usuarioAtual.displayName||auth.currentUser.email.split("@")[0],nova);
 mensagemSenha.style.color="#9dffb0";
 mensagemSenha.textContent="Senha atualizada com sucesso!";
 senhaAtualInput.value="";
@@ -2314,13 +2322,14 @@ senhaConfirmarInput.addEventListener("keydown",e=>{if(e.key==="Enter")atualizarS
 async function sairDaConta(){
 if(!usuarioAtual||saindoDaConta)return;
 saindoDaConta=true;
+let dadosSeguros=null;
 try{
 const usuarioId=usuarioAtual.uid;
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
 if(cancelarMonitoramentoJogador){try{cancelarMonitoramentoJogador();}catch(e){}cancelarMonitoramentoJogador=null;}
 if(dadosCarregados){
 try{
-const dadosSeguros=limparDadosParaFirestore(dadosDoJogo());
+dadosSeguros=limparDadosParaFirestore(dadosDoJogo());
 await db.collection("jogadores").doc(usuarioId).set({
 nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados:dadosSeguros,
@@ -2329,10 +2338,19 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
 }catch(error){mostrarAviso("Não foi possível salvar seu progresso: "+error.message);return;}
 }
-// Mantém a sessão autenticada no Firebase neste aparelho.
-// Assim, ao tocar novamente no nome salvo, a conta abre sem pedir a senha.
+// Encerra também a sessão do Firebase. Antes, apenas escondíamos o jogo,
+// deixando a conta anterior autenticada; isso podia fazer o Firebase
+// reabrir a conta antiga automaticamente ao tentar trocar de usuário.
 dadosCarregados=false;
-pararPresenca(usuarioAtual&&usuarioAtual.uid);
+try{if(dadosSeguros)await publicarResumoRanking(usuarioId,usuarioAtual.displayName||usuarioAtual.email.split("@")[0],dadosSeguros,false);}catch(e){}
+pararPresenca(usuarioId);
+try{
+  await comTempoLimite(auth.signOut(),10000,"desconectar a conta atual");
+}catch(erroSaida){
+  mostrarAviso("Não foi possível desconectar a conta do Firebase. Verifique a conexão e tente novamente.","erro");
+  dadosCarregados=true;
+  return;
+}
 usuarioAtual=null;
 codigoAdminSessao="";
 adminDesbloqueado=false;
@@ -2346,7 +2364,7 @@ carregandoDados=false;
 loginModal.style.display="flex";
 nomeLogin.value="";
 senhaLogin.value="";
-mensagemDeLogin("Conta desconectada do jogo, mas continua lembrada neste aparelho. Toque no nome para entrar direto.",false);
+mensagemDeLogin("Conta desconectada. As contas continuam salvas nesta lista. Para entrar novamente, selecione a conta e digite sua senha.",false);
 }finally{
 saindoDaConta=false;
 }
@@ -2383,7 +2401,7 @@ nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados,
 ranking:{moedas:Number(moedas)||0,renascimentos:Number(renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
-},{merge:true}).catch(error=>console.error("Erro ao salvar:",error));
+},{merge:true}).then(()=>publicarResumoRanking(id,usuarioAtual&&usuarioAtual.uid===id?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"Jogador",dados,true)).catch(error=>console.error("Erro ao salvar:",error));
 }
 
 document.addEventListener("visibilitychange",()=>{
@@ -2516,14 +2534,32 @@ renderizarLogAdmin();
 mostrarAviso(texto,tipo);
 }
 
+function abrirResumoMundos(indices){
+ const modal=document.getElementById("admMundosModal"),lista=document.getElementById("admMundosLista");
+ if(!modal||!lista)return;
+ const validos=[...new Set([0,...(Array.isArray(indices)?indices:[])].map(Number))].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b);
+ lista.textContent="";
+ if(!validos.length){lista.textContent="Nenhum mundo liberado.";}
+ validos.forEach(i=>{const linha=document.createElement("div");linha.className="adm-mundo-liberado";const nome=document.createElement("strong");nome.textContent="Mundo "+(i+1)+" — "+mundosJogo[i].nome;const status=document.createElement("small");status.textContent="LIBERADO";linha.append(nome,status);lista.appendChild(linha);});
+ modal.style.display="flex";
+}
 function criarResumoAdmin(container,itens){
 if(!container)return;
 container.textContent="";
 for(const [rotulo,valor,classe] of itens){
 const chip=document.createElement("div");chip.className="adm-chip";
 const r=document.createElement("span");r.textContent=rotulo;
-const v=document.createElement("strong");v.textContent=valor;if(classe)v.className=classe;
-chip.appendChild(r);chip.appendChild(v);container.appendChild(chip);
+if(classe==="mundos"){
+ const b=document.createElement("button");b.type="button";b.className="adm-mundos-botao";
+ const quantidade=Array.isArray(valor)?valor.length:0;
+ b.textContent="Ver mundos liberados ("+quantidade+")  ⋯";
+ b.addEventListener("click",()=>abrirResumoMundos(valor));
+ chip.append(r,b);
+}else{
+ const v=document.createElement("strong");v.textContent=valor;if(classe)v.className=classe;
+ chip.append(r,v);
+}
+container.appendChild(chip);
 }
 }
 function estatisticasDadosAdmin(nome,dados,status){
@@ -2551,7 +2587,7 @@ return [
 ["Minérios liberados",mrs.length+"/"+minerios.length],
 ["Mundo atual","Mundo "+(Math.max(0,Math.min(mundosJogo.length-1,Number(d.mundoAtual)||0))+1)+" — "+(mundosJogo[Math.max(0,Math.min(mundosJogo.length-1,Number(d.mundoAtual)||0))]?.nome||"Superfície")],
 ["Mundos desbloqueados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).length:1)+"/"+mundosJogo.length],
-["Mundos liberados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b):[0]).map(i=>"Mundo "+(i+1)).join(", ")],
+["Mundos liberados",(Array.isArray(d.mundosDesbloqueados)?[...new Set([0,...d.mundosDesbloqueados.map(Number)])].filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length).sort((a,b)=>a-b):[0]),"mundos"],
 ["Auto clicker",d.autoClickerProComprado?"Pro":(d.autoClickerComprado?"Normal":"Nenhum")]
 ];
 }
@@ -2591,7 +2627,7 @@ if(aba==="eu")aba="outro";
 const abaEu=document.getElementById("abaEu");if(abaEu)abaEu.hidden=true;
 document.getElementById("abaOutro").hidden=aba!=="outro";
 document.getElementById("abaEvento").hidden=aba!=="evento";
-if(aba==="evento"){atualizarStatusEventoAdmin();if(admEventoSorteStatus)admEventoSorteStatus.textContent=eventoSorteGlobal.ativo?"Evento de sorte ativo: "+eventoSorteGlobal.multiplicador+"x.":"Nenhum evento de sorte ativo.";}
+if(aba==="evento"){atualizarStatusEventoAdmin();atualizarStatusMutacoesAdmin();if(admEventoSorteStatus)admEventoSorteStatus.textContent=eventoSorteGlobal.ativo?"Evento de sorte ativo: "+eventoSorteGlobal.multiplicador+"x.":"Nenhum evento de sorte ativo.";}
 if(aba==="outro")atualizarAdmin();
 for(const botao of adminBox.querySelectorAll(".adm-abas button"))botao.classList.toggle("ativa",botao.dataset.aba===aba);
 }
@@ -3102,7 +3138,30 @@ else if(acao==="givePro")textoAviso="O admin "+nomeDoAdminAtual()+" liberou o Au
 else if(acao==="removePro")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o Auto Clicker Pro da sua conta.";
 else if(acao==="setMultiplier")textoAviso="O admin "+nomeDoAdminAtual()+" definiu sua melhoria de dinheiro no nível "+valor+".";
 else if(acao==="givePet")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o pet "+itemNome+".";
-await comTempoLimite(ref.set({dados,avisoAdmin:{id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
+const avisoRemoto={id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()};
+if(acao==="giveWorld"||acao==="removeWorld"){
+ await comTempoLimite(db.runTransaction(async tx=>{
+  const atualSnap=await tx.get(ref);
+  if(!atualSnap.exists)throw new Error("Essa conta não existe mais.");
+  const registroAtual=atualSnap.data()||{};
+  const dadosAtuais=Object.assign({},registroAtual.dados||{});
+  let listaAtual=Array.isArray(dadosAtuais.mundosDesbloqueados)?dadosAtuais.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
+  listaAtual=[...new Set([0,...listaAtual])];
+  if(acao==="giveWorld"){
+   if(!listaAtual.includes(valor))listaAtual.push(valor);
+  }else{
+   if(valor===0)throw new Error("O mundo inicial não pode ser removido.");
+   listaAtual=listaAtual.filter(i=>i!==valor);
+   if(Number(dadosAtuais.mundoAtual)===valor)dadosAtuais.mundoAtual=0;
+  }
+  dadosAtuais.mundosDesbloqueados=listaAtual.sort((a,b)=>a-b);
+  Object.assign(dados,dadosAtuais);
+  tx.set(ref,{dados:dadosAtuais,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+ }),20000,"salvar mundo do jogador");
+}else{
+ await comTempoLimite(ref.set({dados,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
+}
+await publicarResumoRanking(uid,nome,dados,jogadorEstaOnline(registro));
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
 aplicarDadosDoServidor(dados);
@@ -3118,6 +3177,9 @@ admResultado("Não foi possível alterar a conta: "+(error.message||"erro no Fir
 admExecutando=false;botao.disabled=false;botao.textContent=admAcao.value==="viewInventory"?"VER INVENTÁRIO":"Executar";
 }
 }
+
+document.getElementById("admMundosFechar").addEventListener("click",()=>{document.getElementById("admMundosModal").style.display="none";});
+document.getElementById("admMundosModal").addEventListener("click",e=>{if(e.target.id==="admMundosModal")e.currentTarget.style.display="none";});
 
 // EVENTOS GLOBAIS
 const admEventoMultiplicador=document.getElementById("admEventoMultiplicador");
@@ -3193,6 +3255,35 @@ async function encerrarEventoSorteGlobal(){
  try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoSorteGlobal.multiplicador)||1),expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:nomeDoAdminAtual(),id:"sorte-off-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento de sorte");admResultado("Evento global de sorte encerrado.","ok");}
  catch(error){admResultado("Não foi possível encerrar o evento de sorte: "+(error.message||"erro no Firestore"),"erro");}
 }
+
+// Eventos globais de mutação: cada um usa seu próprio documento no Firestore.
+function atualizarStatusMutacoesAdmin(){
+ Object.keys(eventosMutacao).forEach(chave=>{const el=document.getElementById("admMutacao"+chave[0].toUpperCase()+chave.slice(1)+"Status");if(!el)return;const ev=eventosMutacao[chave];const ativo=ev.ativo&&ev.expiraEm>Date.now();const falta=ativo?Math.max(1,Math.ceil((ev.expiraEm-Date.now())/60000)):0;el.textContent=ativo?"Evento "+nomesMutacaoEvento[chave]+" ativo. Restam aproximadamente "+falta+" minuto(s).":"Nenhum evento ativo.";});
+}
+function iniciarMonitoramentoMutacoes(){
+ Object.keys(eventosMutacao).forEach(chave=>{
+  db.collection("eventos").doc("mutacao_"+chave).onSnapshot(snap=>{
+   const dados=snap.exists?(snap.data()||{}):{};const exp=dados.expiraEm&&typeof dados.expiraEm.toMillis==="function"?dados.expiraEm.toMillis():Number(dados.expiraEm)||0;const ativo=dados.ativo===true&&exp>Date.now();const mudou=ativo&&(!eventosMutacao[chave].ativo||eventosMutacao[chave].id!==String(dados.id||""));
+   eventosMutacao[chave]={ativo,expiraEm:exp,id:String(dados.id||"")};
+   if(mudou)mostrarAviso("EVENTO "+nomesMutacaoEvento[chave].toUpperCase()+" ATIVADO! Todos os pets dos ovos receberão essa mutação.","ok");
+   atualizarStatusMutacoesAdmin();
+  },err=>console.error("Erro ao acompanhar evento de mutação "+chave,err));
+ });
+}
+async function controlarEventoMutacao(chave,ativar){
+ if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+ const nome=chave[0].toUpperCase()+chave.slice(1),minutosEl=document.getElementById("admMutacao"+nome+"Minutos");
+ const minutos=Number(minutosEl&&minutosEl.value);
+ if(ativar&&(!Number.isInteger(minutos)||minutos<1||minutos>10080)){admResultado("A duração deve ser de 1 a 10.080 minutos.","erro");return;}
+ const expiraEm=ativar?new Date(Date.now()+minutos*60000):new Date();
+ const id="mutacao-"+chave+"-"+Date.now()+"-"+usuarioAtual.uid;
+ try{await comTempoLimite(db.collection("eventos").doc("mutacao_"+chave).set({ativo:ativar,mutacao:chave,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:ativar?minutos:0,admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,(ativar?"ativar":"encerrar")+" evento "+nome);admResultado(ativar?"Evento "+nomesMutacaoEvento[chave]+" ativado por "+minutos+" minuto(s).":"Evento "+nomesMutacaoEvento[chave]+" encerrado.","ok");}
+ catch(error){admResultado("Não foi possível alterar o evento "+nome+": "+(error.message||"erro no Firestore"),"erro");}
+}
+Object.keys(eventosMutacao).forEach(chave=>{const nome=chave[0].toUpperCase()+chave.slice(1);document.getElementById("admMutacao"+nome+"Ativar").addEventListener("click",()=>controlarEventoMutacao(chave,true));document.getElementById("admMutacao"+nome+"Encerrar").addEventListener("click",()=>controlarEventoMutacao(chave,false));});
+iniciarMonitoramentoMutacoes();
+setInterval(atualizarStatusMutacoesAdmin,1000);
+
 document.getElementById("admEventoSorteAtivar").addEventListener("click",ativarEventoSorteGlobal);
 document.getElementById("admEventoSorteEncerrar").addEventListener("click",encerrarEventoSorteGlobal);
 document.getElementById("admEventoSortePresets").addEventListener("click",e=>{const b=e.target.closest("button[data-sorte-mult]");if(b)admEventoSorteMultiplicador.value=b.dataset.sorteMult;});
@@ -3859,7 +3950,7 @@ retangulo(45,246,190,28,"#7134bd",7);
 texto("CODIGOS",140,265,13,"#fff","center");
 
 retangulo(255,246,200,28,"#a83232",7);
-texto("VOLTAR ÀS CONTAS",355,265,13,"#fff","center");
+texto("SAIR",355,265,13,"#fff","center");
 }
 
 // ENGRENAGEM
