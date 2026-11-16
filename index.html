@@ -104,7 +104,7 @@ z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
 #eventoGalaxiaBadge{top:220px;background:linear-gradient(145deg,#8d43d8,#32105f);border-color:#e4c3ff}
 .evento-badge strong{display:block;font-size:15px;font-weight:900;text-shadow:0 1px 2px #0008}
 .evento-badge span{display:block;margin-top:3px;font-size:9px;font-weight:800;color:#fff}
-.adm-mutacao-menu>.adm-mutacao-mais{list-style:none;display:flex;align-items:center;justify-content:flex-start;width:100%;min-height:42px;margin:0;padding:11px 13px;border:1px solid #8ca8d8;border-radius:8px;background:linear-gradient(145deg,#263b59,#18263b);color:#fff;font-size:13px;font-weight:900;line-height:1.2;cursor:pointer}
+.adm-mutacao-menu>.adm-mutacao-mais{list-style:none;display:flex;align-items:center;justify-content:flex-start;width:100%;min-height:42px;margin:0;padding:11px 13px;border:0;border-radius:8px;background:linear-gradient(145deg,#263b59,#18263b);color:#fff;font-size:13px;font-weight:900;line-height:1.2;cursor:pointer}
 .adm-mutacao-menu>.adm-mutacao-mais::-webkit-details-marker{display:none}
 .adm-mutacao-menu>.adm-mutacao-mais::before{content:"✨ ";}
 .adm-mutacao-menu>.adm-mutacao-mais::after{content:"＋";margin-left:auto;font-size:19px;font-weight:700}
@@ -124,16 +124,16 @@ color:#fff;text-align:center;font-family:Arial,sans-serif;
 flex-direction:column;align-items:center;justify-content:center;
 line-height:1.05;pointer-events:none;
 }
-#eventoSorteBadge{background:linear-gradient(145deg,#72f58a,#25c85a);border-color:#c4ffd0;box-shadow:0 2px 8px #0009,0 0 10px #42f07866}
+#eventoSorteBadge{background:linear-gradient(145deg,#a56bff,#6130bd);border-color:#dfc4ff}
 #eventoSorteBadge strong{display:block;font-size:15px;font-weight:900;color:#fff}
-#eventoSorteBadge span{display:block;margin-top:3px;font-size:9px;font-weight:900;color:#f0fff3;text-shadow:0 1px 2px #08752b}
+#eventoSorteBadge span{display:block;margin-top:3px;font-size:9px;font-weight:800;color:#f5eaff}
 #eventoGlobalBadge strong{
 display:block;font-size:15px;font-weight:900;color:#fff;
 text-shadow:0 1px 2px #075b27;
 }
 #eventoGlobalBadge span{
 display:block;margin-top:3px;font-size:10px;font-weight:800;
-color:#f0fff3;text-shadow:0 1px 2px #075b27;
+color:#eaffef;text-shadow:0 1px 2px #075b27;
 }
 #adminModal{
 display:none;position:fixed;inset:0;background:#000c;
@@ -276,7 +276,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .adm-evento-card>summary::-webkit-details-marker{display:none}
 .adm-evento-card>summary:after{content:'＋';font-size:18px;color:#a9caff}
 .adm-evento-card[open]>summary:after{content:'−'}
-.adm-evento-conteudo{padding:10px}.adm-mutacao-evento{padding:10px;border:1px solid #53627a;border-radius:9px;margin:8px 0;background:#0d1726}.adm-mutacao-evento strong{display:block;margin-bottom:8px;font-size:13px}.adm-mutacao-evento .adm-in{margin:5px 0}.adm-mutacao-evento .adm-b{margin-top:5px}
+.adm-evento-conteudo{padding:10px}.adm-eventos-lote{padding:12px}.adm-mutacao-evento{padding:10px;border:1px solid #53627a;border-radius:9px;margin:8px 0;background:#0d1726}.adm-mutacao-evento strong{display:block;margin-bottom:8px;font-size:13px}.adm-mutacao-evento .adm-in{margin:5px 0}.adm-mutacao-evento .adm-b{margin-top:5px}
 .pet-slot.dourado{border-color:#f4cf55!important;box-shadow:0 0 12px #f4cf5544}
 .pet-slot.dourado .pet-iniciais{border-color:#f4cf55!important;color:#ffe27a!important;background:#4b3b12!important}
 .pet-slot.diamante{border-color:#55dfff!important;box-shadow:0 0 12px #55dfff55}
@@ -642,6 +642,26 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <div class="adm-mutacao-evento" data-mutacao-evento="hacker"><strong>💻 EVENTO HACKER — 2x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoHackerMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoHackerAtivar" type="button">Ativar evento Hacker</button><button class="adm-b vermelho grande" id="admMutacaoHackerEncerrar" type="button">Encerrar evento Hacker</button><div class="adm-dica" id="admMutacaoHackerStatus">Nenhum evento ativo.</div></div>
 <div class="adm-mutacao-evento" data-mutacao-evento="galaxia"><strong>🌌 EVENTO DE GALÁXIA — 2.5x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoGalaxiaMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoGalaxiaAtivar" type="button">Ativar evento de Galáxia</button><button class="adm-b vermelho grande" id="admMutacaoGalaxiaEncerrar" type="button">Encerrar evento de Galáxia</button><div class="adm-dica" id="admMutacaoGalaxiaStatus">Nenhum evento ativo.</div></div>
 </div></details>
+<div class="adm-evento-card adm-eventos-lote">
+<strong class="adm-dica" style="display:block;font-size:14px;color:#fff;margin-bottom:9px">⚡ ATIVAR TODOS OS EVENTOS</strong>
+<p class="adm-dica">Escolha quais eventos deseja ativar. Você pode marcar eventos individuais ou selecionar todos.</p>
+<div class="adm-pet-opcoes" id="admEventosLoteSelecao">
+<label><input type="checkbox" value="dinheiro"> 💰 Evento de dinheiro</label>
+<label><input type="checkbox" value="sorte"> 🍀 Evento de sorte</label>
+<label><input type="checkbox" value="anjo"> 😇 Evento de Anjo</label>
+<label><input type="checkbox" value="hacker"> 💻 Evento Hacker</label>
+<label><input type="checkbox" value="galaxia"> 🌌 Evento de Galáxia</label>
+</div>
+<label class="adm-dica" style="display:block;margin-top:10px"><input id="admEventosLoteTodos" type="checkbox" style="accent-color:#20d968;margin-right:7px"> Selecionar todos os eventos</label>
+<label for="admEventosLoteMultiplicador" class="adm-dica" style="display:block;margin-top:9px">Multiplicador (dinheiro e sorte)</label>
+<input id="admEventosLoteMultiplicador" class="adm-in" type="number" min="2" max="1000000" step="1" value="2">
+<label for="admEventosLoteMinutos" class="adm-dica" style="display:block">Tempo de duração em minutos</label>
+<input id="admEventosLoteMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10">
+<p class="adm-dica">Os multiplicadores próprios das mutações continuam iguais: Anjo 1.5x, Hacker 2x e Galáxia 2.5x.</p>
+<button id="admEventosLoteAtivar" type="button" class="adm-b verde grande">Ativar eventos selecionados</button>
+<button id="admEventosLoteRemover" type="button" class="adm-b vermelho grande" style="margin-top:6px">Remover todos os eventos</button>
+<div id="admEventosLoteStatus" class="adm-dica" style="margin-top:8px">Selecione os eventos que deseja ativar.</div>
+</div>
 </div>
 
 <h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">HISTORICO DA SESSAO</h3>
@@ -1187,8 +1207,8 @@ let petsVendaAutomatica=[];
 const CUSTO_OVO_PET=100000,INTERVALO_AUTO_OVO=1000;
 
 // Evento global de dinheiro sincronizado pelo Firestore.
-let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
-let eventoSorteGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
+let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:"",ativadoEm:0};
+let eventoSorteGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:"",ativadoEm:0};
 const eventosMutacao={anjo:{ativo:false,expiraEm:0,id:"",ativadoEm:0},hacker:{ativo:false,expiraEm:0,id:"",ativadoEm:0},galaxia:{ativo:false,expiraEm:0,id:"",ativadoEm:0}};
 const nomesMutacaoEvento={anjo:"Anjo",hacker:"Hacker",galaxia:"Galáxia"};
 function obterMutacoesEventoAtivas(){const agora=Date.now();return Object.keys(eventosMutacao).filter(k=>eventosMutacao[k].ativo&&eventosMutacao[k].expiraEm>agora);}
@@ -1595,50 +1615,21 @@ async function carregarRanking(forcar=false){
  const modal=document.getElementById("rankingModal");
  if(!modal||modal.style.display!=="flex"||rankingBuscaEmAndamento)return;
  const expirou=(Date.now()-rankingUltimaBusca)>=60000;
- if(!forcar&&rankingUltimoSnapshot&&!expirou){renderizarListaRanking(rankingUltimoSnapshot);return;}
+ if(!forcar&&rankingUltimoSnapshot&&!expirou){
+  renderizarListaRanking(rankingUltimoSnapshot);
+  return;
+ }
  rankingBuscaEmAndamento=true;
  const el=document.getElementById("listaRanking");
  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Carregando ranking...";}
  try{
-  // A lista antiga era montada somente com rankingGlobal, que não continha
-  // contas antigas. A coleção jogadores é a base completa de contas/progressos.
-  // Mantemos rankingGlobal como complemento para contas já publicadas nela.
-  const resultados=await Promise.allSettled([
-   comTempoLimite(db.collection("jogadores").get(),20000,"buscar todas as contas"),
-   comTempoLimite(db.collection("rankingGlobal").get(),20000,"atualizar ranking")
-  ]);
-  const porUid=new Map();
-  if(resultados[0].status==="fulfilled"){
-   resultados[0].value.forEach(doc=>{
-    const d=doc.data()||{};
-    const r=d.ranking||{};
-    const dados=d.dados||{};
-    const pres=d.presenca||{};
-    porUid.set(doc.id,{id:doc.id,data:()=>({
-     nome:d.nome||d.email||("Jogador "+doc.id.slice(0,6)),
-     moedas:Number(r.moedas??dados.moedas)||0,
-     renascimentos:Number(r.renascimentos??dados.renascimentos)||0,
-     online:pres.online===true && (function(){const t=pres.atualizadoEm;const n=t&&typeof t.toMillis==="function"?t.toMillis():(typeof t==="number"?t:0);return n>0&&Date.now()-n<65000;})()
-    })});
-   });
-  }
-  if(resultados[1].status==="fulfilled"){
-   resultados[1].value.forEach(doc=>{
-    const d=doc.data()||{};
-    const anterior=porUid.get(doc.id);
-    if(anterior){
-     const a=anterior.data();
-     porUid.set(doc.id,{id:doc.id,data:()=>({...a,nome:a.nome||d.nome,moedas:Math.max(Number(a.moedas)||0,Number(d.moedas)||0),renascimentos:Math.max(Number(a.renascimentos)||0,Number(d.renascimentos)||0),online:d.online===true||a.online===true})});
-    }else porUid.set(doc.id,doc);
-   });
-  }
-  if(resultados[0].status==="rejected"&&resultados[1].status==="rejected")throw resultados[0].reason||resultados[1].reason;
-  rankingUltimoSnapshot=Array.from(porUid.values());
+  const snap=await comTempoLimite(db.collection("rankingGlobal").get(),20000,"atualizar ranking");
+  rankingUltimoSnapshot=snap;
   rankingUltimaBusca=Date.now();
-  renderizarListaRanking(rankingUltimoSnapshot);
+  renderizarListaRanking(snap);
  }catch(error){
   console.error("Falha ao atualizar ranking:",error);
-  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent=(error&&error.code==="permission-denied")?"O ranking global está bloqueado pelas regras de leitura do Firestore. Libere a leitura das coleções jogadores e rankingGlobal para contas autenticadas.":"Não foi possível carregar o ranking. Verifique a conexão e tente novamente.";}
+  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent=(error&&error.code==="permission-denied")?"O ranking global está bloqueado pelas regras de leitura do Firestore. Libere a leitura autenticada da coleção rankingGlobal.":"Não foi possível carregar o ranking. Verifique a conexão e tente novamente.";}
  }finally{rankingBuscaEmAndamento=false;}
 }
 
@@ -1681,17 +1672,28 @@ return 1;
 return Math.max(1,Number(eventoGlobal.multiplicador)||1);
 }
 
+function atualizarOrdemBadgesEventos(){
+const agora=Date.now();
+const lista=[];
+if(eventoGlobal.ativo&&eventoGlobal.expiraEm>agora)lista.push({id:"eventoGlobalBadge",quando:Number(eventoGlobal.ativadoEm)||0});
+if(eventoSorteGlobal.ativo&&eventoSorteGlobal.expiraEm>agora)lista.push({id:"eventoSorteBadge",quando:Number(eventoSorteGlobal.ativadoEm)||0});
+const cfg={anjo:"eventoAnjoBadge",hacker:"eventoHackerBadge",galaxia:"eventoGalaxiaBadge"};
+Object.keys(cfg).forEach(k=>{const ev=eventosMutacao[k];if(ev.ativo&&ev.expiraEm>agora)lista.push({id:cfg[k],quando:Number(ev.ativadoEm)||0});});
+lista.sort((a,b)=>(a.quando||0)-(b.quando||0));
+lista.forEach((item,i)=>{const el=document.getElementById(item.id);if(el)el.style.top=(12+i*52)+"px";});
+}
 function atualizarBadgeEvento(){
 const badge=document.getElementById("eventoGlobalBadge");
 if(!badge)return;
 const restante=(Number(eventoGlobal.expiraEm)||0)-Date.now();
 const ativo=eventoGlobal.ativo&&restante>0;
 badge.style.display=ativo?"flex":"none";
+atualizarOrdemBadgesEventos();
 if(!ativo)return;
 const segundos=Math.max(0,Math.ceil(restante/1000));
 const min=Math.floor(segundos/60),seg=segundos%60;
 document.getElementById("eventoGlobalMultiplicador").textContent=eventoGlobal.multiplicador+"x";
-document.getElementById("eventoGlobalTempo").textContent="DINHEIRO "+String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
+document.getElementById("eventoGlobalTempo").textContent=String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
 }
 
 let estadoEventoGlobalConhecido=false;
@@ -1703,7 +1705,7 @@ const ref=db.collection("eventos").doc("multiplicadorGlobal");
 cancelarMonitoramentoEvento=ref.onSnapshot(snapshot=>{
 const estavaAtivo=estadoEventoGlobalConhecido&&eventoGlobalEstavaAtivo;
 if(!snapshot.exists){
-eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
+eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:"",ativadoEm:0};
 atualizarBadgeEvento();
 if(estavaAtivo)mostrarAviso("O admin "+nomeDoAdminAtual()+" desativou o evento global de dinheiro.","info");
 estadoEventoGlobalConhecido=true;
@@ -1717,7 +1719,7 @@ const ativo=ev.ativo===true&&expira>Date.now();
 const id=String(ev.id||"");
 const admin=String(ev.admin||"Admin");
 const multiplicador=Math.max(1,Number(ev.multiplicador)||1);
-eventoGlobal={ativo,multiplicador,expiraEm:expira,admin,id};
+eventoGlobal={ativo,multiplicador,expiraEm:expira,admin,id,ativadoEm:Number(ev.ativadoEm)||Number((id.match(/(?:^|-)(\d{10,})(?:-|$)/)||[])[1])||0};
 atualizarBadgeEvento();
 
 // Cada aparelho recebe esta atualização diretamente do mesmo documento do Firestore.
@@ -3269,7 +3271,7 @@ const adminNome=nomeDoAdminAtual();
 const expiraEm=new Date(Date.now()+minutos*60000);
 const id=String(Date.now())+"-"+usuarioAtual.uid;
 try{
-await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:minutos,admin:adminNome,id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global");
+await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:minutos,ativadoEm:Date.now(),admin:adminNome,id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global");
 admResultado("Evento global de "+mult+"x ativado por "+minutos+" minuto(s).","ok");
 }catch(error){admResultado("Não foi possível ativar o evento global: "+(error.message||"erro no Firestore"),"erro");}
 atualizarStatusEventoAdmin();
@@ -3289,15 +3291,15 @@ let cancelarMonitoramentoSorte=null;
 function atualizarBadgeEventoSorte(){
  const badge=document.getElementById("eventoSorteBadge");if(!badge)return;
  const restante=(Number(eventoSorteGlobal.expiraEm)||0)-Date.now();
- const ativo=eventoSorteGlobal.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(!ativo)return;
+ const ativo=eventoSorteGlobal.ativo&&restante>0;badge.style.display=ativo?"flex":"none";atualizarOrdemBadgesEventos();if(!ativo)return;
  const segundos=Math.max(0,Math.ceil(restante/1000)),min=Math.floor(segundos/60),seg=segundos%60;
  document.getElementById("eventoSorteMultiplicador").textContent=eventoSorteGlobal.multiplicador+"x";
- document.getElementById("eventoSorteTempo").textContent="SORTE "+String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
+ document.getElementById("eventoSorteTempo").textContent=String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
 }
 function atualizarBadgesMutacao(){
  const cfg={anjo:{id:"eventoAnjoBadge",tempo:"eventoAnjoTempo",rotulo:"ANJO"},hacker:{id:"eventoHackerBadge",tempo:"eventoHackerTempo",rotulo:"HACKER"},galaxia:{id:"eventoGalaxiaBadge",tempo:"eventoGalaxiaTempo",rotulo:"GALÁXIA"}};
  const ativos=Object.keys(cfg).filter(k=>eventosMutacao[k].ativo&&Number(eventosMutacao[k].expiraEm)>Date.now()).sort((a,b)=>(Number(eventosMutacao[a].ativadoEm)||0)-(Number(eventosMutacao[b].ativadoEm)||0)||a.localeCompare(b));
- Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(ativo){const pos=ativos.indexOf(k);badge.style.top=(116+Math.max(0,pos)*52)+"px";const seg=Math.ceil(restante/1000),mm=Math.floor(seg/60),ss=seg%60;document.getElementById(c.tempo).textContent=c.rotulo+" "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");}});
+ Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(ativo){const seg=Math.ceil(restante/1000),mm=Math.floor(seg/60),ss=seg%60;document.getElementById(c.tempo).textContent=c.rotulo+" "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");}});atualizarOrdemBadgesEventos();
 }
 function iniciarMonitoramentoEventoSorte(){
  if(cancelarMonitoramentoSorte){try{cancelarMonitoramentoSorte();}catch(e){}}
@@ -3308,7 +3310,7 @@ function iniciarMonitoramentoEventoSorte(){
   const ativo=ev.ativo===true&&expira>Date.now();
   const id=String(ev.id||"");
   const novo=ativo&&(!eventoSorteGlobal.ativo||eventoSorteGlobal.id!==id);
-  eventoSorteGlobal={ativo,multiplicador:Math.max(1,Number(ev.multiplicador)||1),expiraEm:expira,admin:String(ev.admin||"Admin"),id};
+  eventoSorteGlobal={ativo,multiplicador:Math.max(1,Number(ev.multiplicador)||1),expiraEm:expira,admin:String(ev.admin||"Admin"),id,ativadoEm:Number(ev.ativadoEm)||Number((id.match(/-(\d{10,})-/)||[])[1])||0};
   if(novo)mostrarAviso("Evento global de SORTE ativado: "+eventoSorteGlobal.multiplicador+"x!","ok");
   if(estavaAtivo&&!ativo)mostrarAviso("O evento global de sorte terminou.","info");
   atualizarBadgeEventoSorte();
@@ -3320,7 +3322,7 @@ async function ativarEventoSorteGlobal(){
  const mult=Number(admEventoSorteMultiplicador.value),minutos=Number(admEventoSorteMinutos.value);
  if(!Number.isInteger(mult)||mult<2||mult>1000000||!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("Informe sorte de 2x a 1.000.000x e duração de 1 a 10.080 minutos.","erro");return;}
  const expiraEm=new Date(Date.now()+minutos*60000),id="sorte-"+Date.now()+"-"+usuarioAtual.uid;
- try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:minutos,admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global de sorte");admResultado("Evento global de sorte de "+mult+"x ativado por "+minutos+" minuto(s).","ok");}
+ try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:minutos,ativadoEm:Date.now(),admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global de sorte");admResultado("Evento global de sorte de "+mult+"x ativado por "+minutos+" minuto(s).","ok");}
  catch(error){admResultado("Não foi possível ativar o evento de sorte: "+(error.message||"erro no Firestore"),"erro");}
 }
 async function encerrarEventoSorteGlobal(){
@@ -3355,6 +3357,37 @@ async function controlarEventoMutacao(chave,ativar){
  catch(error){admResultado("Não foi possível alterar o evento "+nome+": "+(error.message||"erro no Firestore"),"erro");}
 }
 Object.keys(eventosMutacao).forEach(chave=>{const nome=chave[0].toUpperCase()+chave.slice(1);document.getElementById("admMutacao"+nome+"Ativar").addEventListener("click",()=>controlarEventoMutacao(chave,true));document.getElementById("admMutacao"+nome+"Encerrar").addEventListener("click",()=>controlarEventoMutacao(chave,false));});
+
+// Ativação em lote: mantém os multiplicadores fixos das mutações.
+const admEventosLoteSelecao=document.getElementById("admEventosLoteSelecao");
+const admEventosLoteTodos=document.getElementById("admEventosLoteTodos");
+const admEventosLoteStatus=document.getElementById("admEventosLoteStatus");
+function atualizarSelecaoLoteTodos(){const checks=[...admEventosLoteSelecao.querySelectorAll('input[type="checkbox"]')];admEventosLoteTodos.checked=checks.length>0&&checks.every(c=>c.checked);checks.forEach(c=>c.closest("label").classList.toggle("selecionada",c.checked));}
+admEventosLoteSelecao.addEventListener("change",atualizarSelecaoLoteTodos);
+admEventosLoteTodos.addEventListener("change",()=>{admEventosLoteSelecao.querySelectorAll('input[type="checkbox"]').forEach(c=>c.checked=admEventosLoteTodos.checked);atualizarSelecaoLoteTodos();});
+async function ativarEventosEmLote(){
+ if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+ const selecionados=[...admEventosLoteSelecao.querySelectorAll('input[type="checkbox"]:checked')].map(c=>c.value);
+ const minutos=Number(document.getElementById("admEventosLoteMinutos").value),mult=Number(document.getElementById("admEventosLoteMultiplicador").value);
+ if(!selecionados.length){admEventosLoteStatus.textContent="Selecione pelo menos um evento.";return;}
+ if(!Number.isInteger(minutos)||minutos<1||minutos>10080){admEventosLoteStatus.textContent="O tempo deve ser de 1 a 10.080 minutos.";return;}
+ if(selecionados.some(k=>k==="dinheiro"||k==="sorte")&&(!Number.isInteger(mult)||mult<2||mult>1000000)){admEventosLoteStatus.textContent="O multiplicador de dinheiro/sorte deve ser um número inteiro entre 2 e 1.000.000.";return;}
+ const agora=Date.now(),expira=firebase.firestore.Timestamp.fromDate(new Date(agora+minutos*60000)),admin=nomeDoAdminAtual();
+ const docs={dinheiro:"multiplicadorGlobal",sorte:"sorteGlobal",anjo:"mutacao_anjo",hacker:"mutacao_hacker",galaxia:"mutacao_galaxia"};
+ try{
+  await comTempoLimite(Promise.all(selecionados.map(k=>{const dados={ativo:true,expiraEm:expira,duracaoMinutos:minutos,ativadoEm:agora,admin,id:"lote-"+k+"-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};if(k==="dinheiro"||k==="sorte")dados.multiplicador=mult;else dados.mutacao=k;return db.collection("eventos").doc(docs[k]).set(dados,{merge:true});})),30000,"ativar eventos selecionados");
+  admEventosLoteStatus.textContent="Eventos ativados: "+selecionados.join(", ")+". Duração: "+minutos+" minuto(s).";admResultado("Eventos selecionados ativados com sucesso.","ok");
+ }catch(error){admEventosLoteStatus.textContent="Falha ao ativar os eventos: "+(error.message||"erro no Firestore");admResultado(admEventosLoteStatus.textContent,"erro");}
+}
+async function removerTodosEventos(){
+ if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+ const agora=Date.now(),expira=firebase.firestore.Timestamp.fromDate(new Date(agora)),admin=nomeDoAdminAtual();
+ const docs=["multiplicadorGlobal","sorteGlobal","mutacao_anjo","mutacao_hacker","mutacao_galaxia"];
+ try{await comTempoLimite(Promise.all(docs.map(nome=>db.collection("eventos").doc(nome).set({ativo:false,expiraEm:expira,duracaoMinutos:0,ativadoEm:0,admin,id:"lote-off-"+nome+"-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}))),30000,"remover todos os eventos");admEventosLoteStatus.textContent="Todos os eventos foram desativados.";admResultado("Todos os eventos foram removidos.","ok");}
+ catch(error){admEventosLoteStatus.textContent="Não foi possível remover todos os eventos: "+(error.message||"erro no Firestore");admResultado(admEventosLoteStatus.textContent,"erro");}
+}
+document.getElementById("admEventosLoteAtivar").addEventListener("click",ativarEventosEmLote);
+document.getElementById("admEventosLoteRemover").addEventListener("click",removerTodosEventos);
 iniciarMonitoramentoMutacoes();
 setInterval(atualizarStatusMutacoesAdmin,1000);
 
