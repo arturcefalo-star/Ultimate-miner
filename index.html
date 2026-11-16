@@ -2281,8 +2281,12 @@ dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
 iniciarMonitoramentoEventoGlobal();
 iniciarPresenca(user.uid);
-await publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true);
-if(user.uid===ADMIN_UID)await sincronizarRankingHistoricoAdmin();
+// O ranking é complementar: nunca pode bloquear a entrada no jogo.
+// As gravações continuam acontecendo em segundo plano, sem prender a tela de login.
+publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true).catch(error=>console.warn("Falha ao publicar ranking após login:",error));
+if(user.uid===ADMIN_UID){
+  sincronizarRankingHistoricoAdmin().catch(error=>console.warn("Falha ao sincronizar ranking histórico:",error));
+}
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
