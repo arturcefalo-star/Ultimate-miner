@@ -1269,7 +1269,7 @@ function abrirNovoModal(tipo){
  if(tipo==="mundos"){atualizarMundosDesbloqueados();renderizarMundos();document.getElementById("mundosModal").style.display="flex";}
  if(tipo==="ovos"){renderizarChancesOvo();renderizarResumoPets();document.getElementById("ovosPetsModal").style.display="flex";}
  if(tipo==="inventario"){renderizarPets();document.getElementById("inventarioPetsModal").style.display="flex";}
- if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";atualizarContagemRanking();carregarRanking(true);}
+ if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";atualizarContagemRanking();carregarRanking();}
  somAbrirLoja();
 }
 function fecharNovosModais(){
@@ -1563,22 +1563,24 @@ function venderPetsSelecionados(){
 }
 
 function jogadorEstaOnline(registro){
- const nested=(registro&&registro.presenca)||{};
- // No ranking, a presença é atualizada no nível principal do documento rankingGlobal;
- // no painel Admin, ela fica dentro de presenca. Preferimos sempre o campo mais recente.
- const pres=(nested&&typeof nested.online==="boolean"&&nested.atualizadoEm)?nested:registro;
- const onlineMarcado=pres&&pres.online===true;
- let atualizado=0;
- try{
-  const valor=pres.atualizadoEm;
-  if(valor&&typeof valor.toMillis==="function") atualizado=valor.toMillis();
-  else if(valor&&typeof valor.toDate==="function") atualizado=valor.toDate().getTime();
-  else if(valor&&typeof valor.seconds==="number") atualizado=valor.seconds*1000;
-  else if(typeof valor==="number") atualizado=valor>100000000000?valor:valor*1000;
- }catch(e){atualizado=0;}
+ const r=registro||{};
+ const nested=r.presenca||{};
+ // heartbeatAt é um horário numérico escrito junto com o status; evita depender
+ // da conversão de serverTimestamp em snapshots recém-gravados.
+ const pres=(typeof r.online==="boolean"&&(r.heartbeatAt||r.atualizadoEm))?r:nested;
+ const onlineMarcado=pres.online===true;
+ let atualizado=Number(pres.heartbeatAt)||0;
+ if(!atualizado){
+  try{
+   const valor=pres.atualizadoEm;
+   if(valor&&typeof valor.toMillis==="function") atualizado=valor.toMillis();
+   else if(valor&&typeof valor.toDate==="function") atualizado=valor.toDate().getTime();
+   else if(valor&&typeof valor.seconds==="number") atualizado=valor.seconds*1000;
+   else if(typeof valor==="number") atualizado=valor>100000000000?valor:valor*1000;
+  }catch(e){atualizado=0;}
+ }
  const idade=Date.now()-atualizado;
- // Mesma fonte e regra de presença do painel Admin; registros antigos ficam OFF.
- return onlineMarcado&&atualizado>0&&idade>=-5000&&idade<65000;
+ return onlineMarcado&&atualizado>0&&idade>=-15000&&idade<70000;
 }
 
 function criarEtiquetaPresenca(online){
@@ -1603,7 +1605,7 @@ async function renderizarListaRanking(snap){
   const moedas=Number(d.moedas??ranking.moedas??dados.moedas)||0;
   const renascimentos=Number(d.renascimentos??ranking.renascimentos??dados.renascimentos)||0;
   const anterior=mapa.get(uid)||{};
-  mapa.set(uid,{uid,nome:(nome&&nome!=="Jogador "+String(uid).slice(0,6))?nome:(anterior.nome||nome),moedas:Number.isFinite(moedas)?moedas:(anterior.moedas||0),renascimentos:Number.isFinite(renascimentos)?renascimentos:(anterior.renascimentos||0),registroJogador:d.presenca?d:(typeof d.online==="boolean"?d:(anterior.registroJogador||null)),online:false});
+  mapa.set(uid,{uid,nome:(nome&&nome!=="Jogador "+String(uid).slice(0,6))?nome:(anterior.nome||nome),moedas:Number.isFinite(moedas)?moedas:(anterior.moedas||0),renascimentos:Number.isFinite(renascimentos)?renascimentos:(anterior.renascimentos||0),registroJogador:(d.presenca||typeof d.online==="boolean")?d:anterior.registroJogador||null,online:false});
  });
  const lista=[...mapa.values()];
  lista.forEach(j=>{j.online=!!(j.registroJogador&&jogadorEstaOnline(j.registroJogador));});
@@ -1638,11 +1640,10 @@ async function sincronizarRankingHistoricoAdmin(){
    const lote=db.batch();
    docs.slice(i,i+400).forEach(doc=>{
     const d=doc.data()||{},dados=d.dados||{},ranking=d.ranking||{};
-    const estatisticas=(usuarioAtual&&doc.id===usuarioAtual.uid)?dadosDoJogo():dados;
     lote.set(db.collection("rankingGlobal").doc(doc.id),{
      nome:String(d.nome||("Jogador "+doc.id.slice(0,6))),
-     moedas:Math.max(0,Number(estatisticas.moedas??ranking.moedas??d.moedas)||0),
-     renascimentos:Math.max(0,Number(estatisticas.renascimentos??ranking.renascimentos??d.renascimentos)||0),
+     moedas:Math.max(0,Number(ranking.moedas??dados.moedas)||0),
+     renascimentos:Math.max(0,Number(ranking.renascimentos??dados.renascimentos)||0),
      presenca:d.presenca||{online:false}
     },{merge:true});
    });
@@ -1661,30 +1662,35 @@ function pararRankingAoVivo(){
 async function carregarRanking(forcar=false){
  const modal=document.getElementById("rankingModal");
  if(!modal||modal.style.display!=="flex"||rankingBuscaEmAndamento)return;
- const expirou=(Date.now()-rankingUltimaBusca)>=60000;
- if(!forcar&&rankingUltimoSnapshot&&!expirou){
-  renderizarListaRanking(rankingUltimoSnapshot);
-  return;
- }
+ const expirou=(Date.now()-rankingUltimaBusca)>=30000;
+ if(!forcar&&rankingUltimoSnapshot&&!expirou){renderizarListaRanking(rankingUltimoSnapshot);return;}
  rankingBuscaEmAndamento=true;
  const el=document.getElementById("listaRanking");
  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Carregando ranking...";}
  try{
-  // Publica o saldo real da sessão antes da consulta: evita mostrar um resumo antigo
-  // enquanto o salvamento automático ainda está aguardando o próximo ciclo.
-  if(jogoPronto()&&usuarioAtual){
-   const dadosAtuais=dadosDoJogo();
-   await publicarResumoRanking(usuarioAtual.uid,usuarioAtual.displayName||usuarioAtual.email.split("@")[0],dadosAtuais,true);
+  // Busca o índice público sem esperar a sincronização histórica do administrador.
+  const rankingPromise=comTempoLimite(db.collection("rankingGlobal").get(),18000,"ler rankingGlobal");
+  let docs=[];
+  if(usuarioAtual&&usuarioAtual.uid===ADMIN_UID){
+   const [rankingSnap,jogadoresSnap]=await Promise.all([
+    rankingPromise,
+    comTempoLimite(db.collection("jogadores").get(),18000,"ler contas dos jogadores")
+   ]);
+   docs=[...(rankingSnap.docs||[]),...(jogadoresSnap.docs||[])];
+   // A sincronização histórica publica os registros antigos para os outros jogadores,
+   // mas não bloqueia a exibição do ranking nesta tela.
+   sincronizarRankingHistoricoAdmin().catch(e=>console.warn("Sincronização histórica adiada:",e));
+  }else{
+   const rankingSnap=await rankingPromise;
+   docs=rankingSnap.docs||[];
   }
-  // O administrador reconstrói o índice público a partir de todos os registros históricos.
-  if(usuarioAtual&&usuarioAtual.uid===ADMIN_UID)await sincronizarRankingHistoricoAdmin();
-  const snap=await comTempoLimite(db.collection("rankingGlobal").get(),20000,"atualizar ranking");
-  rankingUltimoSnapshot=snap;
+  rankingUltimoSnapshot=docs;
   rankingUltimaBusca=Date.now();
-  renderizarListaRanking(snap);
+  await renderizarListaRanking(docs);
  }catch(error){
   console.error("Falha ao atualizar ranking:",error);
-  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Não foi possível atualizar o ranking agora. Tente novamente em instantes.";}
+  el.className="novo-vazio";
+  el.textContent=(error&&error.code==="permission-denied")?"O Firestore bloqueou a leitura do ranking. Confira as regras de rankingGlobal.":"Não foi possível carregar o ranking. Toque para tentar novamente.";
  }finally{rankingBuscaEmAndamento=false;}
 }
 
@@ -2190,10 +2196,12 @@ let operacaoManualDeConta=false;
 // Presença online/offline compartilhada pelo Firestore.
 async function atualizarPresenca(online,uidForcado){
 const uid=uidForcado||(usuarioAtual&&usuarioAtual.uid);
-if(!uid)return;
+if(!uid||!db)return;
+const agora=Date.now();
+const marca={online:!!online,heartbeatAt:agora,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
 try{
-await db.collection("jogadores").doc(uid).set({presenca:{online:!!online,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()}},{merge:true});
-try{await db.collection("rankingGlobal").doc(uid).set({online:!!online,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){}
+ await db.collection("jogadores").doc(uid).set({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm,presenca:marca},{merge:true});
+ await db.collection("rankingGlobal").doc(uid).set({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm},{merge:true});
 }catch(error){console.warn("Não foi possível atualizar a presença:",error);}
 }
 function iniciarPresenca(uid){
@@ -2201,8 +2209,8 @@ if(timerPresenca)clearInterval(timerPresenca);
 ultimaPresencaUid=uid;
 atualizarPresenca(true,uid);
 timerPresenca=setInterval(()=>{
-if(usuarioAtual&&usuarioAtual.uid===uid&&document.visibilityState!=="hidden")atualizarPresenca(true,uid);
-},20000);
+if(usuarioAtual&&usuarioAtual.uid===uid)atualizarPresenca(true,uid);
+},15000);
 }
 function pararPresenca(uid){
 if(timerPresenca){clearInterval(timerPresenca);timerPresenca=null;}
@@ -2210,9 +2218,7 @@ if(uid)atualizarPresenca(false,uid);
 }
 window.addEventListener("pagehide",()=>{if(ultimaPresencaUid)atualizarPresenca(false,ultimaPresencaUid);});
 document.addEventListener("visibilitychange",()=>{
-if(!usuarioAtual)return;
-if(document.visibilityState==="hidden")atualizarPresenca(false,usuarioAtual.uid);
-else atualizarPresenca(true,usuarioAtual.uid);
+if(usuarioAtual&&document.visibilityState!=="hidden")atualizarPresenca(true,usuarioAtual.uid);
 });
 
 function nomeDoAdminAtual(){
@@ -2275,16 +2281,12 @@ dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
 iniciarMonitoramentoEventoGlobal();
 iniciarPresenca(user.uid);
-// O login não deve esperar as tarefas secundárias do ranking/Firebase.
-// Primeiro libera o jogo; a publicação do ranking acontece em segundo plano.
+await publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true);
+if(user.uid===ADMIN_UID)await sincronizarRankingHistoricoAdmin();
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
 salvarContaUsada(nomeCanonico);
-Promise.resolve().then(()=>publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true)).catch(error=>console.warn("Ranking será atualizado posteriormente:",error));
-if(user.uid===ADMIN_UID){
-  setTimeout(()=>{sincronizarRankingHistoricoAdmin().catch(error=>console.warn("Sincronização do ranking adiada:",error));},0);
-}
 return true;
 }catch(error){
 usuarioAtual=null;
@@ -2958,6 +2960,8 @@ const carregando=document.createElement("option");
 carregando.value="";carregando.textContent="Carregando jogadores...";
 select.appendChild(carregando);
 try{
+// Atualiza primeiro a própria presença para que o administrador nunca apareça OFF por atraso do heartbeat.
+await atualizarPresenca(true,usuarioAtual.uid);
 const snapshot=await comTempoLimite(db.collection("jogadores").get(),20000,"listar jogadores");
 jogadoresAdmin=snapshot.docs.map(doc=>{
 const registro=doc.data()||{};
@@ -3401,7 +3405,7 @@ async function ativarTodosEventos(){
   if(!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("Confira a duração do evento "+nome+".","erro");return;}
   adicionar("mutacao_"+chave,{ativo:true,mutacao:chave,ativadoEm:agora,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(agora+minutos*60000)),duracaoMinutos:minutos,admin,id:"mutacao-"+chave+"-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
  }
- try{await batch.commit();admResultado("Todos os eventos foram ativados com sucesso!","ok");atualizarStatusEventoAdmin();atualizarStatusMutacoesAdmin();}
+ try{await comTempoLimite(batch.commit(),25000,"ativar todos os eventos");admResultado("Todos os eventos foram ativados com sucesso!","ok");atualizarStatusEventoAdmin();atualizarStatusMutacoesAdmin();}
  catch(error){admResultado("Não foi possível ativar todos os eventos: "+(error.message||"erro no Firestore"),"erro");}
 }
 
@@ -4014,20 +4018,16 @@ function desenharMelhorias(){
  ];}else{
   const ci=CUSTOS_INVENTARIO_PETS[melhoriaInventarioPets],ce=CUSTOS_EQUIPAR_PETS[melhoriaPetsEquipados];
   linhas=[
-   {y:58,t:"ESPAÇO DO INVENTÁRIO DE PETS",d:""+limiteInventarioPets()+"/200 vagas • próximo nível: +25 vagas",b:melhoriaInventarioPets>=6?"MAX":"$ "+formatarDinheiro(ci),c:melhoriaInventarioPets>=6?"#777777":(moedas>=ci?"#218b4a":"#754044"),max:melhoriaInventarioPets>=6},
-   {y:142,t:"PETS EQUIPADOS — MELHORIA PODEROSA",d:limitePetsEquipados()+"/6 equipados • +1 vaga por melhoria",b:melhoriaPetsEquipados>=3?"MAX":"$ "+formatarDinheiro(ce),c:melhoriaPetsEquipados>=3?"#777777":(moedas>=ce?"#218b4a":"#754044"),max:melhoriaPetsEquipados>=3}
+   {y:45,t:"INVENTÁRIO DE PETS",d:"ATUAL: "+limiteInventarioPets()+" | PRÓXIMO: "+(melhoriaInventarioPets>=6?"200 (MÁX.)":limiteInventarioPets()+25),b:melhoriaInventarioPets>=6?"MAX":"$ "+formatarDinheiro(ci),c:melhoriaInventarioPets>=6?"#777777":(moedas>=ci?"#218b4a":"#754044"),max:melhoriaInventarioPets>=6},
+   {y:76,t:"MAIS ESPAÇO NO INVENTÁRIO",d:"+25 vagas por melhoria | máximo: 200 pets",b:melhoriaInventarioPets>=6?"MAX":"NÍVEL "+(melhoriaInventarioPets+1)+"/6",c:melhoriaInventarioPets>=6?"#777777":"#754044",max:melhoriaInventarioPets>=6},
+   {y:107,t:"PETS EQUIPADOS",d:"ATUAL: "+limitePetsEquipados()+" | PRÓXIMO: "+(melhoriaPetsEquipados>=3?"6 (MÁX.)":limitePetsEquipados()+1),b:melhoriaPetsEquipados>=3?"MAX":"$ "+formatarDinheiro(ce),c:melhoriaPetsEquipados>=3?"#777777":(moedas>=ce?"#218b4a":"#754044"),max:melhoriaPetsEquipados>=3},
+   {y:138,t:"MAIS PETS EQUIPADOS",d:"+1 vaga por melhoria | máximo: 6 pets",b:melhoriaPetsEquipados>=3?"MAX":"NÍVEL "+(melhoriaPetsEquipados+1)+"/3",c:melhoriaPetsEquipados>=3?"#777777":"#754044",max:melhoriaPetsEquipados>=3},
+   {y:169,t:"CUSTO ALTO — MELHORIA RARA",d:"Esses bônus aumentam muito seu poder.",b:"ESPECIAL",c:"#754044",max:true},
+   {y:200,t:"LIMITE FINAL",d:"200 no inventário e 6 equipados.",b:"MÁXIMO",c:"#777777",max:true}
   ];
  }
- linhas.forEach(l=>{
-  retangulo(38,l.y,424,52,"#34394e",7);
-  texto(l.t,48,l.y+17,9.5,paginaMelhorias?"#ffe08a":"#ffffff");
-  texto(l.d,48,l.y+36,8.2,l.max?"#a0a0a0":"#bdc9da");
-  retangulo(357,l.y+14,96,25,l.c,6);texto(l.b,405,l.y+31,8.5,l.max?"#d0d0d0":"#fff","center");
- });
- if(paginaMelhorias){
-  texto("INVENTÁRIO: 50 → 75 → 100 → 125 → 150 → 175 → 200",250,244,7.2,"#a9bed8","center");
-  texto("EQUIPADOS: 3 → 4 → 5 → 6 • MELHORIA MUITO FORTE",250,260,7.2,"#ffe08a","center");
- }else texto("TOQUE NO BOTÃO DE UMA MELHORIA PARA COMPRAR",250,279,7,"#a9bed8","center");
+ linhas.forEach((l,i)=>{retangulo(38,l.y,424,29,"#34394e",5);texto(l.t,46,l.y+11,9.1,(paginaMelhorias?"#ffe08a":"#ffffff"));texto(l.d,46,l.y+23,7.3,l.max?"#a0a0a0":"#bdc9da");retangulo(357,l.y+3,96,23,l.c,5);texto(l.b,405,l.y+18,8,l.max?"#d0d0d0":"#fff","center");});
+ texto("TOQUE NO BOTÃO DE UMA MELHORIA PARA COMPRAR",250,279,7,"#a9bed8","center");
 }
 function comprarTriploOvo(){
  if(triploOvoComprado){mostrarAviso("O upgrade TRIPLO OVO já está no máximo.","info");return;}
@@ -4415,8 +4415,8 @@ if(p.x>=355&&p.x<=455){
   if(p.y>=200&&p.y<=226){comprarSorteOvo();return;}
   if(p.y>=238&&p.y<=264){comprarImpulsoPets();return;}
  }else{
-  if(p.y>=72&&p.y<=112){comprarEspacoInventarioPets();return;}
-  if(p.y>=156&&p.y<=196){comprarEspacoPetsEquipados();return;}
+  if(p.y>=48&&p.y<=74){comprarEspacoInventarioPets();return;}
+  if(p.y>=110&&p.y<=136){comprarEspacoPetsEquipados();return;}
  }
 }
 
