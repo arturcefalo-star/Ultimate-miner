@@ -2122,7 +2122,7 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
 await publicarResumoRanking(id,nomeRanking,copia,true);
 }catch(error){console.error("Erro ao salvar no Firebase:",error);}
-},30000);
+},500);
 }
 
 function salvar(){
@@ -2223,7 +2223,7 @@ ultimaPresencaUid=uid;
 atualizarPresenca(true,uid);
 timerPresenca=setInterval(()=>{
 if(usuarioAtual&&usuarioAtual.uid===uid)atualizarPresenca(true,uid);
-},60000);
+},15000);
 }
 function pararPresenca(uid){
 if(timerPresenca){clearInterval(timerPresenca);timerPresenca=null;}
@@ -2529,10 +2529,8 @@ await entrarNoJogo(user,nome);
 
 // Salva na nuvem na hora (aba escondida ou página fechando).
 // Nunca salva antes do progresso carregar, para não apagar o save com valores zerados.
-let salvamentoFinalEmAndamento=false;
 function salvarNuvemAgora(){
-if(!jogoPronto()||carregandoDados||!usuarioAtual||salvamentoFinalEmAndamento)return;
-salvamentoFinalEmAndamento=true;
+if(!jogoPronto()||carregandoDados||!usuarioAtual)return;
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
 const id=usuarioAtual.uid;
 const dados=limparDadosParaFirestore(dadosDoJogo());
@@ -2544,7 +2542,7 @@ nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados,
 ranking:{moedas:Number(moedas)||0,renascimentos:Number(renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
-},{merge:true}).then(()=>publicarResumoRanking(id,usuarioAtual&&usuarioAtual.uid===id?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"Jogador",dados,true)).catch(error=>console.error("Erro ao salvar:",error)).finally(()=>{salvamentoFinalEmAndamento=false;});
+},{merge:true}).then(()=>publicarResumoRanking(id,usuarioAtual&&usuarioAtual.uid===id?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"Jogador",dados,true)).catch(error=>console.error("Erro ao salvar:",error));
 }
 
 document.addEventListener("visibilitychange",()=>{
@@ -2988,8 +2986,13 @@ const snapshot=await comTempoLimite(db.collection("jogadores").get(),15000,"list
 jogadoresAdmin=snapshot.docs.map(doc=>{
 const registro=doc.data()||{};
 const online=jogadorEstaOnline(registro);
-return {uid:doc.id,nome:String(registro.nome||"Jogador"),dados:registro.dados||{},online};
-}).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
+return {uid:doc.id,nome:String(registro.nome||registro.displayName||(doc.id===ADMIN_UID?"Artur":doc.id.slice(0,8))),dados:registro.dados||{},online};
+}).sort((a,b)=>{
+// A conta administrativa fica sempre no topo; as demais seguem em ordem alfabética.
+if(a.uid===ADMIN_UID)return -1;
+if(b.uid===ADMIN_UID)return 1;
+return a.nome.localeCompare(b.nome,"pt-BR");
+});
 select.textContent="";
 for(const jogador of jogadoresAdmin){
 const op=document.createElement("option");
@@ -3309,10 +3312,29 @@ if(acao==="giveWorld"||acao==="removeWorld"){
   Object.assign(dados,dadosAtuais);
   tx.set(ref,{dados:dadosAtuais,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
  }),20000,"salvar mundo do jogador");
+}else if(["addMoney","removeMoney","clearMoney"].includes(acao)){
+ // Dinheiro é alterado dentro de uma transação usando o saldo mais recente.
+ // Assim, o autosave do jogador não sobrescreve uma ação do painel Admin.
+ const saldoFinal=await comTempoLimite(db.runTransaction(async tx=>{
+  const atualSnap=await tx.get(ref);
+  if(!atualSnap.exists)throw new Error("Essa conta não existe mais.");
+  const registroAtual=atualSnap.data()||{};
+  const dadosAtuais=registroAtual.dados&&typeof registroAtual.dados==="object"?registroAtual.dados:{};
+  const saldoAtual=Math.max(0,Number(dadosAtuais.moedas)||0);
+  let novoSaldo=saldoAtual;
+  if(acao==="addMoney")novoSaldo=Math.min(MAX_MOEDAS,saldoAtual+valor);
+  if(acao==="removeMoney")novoSaldo=Math.max(0,saldoAtual-valor);
+  if(acao==="clearMoney")novoSaldo=0;
+  tx.update(ref,{
+   "dados.moedas":novoSaldo,
+   avisoAdmin:avisoRemoto,
+   atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  return novoSaldo;
+ }),25000,"salvar dinheiro do jogador");
+ dados.moedas=saldoFinal;
 }else{
- // Grava o mapa "dados" como um único campo. Isso evita montar caminhos
- // dinâmicos como "dados.nomeDoCampo" e falhas quando algum campo tem
- // caracteres especiais. A leitura imediatamente anterior fornece a base.
+ // Para as demais ações, preserva o salvamento já existente.
  const atualizacao={
   dados:dados,
   avisoAdmin:avisoRemoto,
