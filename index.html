@@ -104,8 +104,14 @@ z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
 #eventoGalaxiaBadge{top:220px;background:linear-gradient(145deg,#8d43d8,#32105f);border-color:#e4c3ff}
 .evento-badge strong{display:block;font-size:15px;font-weight:900;text-shadow:0 1px 2px #0008}
 .evento-badge span{display:block;margin-top:3px;font-size:9px;font-weight:800;color:#fff}
-.adm-mutacao-menu>.adm-mutacao-mais{list-style:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;margin:8px;border:1px solid #8ca8d8;border-radius:8px;background:linear-gradient(145deg,#263b59,#18263b);color:#fff;font-size:30px;font-weight:400;line-height:1;cursor:pointer}
+.adm-mutacao-menu>.adm-mutacao-mais{list-style:none;display:flex;align-items:center;justify-content:flex-start;width:100%;min-height:42px;margin:0;padding:11px 13px;border:1px solid #8ca8d8;border-radius:8px;background:linear-gradient(145deg,#263b59,#18263b);color:#fff;font-size:13px;font-weight:900;line-height:1.2;cursor:pointer}
 .adm-mutacao-menu>.adm-mutacao-mais::-webkit-details-marker{display:none}
+.adm-mutacao-menu>.adm-mutacao-mais::before{content:"✨ ";}
+.adm-mutacao-menu>.adm-mutacao-mais::after{content:"＋";margin-left:auto;font-size:19px;font-weight:700}
+.adm-pet-opcoes{display:grid;gap:9px;margin-top:9px}
+.adm-pet-opcoes label{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid #39445c;border-radius:8px;background:#121827;color:#cbd5e1;font-size:13px;font-weight:800;transition:.12s}
+.adm-pet-opcoes label.selecionada,.adm-pet-opcoes label:has(input:checked){border-color:#31e879;background:#10351f;color:#6dffa0;box-shadow:inset 0 0 0 1px #31e87955}
+.adm-pet-opcoes input{width:18px;height:18px;accent-color:#20d968}
 .adm-mutacao-menu[open]>.adm-mutacao-mais{margin-bottom:0}
 .adm-mutacao-titulo{padding:8px 0;font-size:13px;font-weight:900;color:#fff}
 #eventoGlobalBadge{
@@ -604,7 +610,15 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <div id="admCampoDest" hidden>
 <input id="admDestinatario" class="adm-in" placeholder="Nome de quem recebe as moedas" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false">
 </div>
-<div id="admCampoPet" hidden><select id="admPetEscolhido" class="adm-in" aria-label="Pet para dar"></select><select id="admPetMutacao" class="adm-in" aria-label="Mutação do pet"><option value="0">Normal</option><option value="1">Dourado</option><option value="2">Diamante</option><option value="3">Rainbow</option><option value="4">Void</option></select></div>
+<div id="admCampoPet" hidden>
+<label class="adm-dica" for="admPetEscolhido" style="display:block;margin:5px 0">Pet que será entregue</label><select id="admPetEscolhido" class="adm-in" aria-label="Pet para dar"></select>
+<label class="adm-dica" for="admPetMutacao" style="display:block;margin:5px 0">Fusão do pet</label><select id="admPetMutacao" class="adm-in" aria-label="Fusão do pet"><option value="0">Normal</option><option value="1">Gold / Dourado</option><option value="2">Diamante</option><option value="3">Rainbow</option><option value="4">Void</option></select>
+<div class="adm-dica" style="margin-top:9px">Selecione uma ou mais mutações de evento. As opções selecionadas ficam verdes e podem ser combinadas.</div>
+<div class="adm-pet-opcoes" id="admPetMutacoesEvento">
+<label><input type="checkbox" value="anjo"> 😇 Anjo — 1.5x</label>
+<label><input type="checkbox" value="hacker"> 💻 Hacker — 2x</label>
+<label><input type="checkbox" value="galaxia"> 🌌 Galáxia — 2.5x</label>
+</div></div>
 
 <button id="admExecutar" type="button" class="adm-b azul grande" data-acao="remoto">Executar</button>
 </div>
@@ -623,7 +637,7 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <label for="admEventoSorteMinutos" class="adm-dica" style="display:block">Duração em minutos</label><input id="admEventoSorteMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Duração em minutos">
 <button id="admEventoSorteAtivar" type="button" class="adm-b verde grande">Ativar evento de sorte</button><button id="admEventoSorteEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento de sorte</button><div id="admEventoSorteStatus" class="adm-dica" style="margin-top:8px">Nenhum evento de sorte ativo.</div>
 </div></details>
-<details class="adm-evento-card adm-mutacao-menu"><summary class="adm-mutacao-mais" aria-label="Abrir eventos de mutação dos pets">＋</summary><div class="adm-evento-conteudo"><div class="adm-mutacao-titulo">✨ EVENTOS DE MUTAÇÃO DOS PETS</div><p class="adm-dica">Enquanto um evento estiver ativo, todos os pets gerados por qualquer ovo receberão a mutação correspondente. Os eventos podem funcionar ao mesmo tempo.</p>
+<details class="adm-evento-card adm-mutacao-menu"><summary class="adm-mutacao-mais" aria-label="Abrir eventos de mutação dos pets">EVENTOS DE MUTAÇÃO</summary><div class="adm-evento-conteudo"><div class="adm-mutacao-titulo">✨ EVENTOS DE MUTAÇÃO DOS PETS</div><p class="adm-dica">Enquanto um evento estiver ativo, todos os pets gerados por qualquer ovo receberão a mutação correspondente. Os eventos podem funcionar ao mesmo tempo.</p>
 <div class="adm-mutacao-evento" data-mutacao-evento="anjo"><strong>😇 EVENTO DE ANJO — 1.5x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoAnjoMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoAnjoAtivar" type="button">Ativar evento de Anjo</button><button class="adm-b vermelho grande" id="admMutacaoAnjoEncerrar" type="button">Encerrar evento de Anjo</button><div class="adm-dica" id="admMutacaoAnjoStatus">Nenhum evento ativo.</div></div>
 <div class="adm-mutacao-evento" data-mutacao-evento="hacker"><strong>💻 EVENTO HACKER — 2x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoHackerMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoHackerAtivar" type="button">Ativar evento Hacker</button><button class="adm-b vermelho grande" id="admMutacaoHackerEncerrar" type="button">Encerrar evento Hacker</button><div class="adm-dica" id="admMutacaoHackerStatus">Nenhum evento ativo.</div></div>
 <div class="adm-mutacao-evento" data-mutacao-evento="galaxia"><strong>🌌 EVENTO DE GALÁXIA — 2.5x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoGalaxiaMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoGalaxiaAtivar" type="button">Ativar evento de Galáxia</button><button class="adm-b vermelho grande" id="admMutacaoGalaxiaEncerrar" type="button">Encerrar evento de Galáxia</button><div class="adm-dica" id="admMutacaoGalaxiaStatus">Nenhum evento ativo.</div></div>
@@ -1175,7 +1189,7 @@ const CUSTO_OVO_PET=100000,INTERVALO_AUTO_OVO=1000;
 // Evento global de dinheiro sincronizado pelo Firestore.
 let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
 let eventoSorteGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
-const eventosMutacao={anjo:{ativo:false,expiraEm:0,id:""},hacker:{ativo:false,expiraEm:0,id:""},galaxia:{ativo:false,expiraEm:0,id:""}};
+const eventosMutacao={anjo:{ativo:false,expiraEm:0,id:"",ativadoEm:0},hacker:{ativo:false,expiraEm:0,id:"",ativadoEm:0},galaxia:{ativo:false,expiraEm:0,id:"",ativadoEm:0}};
 const nomesMutacaoEvento={anjo:"Anjo",hacker:"Hacker",galaxia:"Galáxia"};
 function obterMutacoesEventoAtivas(){const agora=Date.now();return Object.keys(eventosMutacao).filter(k=>eventosMutacao[k].ativo&&eventosMutacao[k].expiraEm>agora);}
 function multiplicadorBonusMutacoes(mutacoes){const fatores={anjo:1.5,hacker:2,galaxia:2.5};return [...new Set(Array.isArray(mutacoes)?mutacoes:[])].reduce((total,k)=>total*(fatores[k]||1),1);}
@@ -2491,6 +2505,8 @@ const admCampoDest=document.getElementById("admCampoDest");
 const admCampoPet=document.getElementById("admCampoPet");
 const admPetEscolhido=document.getElementById("admPetEscolhido");
 const admPetMutacao=document.getElementById("admPetMutacao");
+const admPetMutacoesEvento=document.getElementById("admPetMutacoesEvento");
+if(admPetMutacoesEvento)admPetMutacoesEvento.querySelectorAll("input[type=checkbox]").forEach(ch=>{const atualizar=()=>ch.closest("label").classList.toggle("selecionada",ch.checked);ch.addEventListener("change",atualizar);atualizar();});
 const admLogEl=document.getElementById("admLog");
 
 const admHistorico=[];
@@ -3128,9 +3144,10 @@ dados.precoMultiplicador=100*Math.pow(3,valor);
 if(acao==="givePet"){
  const base=catalogoPets[valor];
  const mutacao=Math.max(0,Math.min(4,Number(admPetMutacao.value)||0));
+ const mutacoesEvento=[...new Set(Array.from(admPetMutacoesEvento.querySelectorAll("input[type=checkbox]:checked")).map(el=>el.value).filter(k=>["anjo","hacker","galaxia"].includes(k)))];
  const inventario=Array.isArray(dados.petsInventario)?dados.petsInventario.slice():[];
  if(inventario.length>=50)throw new Error("O inventário do jogador está cheio (50 pets).");
- const pet={id:"pet_admin_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,mutacao),cor:base.cor,borda:base.borda||"",dourado:mutacao>=1,diamante:mutacao>=2,rainbow:mutacao>=3,void:mutacao>=4};
+ const pet={id:"pet_admin_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,mutacao)*multiplicadorBonusMutacoes(mutacoesEvento),cor:base.cor,borda:base.borda||"",dourado:mutacao>=1,diamante:mutacao>=2,rainbow:mutacao>=3,void:mutacao>=4,mutacoesEvento};
  inventario.push(pet);dados.petsInventario=inventario;
  dados.petsEquipados=Array.isArray(dados.petsEquipados)?dados.petsEquipados:[];
 }
@@ -3139,7 +3156,7 @@ if(dados.autoClickerAtivo&&dados.autoClickerProAtivo)dados.autoClickerAtivo=fals
 dados.picaretasCompradas.sort((a,b)=>a-b);
 dados.mineriosComprados.sort((a,b)=>a-b);
 const nome=String(registro.nome||jogador.nome);
-const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="pet"?(catalogoPets[valor].nome+" ("+["Normal","Dourado","Diamante","Rainbow","Void"][Number(admPetMutacao.value)||0]+")"):def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):def.campo==="mundo"?("Mundo "+(valor+1)+" — "+mundosJogo[valor].nome):"";
+const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="pet"?(catalogoPets[valor].nome+" ("+["Normal","Gold","Diamante","Rainbow","Void"][Number(admPetMutacao.value)||0]+(admPetMutacoesEvento.querySelectorAll("input[type=checkbox]:checked").length?" + "+Array.from(admPetMutacoesEvento.querySelectorAll("input[type=checkbox]:checked")).map(el=>nomesMutacaoEvento[el.value]).join(" + "):"")+")"):def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):def.campo==="mundo"?("Mundo "+(valor+1)+" — "+mundosJogo[valor].nome):"";
 let textoAviso="O admin "+nomeDoAdminAtual()+" alterou sua conta: "+def.rotulo.toLowerCase();
 if(acao==="addMoney")textoAviso="O admin "+nomeDoAdminAtual()+" te deu $"+formatarDinheiro(valor)+".";
 else if(acao==="removeMoney")textoAviso="O admin "+nomeDoAdminAtual()+" removeu $"+formatarDinheiro(valor)+" da sua conta.";
@@ -3250,7 +3267,8 @@ function atualizarBadgeEventoSorte(){
 }
 function atualizarBadgesMutacao(){
  const cfg={anjo:{id:"eventoAnjoBadge",tempo:"eventoAnjoTempo",rotulo:"ANJO"},hacker:{id:"eventoHackerBadge",tempo:"eventoHackerTempo",rotulo:"HACKER"},galaxia:{id:"eventoGalaxiaBadge",tempo:"eventoGalaxiaTempo",rotulo:"GALÁXIA"}};
- Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(ativo){const seg=Math.ceil(restante/1000),mm=Math.floor(seg/60),ss=seg%60;document.getElementById(c.tempo).textContent=c.rotulo+" "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");}});
+ const ativos=Object.keys(cfg).filter(k=>eventosMutacao[k].ativo&&Number(eventosMutacao[k].expiraEm)>Date.now()).sort((a,b)=>(Number(eventosMutacao[a].ativadoEm)||0)-(Number(eventosMutacao[b].ativadoEm)||0)||a.localeCompare(b));
+ Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(ativo){const pos=ativos.indexOf(k);badge.style.top=(116+Math.max(0,pos)*52)+"px";const seg=Math.ceil(restante/1000),mm=Math.floor(seg/60),ss=seg%60;document.getElementById(c.tempo).textContent=c.rotulo+" "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");}});
 }
 function iniciarMonitoramentoEventoSorte(){
  if(cancelarMonitoramentoSorte){try{cancelarMonitoramentoSorte();}catch(e){}}
@@ -3290,7 +3308,8 @@ function iniciarMonitoramentoMutacoes(){
  Object.keys(eventosMutacao).forEach(chave=>{
   db.collection("eventos").doc("mutacao_"+chave).onSnapshot(snap=>{
    const dados=snap.exists?(snap.data()||{}):{};const exp=dados.expiraEm&&typeof dados.expiraEm.toMillis==="function"?dados.expiraEm.toMillis():Number(dados.expiraEm)||0;const ativo=dados.ativo===true&&exp>Date.now();const mudou=ativo&&(!eventosMutacao[chave].ativo||eventosMutacao[chave].id!==String(dados.id||""));
-   eventosMutacao[chave]={ativo,expiraEm:exp,id:String(dados.id||"")};
+   const idEvento=String(dados.id||"");const ativadoEm=Number(dados.ativadoEm)||Number((idEvento.match(/-(\d{10,})-/)||[])[1])||0;
+   eventosMutacao[chave]={ativo,expiraEm:exp,id:idEvento,ativadoEm};
    if(mudou)mostrarAviso("EVENTO "+nomesMutacaoEvento[chave].toUpperCase()+" ATIVADO! Todos os pets dos ovos receberão essa mutação.","ok");
    atualizarStatusMutacoesAdmin();atualizarBadgesMutacao();
   },err=>console.error("Erro ao acompanhar evento de mutação "+chave,err));
@@ -3302,8 +3321,8 @@ async function controlarEventoMutacao(chave,ativar){
  const minutos=Number(minutosEl&&minutosEl.value);
  if(ativar&&(!Number.isInteger(minutos)||minutos<1||minutos>10080)){admResultado("A duração deve ser de 1 a 10.080 minutos.","erro");return;}
  const expiraEm=ativar?new Date(Date.now()+minutos*60000):new Date();
- const id="mutacao-"+chave+"-"+Date.now()+"-"+usuarioAtual.uid;
- try{await comTempoLimite(db.collection("eventos").doc("mutacao_"+chave).set({ativo:ativar,mutacao:chave,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:ativar?minutos:0,admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,(ativar?"ativar":"encerrar")+" evento "+nome);admResultado(ativar?"Evento "+nomesMutacaoEvento[chave]+" ativado por "+minutos+" minuto(s).":"Evento "+nomesMutacaoEvento[chave]+" encerrado.","ok");}
+ const agora=Date.now(),id="mutacao-"+chave+"-"+agora+"-"+usuarioAtual.uid;
+ try{await comTempoLimite(db.collection("eventos").doc("mutacao_"+chave).set({ativo:ativar,mutacao:chave,ativadoEm:ativar?agora:0,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:ativar?minutos:0,admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,(ativar?"ativar":"encerrar")+" evento "+nome);admResultado(ativar?"Evento "+nomesMutacaoEvento[chave]+" ativado por "+minutos+" minuto(s).":"Evento "+nomesMutacaoEvento[chave]+" encerrado.","ok");}
  catch(error){admResultado("Não foi possível alterar o evento "+nome+": "+(error.message||"erro no Firestore"),"erro");}
 }
 Object.keys(eventosMutacao).forEach(chave=>{const nome=chave[0].toUpperCase()+chave.slice(1);document.getElementById("admMutacao"+nome+"Ativar").addEventListener("click",()=>controlarEventoMutacao(chave,true));document.getElementById("admMutacao"+nome+"Encerrar").addEventListener("click",()=>controlarEventoMutacao(chave,false));});
