@@ -669,6 +669,7 @@ const ADMIN_UID="fWMMFNbKxmYozmkwsAwPTJO2skI3";
 
 let usuarioAtual=null;
 let timerSalvamentoNuvem=null;
+let ultimaGravacaoNuvem=0;
 let carregandoDados=false;
 let dadosCarregados=false;
 let saindoDaConta=false;
@@ -1594,7 +1595,7 @@ function jogadorEstaOnline(registro){
   }catch(e){atualizado=0;}
  }
  const idade=Date.now()-atualizado;
- return onlineMarcado&&atualizado>0&&idade>=-15000&&idade<390000;
+ return onlineMarcado&&atualizado>0&&idade>=-15000&&idade<1200000;
 }
 
 function criarEtiquetaPresenca(online){
@@ -2134,8 +2135,8 @@ async function publicarResumoRanking(uid,nome,dados,online=true,forcar=false){
 
 function agendarSalvamentoNuvem(dados){
 // Economia de cota: agrupa alterações frequentes (ex.: mineração) e envia no máximo
-// um salvamento automático a cada 5 minutos. salvar() continua atualizando o localStorage
-// imediatamente, e sair/fechar a página continua tentando enviar o estado mais recente.
+// um salvamento automático a cada 15 minutos. salvar() continua atualizando o localStorage
+// imediatamente; assim, o progresso recente também fica recuperável neste aparelho.
 if(!jogoPronto()||carregandoDados||!usuarioAtual)return;
 // Não reinicia o temporizador em cada mineração: isso impedia o envio
 // quando o jogador ganhava dinheiro continuamente (auto-click/mineração rápida).
@@ -2154,9 +2155,10 @@ dados:copia,
 ranking:{moedas:Number(copia.moedas)||0,renascimentos:Number(copia.renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
+ultimaGravacaoNuvem=Date.now();
 await publicarResumoRanking(id,nomeRanking,copia,true);
 }catch(error){console.error("Erro ao salvar no Firebase:",error);}
-},300000);
+},900000);
 }
 
 function salvar(){
@@ -2246,7 +2248,7 @@ const uid=uidForcado||(usuarioAtual&&usuarioAtual.uid);
 if(!uid||!db)return;
 const agora=Date.now();
 // Evita gravar novamente ao alternar rapidamente entre abas/aplicativos.
-if(online&&agora-ultimaPresencaEnviada<300000)return;
+if(online&&agora-ultimaPresencaEnviada<900000)return;
 if(online)ultimaPresencaEnviada=agora;
 const marca={online:!!online,heartbeatAt:agora,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
 try{
@@ -2255,19 +2257,20 @@ try{
 }catch(error){console.warn("Não foi possível atualizar a presença:",error);}
 }
 function iniciarPresenca(uid){
-// Heartbeat a cada 5 minutos para reduzir gravações duplicadas em jogadores e rankingGlobal.
+// Heartbeat a cada 15 minutos para reduzir gravações duplicadas em jogadores e rankingGlobal.
 if(timerPresenca)clearInterval(timerPresenca);
 ultimaPresencaUid=uid;
 atualizarPresenca(true,uid);
 timerPresenca=setInterval(()=>{
 if(usuarioAtual&&usuarioAtual.uid===uid)atualizarPresenca(true,uid);
-},300000);
+},900000);
 }
 function pararPresenca(uid){
 if(timerPresenca){clearInterval(timerPresenca);timerPresenca=null;}
 if(uid)atualizarPresenca(false,uid);
 }
-window.addEventListener("pagehide",()=>{if(ultimaPresencaUid)atualizarPresenca(false,ultimaPresencaUid);});
+// Ao fechar/mandar o app para segundo plano, não fazemos duas gravações extras.
+ // O status ON expira automaticamente pelo heartbeat; sair pelo botão chama pararPresenca().
 document.addEventListener("visibilitychange",()=>{
 if(usuarioAtual&&document.visibilityState!=="hidden")atualizarPresenca(true,usuarioAtual.uid);
 });
@@ -2515,6 +2518,7 @@ dados:dadosSeguros,
 ranking:{moedas:Number(dadosSeguros.moedas)||0,renascimentos:Number(dadosSeguros.renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
+ultimaGravacaoNuvem=Date.now();
 }catch(error){mostrarAviso("Não foi possível salvar seu progresso: "+error.message);return;}
 }
 // Encerra também a sessão do Firebase. Antes, apenas escondíamos o jogo,
@@ -2570,6 +2574,9 @@ await entrarNoJogo(user,nome);
 function salvarNuvemAgora(){
 if(!jogoPronto()||carregandoDados||!usuarioAtual)return;
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
+// pagehide também ocorre ao alternar aplicativos no celular. Evita uma gravação
+// extra em cada troca; o salvamento local já foi atualizado em cada alteração.
+if(ultimaGravacaoNuvem&&Date.now()-ultimaGravacaoNuvem<600000)return;
 const id=usuarioAtual.uid;
 const dados=limparDadosParaFirestore(dadosDoJogo());
 // Guarda uma cópia local síncrona com inventário, pets equipados e preferências de venda.
@@ -2580,7 +2587,7 @@ nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados,
 ranking:{moedas:Number(moedas)||0,renascimentos:Number(renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
-},{merge:true}).then(()=>publicarResumoRanking(id,usuarioAtual&&usuarioAtual.uid===id?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"Jogador",dados,true)).catch(error=>console.error("Erro ao salvar:",error));
+},{merge:true}).then(()=>{ultimaGravacaoNuvem=Date.now();return publicarResumoRanking(id,usuarioAtual&&usuarioAtual.uid===id?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"Jogador",dados,true);}).catch(error=>console.error("Erro ao salvar:",error));
 }
 
 // O salvamento local já ocorre em cada alteração. Evitamos gravar na nuvem
