@@ -2102,11 +2102,34 @@ ovosAbertos:ovosAbertos
 };
 }
 
-async function publicarResumoRanking(uid,nome,dados,online=true){
+// Controle local para evitar gravações repetidas no rankingGlobal.
+// O progresso completo continua sendo salvo em "jogadores"; o resumo público
+// é atualizado no máximo uma vez a cada 15 minutos por conta, salvo na primeira vez.
+const ultimaPublicacaoRanking = Object.create(null);
+const ultimoResumoRanking = Object.create(null);
+async function publicarResumoRanking(uid,nome,dados,online=true,forcar=false){
  if(!uid||!dados)return;
- const resumo={nome:String(nome||"Jogador"),moedas:Math.max(0,Number(dados.moedas)||0),renascimentos:Math.max(0,Number(dados.renascimentos)||0),online:online===true,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
- try{await db.collection("rankingGlobal").doc(uid).set(resumo,{merge:true});}
- catch(error){console.warn("Não foi possível atualizar o ranking público:",error);}
+ const resumoBase={
+  nome:String(nome||"Jogador"),
+  moedas:Math.max(0,Number(dados.moedas)||0),
+  renascimentos:Math.max(0,Number(dados.renascimentos)||0),
+  online:online===true
+ };
+ const assinatura=JSON.stringify(resumoBase);
+ const agora=Date.now();
+ const jaPublicado=Number(ultimaPublicacaoRanking[uid])||0;
+ // Se o resumo não mudou, não consome uma gravação do Firestore.
+ if(!forcar&&ultimoResumoRanking[uid]===assinatura)return;
+ // Mesmo que o saldo mude durante a mineração, evita gravar o ranking a cada autosave.
+ if(!forcar&&jaPublicado&&agora-jaPublicado<900000)return;
+ const resumo={...resumoBase,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
+ try{
+  await db.collection("rankingGlobal").doc(uid).set(resumo,{merge:true});
+  ultimaPublicacaoRanking[uid]=agora;
+  ultimoResumoRanking[uid]=assinatura;
+ }catch(error){
+  console.warn("Não foi possível atualizar o ranking público:",error);
+ }
 }
 
 function agendarSalvamentoNuvem(dados){
@@ -3356,7 +3379,9 @@ if(acao==="giveWorld"||acao==="removeWorld"){
  };
  await comTempoLimite(ref.update(atualizacao),25000,"salvar alteração do jogador");
 }
-await publicarResumoRanking(uid,nome,dados,jogadorEstaOnline(registro));
+if(["addMoney","removeMoney","clearMoney","resetRebirths","resetAll"].includes(acao)){
+ await publicarResumoRanking(uid,nome,dados,jogadorEstaOnline(registro));
+}
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
 aplicarDadosDoServidor(dados);
