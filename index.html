@@ -400,6 +400,21 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .adm-select-option{display:block;width:100%;padding:10px;border:0;border-radius:7px;background:transparent;color:#fff;text-align:left;font-size:13px;cursor:pointer}
 .adm-select-option+.adm-select-option{border-top:1px solid #ffffff12}
 .adm-select-option:hover,.adm-select-option.selecionada{background:#293957}
+
+/* PETS: leitura clara, mutações no canto direito e equipamento sempre verde */
+.pet-slot{position:relative;min-height:116px;padding:9px 38px 9px 6px;gap:6px;overflow:hidden}
+.pet-slot .pet-nome-card{display:block;width:100%;font-size:12px;line-height:1.2;font-weight:900;color:#fff;text-shadow:0 1px 2px #000;text-align:center;overflow-wrap:anywhere}
+.pet-slot .pet-raridade-card{display:block;width:100%;padding:3px 4px;border:1px solid #9eb6d5;border-radius:6px;background:#26364d;color:#fff;font-size:11px;line-height:1.2;font-weight:900;text-align:center;text-shadow:0 1px 2px #000;overflow-wrap:anywhere}
+.pet-slot .pet-equipado-tag{position:absolute;left:4px;top:4px;z-index:3;padding:2px 5px;border:1px solid #8bffb4;border-radius:5px;background:#075b2d;color:#fff;font-size:8px;line-height:1.1;font-weight:1000;box-shadow:0 0 7px #35e87999}
+.pet-slot .pet-mutacoes-canto{position:absolute;right:4px;top:4px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:3px;max-height:calc(100% - 8px);overflow:visible}
+.pet-slot .pet-mutacao-mini{width:22px;height:22px;display:grid;place-items:center;border:1px solid #fff;border-radius:5px;color:#fff;font-size:11px;font-weight:1000;text-shadow:0 1px 2px #000;box-shadow:0 1px 5px #0009}
+.pet-slot .pet-mutacao-mini-anjo{background:linear-gradient(145deg,#fff0a8,#a87912);color:#241900}
+.pet-slot .pet-mutacao-mini-hacker{background:linear-gradient(145deg,#22ff80,#07552b);color:#001b0a}
+.pet-slot .pet-mutacao-mini-galaxia{background:linear-gradient(145deg,#e6a2ff,#6421a6);color:#fff}
+/* Regra final: nenhuma raridade ou mutação pode esconder a borda verde de equipado. */
+.pet-slot.equipado,.pet-slot.equipado.rainbow,.pet-slot.equipado.void,.pet-slot.equipado.diamante,.pet-slot.equipado.dourado,.pet-slot.equipado[class*="mutacao-"]{border:3px solid #35e879!important;border-color:#35e879!important;box-shadow:0 0 0 1px #35e87988,0 0 15px #35e87999!important}
+.pet-slot.equipado .pet-iniciais{border-color:#35e879!important}
+@media(max-width:420px){.pet-slot{min-height:118px;padding-right:34px}.pet-slot .pet-mutacao-mini{width:20px;height:20px;font-size:10px}.pet-slot .pet-raridade-card{font-size:10px}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -1524,10 +1539,12 @@ function renderizarPets(){
  if(!petsInventario.length){const v=document.createElement("div");v.className="novo-vazio";v.textContent="INVENTARIO VAZIO - ABRA UM OVO PARA CONSEGUIR PETS";el.appendChild(v);petSelecionadoId=null;renderizarStatusPet();return;}
  if(!petsInventario.some(p=>p.id===petSelecionadoId))petSelecionadoId=petsInventario[0].id;
  petsInventario.slice().sort(ordenar).forEach(p=>{
-  const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(p.void?" void":p.rainbow?" rainbow":p.diamante?" diamante":p.dourado?" dourado":"")+((p.mutacoesEvento||[]).length?" mutacao-"+p.mutacoesEvento[0]:"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":(p.void?"#b58aff":p.rainbow?"#ff75e8":p.diamante?"#55dfff":p.dourado?"#f4cf55":cor);card.addEventListener("click",()=>selecionarPetInventario(p.id));
+  const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const mutacoes=Array.isArray(p.mutacoesEvento)?[...new Set(p.mutacoesEvento)]:[];const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(p.void?" void":p.rainbow?" rainbow":p.diamante?" diamante":p.dourado?" dourado":"")+(mutacoes.length?" mutacao-"+mutacoes[0]:"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":(p.void?"#b58aff":p.rainbow?"#ff75e8":p.diamante?"#55dfff":p.dourado?"#f4cf55":cor);card.addEventListener("click",()=>selecionarPetInventario(p.id));
   const sigla=document.createElement("span");sigla.className="pet-iniciais";sigla.textContent=p.sigla||p.nome.slice(0,2).toUpperCase();sigla.style.color=cor;sigla.style.borderColor=cor;sigla.style.background=p.raridade==="Secreto"?"#050505":"#202d40";
-  const nome=document.createElement("strong");nome.textContent=p.nome;
-  const rar=document.createElement("small");rar.textContent=p.raridade+(nivelEvolucaoPet(p)?" | "+nomeNivelPet(nivelEvolucaoPet(p)):"")+((p.mutacoesEvento||[]).length?" | "+p.mutacoesEvento.map(k=>nomesMutacaoEvento[k]||k).join(" + "):"")+(petsEquipados.includes(p.id)?" | EQUIPADO":"");
+  const nome=document.createElement("strong");nome.className="pet-nome-card";nome.textContent=p.nome;
+  const rar=document.createElement("small");rar.className="pet-raridade-card";rar.textContent=p.raridade+(nivelEvolucaoPet(p)?" • "+nomeNivelPet(nivelEvolucaoPet(p)):"");
+  if(equipado){const estado=document.createElement("span");estado.className="pet-equipado-tag";estado.textContent="✓ EQUIPADO";card.appendChild(estado);}
+  if(mutacoes.length){const painelMutacoes=document.createElement("span");painelMutacoes.className="pet-mutacoes-canto";painelMutacoes.setAttribute("aria-label","Mutações: "+mutacoes.map(k=>nomesMutacaoEvento[k]||k).join(", "));mutacoes.forEach(k=>{const tag=document.createElement("span");tag.className="pet-mutacao-mini pet-mutacao-mini-"+k;tag.textContent=k==="anjo"?"A":k==="hacker"?"H":k==="galaxia"?"G":String(k).slice(0,1).toUpperCase();tag.title=nomesMutacaoEvento[k]||k;tag.setAttribute("aria-label",nomesMutacaoEvento[k]||k);painelMutacoes.appendChild(tag);});card.appendChild(painelMutacoes);}
   card.append(sigla,nome,rar);el.appendChild(card);
  });
  renderizarStatusPet();
@@ -2101,8 +2118,9 @@ async function publicarResumoRanking(uid,nome,dados,online=true){
  catch(error){console.warn("Não foi possível atualizar o ranking público:",error);}
 }
 
+let bloqueandoSalvamentoAdmin=false;
 function agendarSalvamentoNuvem(dados){
-if(!jogoPronto()||carregandoDados||!usuarioAtual)return;
+if(bloqueandoSalvamentoAdmin||!jogoPronto()||carregandoDados||!usuarioAtual)return;
 // Não reinicia o temporizador em cada mineração: isso impedia o envio
 // quando o jogador ganhava dinheiro continuamente (auto-click/mineração rápida).
 if(timerSalvamentoNuvem)return;
@@ -3148,7 +3166,10 @@ valor=Number(admRemotoNivel.value);
 if(!Number.isInteger(valor)||valor<0||valor>500){admResultado("Digite um nível inteiro de 0 a 500.","erro");return;}
 }
 if(def.perigo&&!confirmarClique(botao))return;
-admExecutando=true;botao.disabled=true;botao.textContent="Salvando...";
+admExecutando=true;
+const comandoNaPropriaConta=uid===usuarioAtual.uid;
+if(comandoNaPropriaConta){bloqueandoSalvamentoAdmin=true;if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}}
+botao.disabled=true;botao.textContent="Salvando...";
 try{
 const ref=db.collection("jogadores").doc(uid);
 const snap=await comTempoLimite(ref.get(),15000,"consultar jogador selecionado");
@@ -3321,7 +3342,7 @@ if(acao==="giveWorld"||acao==="removeWorld"){
  }
  await comTempoLimite(ref.update(atualizacao),20000,"salvar alteração do jogador");
 }
-await publicarResumoRanking(uid,nome,dados,jogadorEstaOnline(registro));
+publicarResumoRanking(uid,nome,dados,jogadorEstaOnline(registro)).catch(error=>console.warn("Falha secundária ao atualizar ranking após ação administrativa:",error));
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
 if(uid===usuarioAtual.uid){
 aplicarDadosDoServidor(dados);
@@ -3334,6 +3355,7 @@ atualizarAdmin();
 console.error("Erro ao gerenciar jogador:",error);
 admResultado("Não foi possível alterar a conta: "+(error.message||"erro no Firestore"),"erro");
 }finally{
+bloqueandoSalvamentoAdmin=false;
 admExecutando=false;botao.disabled=false;botao.textContent=admAcao.value==="viewInventory"?"VER INVENTÁRIO":"Executar";
 }
 }
@@ -3436,7 +3458,7 @@ async function ativarTodosEventos(){
  for(const chave of Object.keys(eventosMutacao)){
   adicionar("mutacao_"+chave,{ativo:true,mutacao:chave,ativadoEm:agora,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(agora+minutos*60000)),duracaoMinutos:minutos,admin,id:"mutacao-"+chave+"-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
  }
- try{await comTempoLimite(batch.commit(),25000,"ativar todos os eventos");admResultado("Todos os eventos foram ativados com sucesso!","ok");atualizarStatusEventoAdmin();atualizarStatusMutacoesAdmin();}
+ try{await batch.commit();admResultado("Todos os eventos foram ativados com sucesso!","ok");atualizarStatusEventoAdmin();atualizarStatusMutacoesAdmin();}
  catch(error){console.error("Erro ao ativar todos os eventos:",error);admResultado("Não foi possível ativar todos os eventos: "+(error.message||"erro no Firestore"),"erro");}
 }
 
