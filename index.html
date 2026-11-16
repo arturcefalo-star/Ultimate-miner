@@ -2238,12 +2238,18 @@ ultimoAvisoAdminId="";
 try{
 mensagemDeLogin("Conectado! Consultando seus dados salvos...",false);
 const ref=db.collection("jogadores").doc(user.uid);
-const snap=await comTempoLimite(ref.get(),15000,"consultar os dados da conta");
-// O Firebase usa o e-mail em minúsculas para autenticar, mas o nome público
-// mantém exatamente a capitalização cadastrada. Nome oficial do administrador: Artur.
-const nomeCanonico=user.uid===ADMIN_UID?"Artur":String(nome||user.displayName||user.email.split("@")[0]);
-if(user.displayName!==nomeCanonico){
-try{await comTempoLimite(user.updateProfile({displayName:nomeCanonico}),10000,"atualizar o nome de exibição");}catch(e){console.warn("Não foi possível atualizar displayName:",e);}
+// Fazemos uma única leitura do documento por entrada. A versão anterior
+// consultava o mesmo documento duas vezes e ainda aguardava updateProfile.
+const snap=await comTempoLimite(ref.get(),12000,"consultar os dados da conta");
+const registroInicial=snap.exists?(snap.data()||{}):{};
+// O Firebase autentica e-mails sem diferenciar maiúsculas, mas o nome público
+// continua respeitando exatamente a capitalização originalmente cadastrada.
+const nomeCanonico=user.uid===ADMIN_UID?"Artur":String(registroInicial.nome||user.displayName||nome||user.email.split("@")[0]);
+if(nome&&nomeCanonico!==nome){
+  try{await auth.signOut();}catch(e){}
+  const erroNome=new Error("Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas.");
+  erroNome.code="auth/username-case-mismatch";
+  throw erroNome;
 }
 let dadosConta={};
 let dadosLocais={};
@@ -2255,9 +2261,9 @@ const versaoNuvem=Number(dadosNuvem&&dadosNuvem._saveUpdatedAt)||0;
 // Recupera inventário, pets equipados e preferências de venda mais recentes do aparelho.
 dadosConta=versaoLocal>versaoNuvem?dadosLocais:dadosNuvem;
 ultimoAvisoAdminId="";
-// Corrige também o nome antigo salvo no registro do jogador.
-if(String((snap.data()||{}).nome||"")!==nomeCanonico){
-await comTempoLimite(ref.set({nome:nomeCanonico},{merge:true}),10000,"corrigir o nome salvo");
+// Corrige registros antigos sem bloquear a abertura do jogo.
+if(!registroInicial.nome){
+  ref.set({nome:nomeCanonico},{merge:true}).catch(e=>console.warn("Não foi possível atualizar o nome público:",e));
 }
 }else{
 try{dadosConta=JSON.parse(localStorage.getItem("mining_game_save_"+user.uid)||"{}");}catch(e){dadosConta={};}
@@ -2326,15 +2332,10 @@ await comTempoLimite(auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL),1
 const cred=await comTempoLimite(auth.signInWithEmailAndPassword(usuarioEmail(nome),senha),20000,"entrar na conta");
 // O Firebase trata o e-mail sem diferenciar maiúsculas/minúsculas.
 // Esta conferência adicional mantém o nome de usuário realmente exato.
-const registroSnap=await comTempoLimite(db.collection("jogadores").doc(cred.user.uid).get(),15000,"conferir o nome exato da conta");
-const registroConta=registroSnap.exists?(registroSnap.data()||{}):{};
-const nomeCadastrado=cred.user.uid===ADMIN_UID?"Artur":String(registroConta.nome||cred.user.displayName||"");
-if(nomeCadastrado!==nome){
-await auth.signOut();
-throw {code:"auth/username-case-mismatch",message:"Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas."};
-}
+// A validação do nome e a leitura dos dados são feitas juntas em entrarNoJogo.
+// Isso evita duas viagens de rede seguidas ao Firestore em todo login.
 mensagemDeLogin("ETAPA 2/2: conta reconhecida; carregando progresso...",false);
-const ok=await entrarNoJogo(cred.user,nomeCadastrado);
+const ok=await entrarNoJogo(cred.user,nome);
 if(!ok&&auth.currentUser)await auth.signOut();
 }catch(error){
 console.error("Erro no login:",error);
@@ -2964,9 +2965,11 @@ const carregando=document.createElement("option");
 carregando.value="";carregando.textContent="Carregando jogadores...";
 select.appendChild(carregando);
 try{
-// Atualiza primeiro a própria presença para que o administrador nunca apareça OFF por atraso do heartbeat.
-await atualizarPresenca(true,usuarioAtual.uid);
-const snapshot=await comTempoLimite(db.collection("jogadores").get(),20000,"listar jogadores");
+// Presença é independente da listagem: nunca espere a gravação de heartbeat
+// para buscar os jogadores. Uma falha nas gravações de ON/OFF não pode travar
+// o seletor administrativo.
+atualizarPresenca(true,usuarioAtual.uid).catch(error=>console.warn("Falha ao atualizar presença antes da lista:",error));
+const snapshot=await comTempoLimite(db.collection("jogadores").get(),15000,"listar jogadores");
 jogadoresAdmin=snapshot.docs.map(doc=>{
 const registro=doc.data()||{};
 const online=jogadorEstaOnline(registro);
