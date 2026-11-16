@@ -94,6 +94,20 @@ z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
 #aviso.ok{background:#12381f;color:#a4ffbb;border-color:#2c8a4a}
 #aviso.info{background:#1a2848;color:#bcd6ff;border-color:#4a6fb8}
 
+
+.evento-badge{display:none;position:fixed;right:12px;z-index:8;width:48px;height:46px;padding:4px 3px;border-radius:5px;border:2px solid #fff9;box-shadow:0 2px 8px #0009;color:#fff;text-align:center;font-family:Arial,sans-serif;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;pointer-events:none}
+#eventoGlobalBadge{top:12px}
+#eventoSorteBadge{top:64px}
+#eventoAnjoBadge{top:116px;background:linear-gradient(145deg,#fff3a6,#d9a928);border-color:#fff8d9;color:#553c00}
+#eventoAnjoBadge strong,#eventoAnjoBadge span{color:#fff}
+#eventoHackerBadge{top:168px;background:linear-gradient(145deg,#123b24,#020b06);border-color:#43ff83}
+#eventoGalaxiaBadge{top:220px;background:linear-gradient(145deg,#8d43d8,#32105f);border-color:#e4c3ff}
+.evento-badge strong{display:block;font-size:15px;font-weight:900;text-shadow:0 1px 2px #0008}
+.evento-badge span{display:block;margin-top:3px;font-size:9px;font-weight:800;color:#fff}
+.adm-mutacao-menu>.adm-mutacao-mais{list-style:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;margin:8px;border:1px solid #8ca8d8;border-radius:8px;background:linear-gradient(145deg,#263b59,#18263b);color:#fff;font-size:30px;font-weight:400;line-height:1;cursor:pointer}
+.adm-mutacao-menu>.adm-mutacao-mais::-webkit-details-marker{display:none}
+.adm-mutacao-menu[open]>.adm-mutacao-mais{margin-bottom:0}
+.adm-mutacao-titulo{padding:8px 0;font-size:13px;font-weight:900;color:#fff}
 #eventoGlobalBadge{
 display:none;position:fixed;top:12px;right:12px;z-index:8;
 width:48px;height:46px;padding:4px 3px;
@@ -104,7 +118,7 @@ color:#fff;text-align:center;font-family:Arial,sans-serif;
 flex-direction:column;align-items:center;justify-content:center;
 line-height:1.05;pointer-events:none;
 }
-#eventoSorteBadge{display:none;position:fixed;top:64px;right:12px;z-index:8;width:48px;height:46px;padding:4px 3px;background:linear-gradient(145deg,#a56bff,#6130bd);border:2px solid #dfc4ff;border-radius:5px;box-shadow:0 2px 8px #0009,0 0 10px #a56bff66;color:#fff;text-align:center;font-family:Arial,sans-serif;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;pointer-events:none}
+#eventoSorteBadge{background:linear-gradient(145deg,#a56bff,#6130bd);border-color:#dfc4ff}
 #eventoSorteBadge strong{display:block;font-size:15px;font-weight:900;color:#fff}
 #eventoSorteBadge span{display:block;margin-top:3px;font-size:9px;font-weight:800;color:#f5eaff}
 #eventoGlobalBadge strong{
@@ -498,8 +512,11 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 
 <div id="admMundosModal" class="adm-mundos-modal" role="dialog" aria-modal="true" aria-label="Mundos liberados"><div class="adm-mundos-caixa"><div class="adm-mundos-cabecalho"><h3>🌎 MUNDOS LIBERADOS</h3><button id="admMundosFechar" class="adm-mundos-fechar" type="button">FECHAR</button></div><div id="admMundosLista"></div></div></div>
 
-<div id="eventoGlobalBadge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">00:00</span></div>
-<div id="eventoSorteBadge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span id="eventoSorteTempo">SORTE</span></div>
+<div id="eventoGlobalBadge" class="evento-badge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">00:00</span></div>
+<div id="eventoSorteBadge" class="evento-badge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span id="eventoSorteTempo">SORTE</span></div>
+<div id="eventoAnjoBadge" class="evento-badge"><strong>1.5x</strong><span id="eventoAnjoTempo">ANJO</span></div>
+<div id="eventoHackerBadge" class="evento-badge"><strong>2x</strong><span id="eventoHackerTempo">HACKER</span></div>
+<div id="eventoGalaxiaBadge" class="evento-badge"><strong>2.5x</strong><span id="eventoGalaxiaTempo">GALÁXIA</span></div>
 
 <div id="adminModal">
 <div id="adminBox" role="dialog" aria-modal="true" aria-label="Painel de administração">
@@ -606,11 +623,11 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <label for="admEventoSorteMinutos" class="adm-dica" style="display:block">Duração em minutos</label><input id="admEventoSorteMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Duração em minutos">
 <button id="admEventoSorteAtivar" type="button" class="adm-b verde grande">Ativar evento de sorte</button><button id="admEventoSorteEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento de sorte</button><div id="admEventoSorteStatus" class="adm-dica" style="margin-top:8px">Nenhum evento de sorte ativo.</div>
 </div></details>
-<div class="adm-evento-card"><div style="padding:12px 13px;font-size:13px;font-weight:900;color:#fff;background:linear-gradient(110deg,#263b59,#18263b)">✨ EVENTOS DE MUTAÇÃO DOS PETS</div><div class="adm-evento-conteudo"><p class="adm-dica">Enquanto um evento estiver ativo, todos os pets gerados por qualquer ovo receberão a mutação correspondente. Os eventos podem funcionar ao mesmo tempo.</p>
-<div class="adm-mutacao-evento" data-mutacao-evento="anjo"><strong>😇 EVENTO DE ANJO</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoAnjoMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoAnjoAtivar" type="button">Ativar evento de Anjo</button><button class="adm-b vermelho grande" id="admMutacaoAnjoEncerrar" type="button">Encerrar evento de Anjo</button><div class="adm-dica" id="admMutacaoAnjoStatus">Nenhum evento ativo.</div></div>
-<div class="adm-mutacao-evento" data-mutacao-evento="hacker"><strong>💻 EVENTO HACKER</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoHackerMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoHackerAtivar" type="button">Ativar evento Hacker</button><button class="adm-b vermelho grande" id="admMutacaoHackerEncerrar" type="button">Encerrar evento Hacker</button><div class="adm-dica" id="admMutacaoHackerStatus">Nenhum evento ativo.</div></div>
-<div class="adm-mutacao-evento" data-mutacao-evento="galaxia"><strong>🌌 EVENTO DE GALÁXIA</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoGalaxiaMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoGalaxiaAtivar" type="button">Ativar evento de Galáxia</button><button class="adm-b vermelho grande" id="admMutacaoGalaxiaEncerrar" type="button">Encerrar evento de Galáxia</button><div class="adm-dica" id="admMutacaoGalaxiaStatus">Nenhum evento ativo.</div></div>
-</div></div>
+<details class="adm-evento-card adm-mutacao-menu"><summary class="adm-mutacao-mais" aria-label="Abrir eventos de mutação dos pets">＋</summary><div class="adm-evento-conteudo"><div class="adm-mutacao-titulo">✨ EVENTOS DE MUTAÇÃO DOS PETS</div><p class="adm-dica">Enquanto um evento estiver ativo, todos os pets gerados por qualquer ovo receberão a mutação correspondente. Os eventos podem funcionar ao mesmo tempo.</p>
+<div class="adm-mutacao-evento" data-mutacao-evento="anjo"><strong>😇 EVENTO DE ANJO — 1.5x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoAnjoMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoAnjoAtivar" type="button">Ativar evento de Anjo</button><button class="adm-b vermelho grande" id="admMutacaoAnjoEncerrar" type="button">Encerrar evento de Anjo</button><div class="adm-dica" id="admMutacaoAnjoStatus">Nenhum evento ativo.</div></div>
+<div class="adm-mutacao-evento" data-mutacao-evento="hacker"><strong>💻 EVENTO HACKER — 2x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoHackerMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoHackerAtivar" type="button">Ativar evento Hacker</button><button class="adm-b vermelho grande" id="admMutacaoHackerEncerrar" type="button">Encerrar evento Hacker</button><div class="adm-dica" id="admMutacaoHackerStatus">Nenhum evento ativo.</div></div>
+<div class="adm-mutacao-evento" data-mutacao-evento="galaxia"><strong>🌌 EVENTO DE GALÁXIA — 2.5x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoGalaxiaMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoGalaxiaAtivar" type="button">Ativar evento de Galáxia</button><button class="adm-b vermelho grande" id="admMutacaoGalaxiaEncerrar" type="button">Encerrar evento de Galáxia</button><div class="adm-dica" id="admMutacaoGalaxiaStatus">Nenhum evento ativo.</div></div>
+</div></details>
 </div>
 
 <h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">HISTORICO DA SESSAO</h3>
@@ -1161,6 +1178,7 @@ let eventoSorteGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:"
 const eventosMutacao={anjo:{ativo:false,expiraEm:0,id:""},hacker:{ativo:false,expiraEm:0,id:""},galaxia:{ativo:false,expiraEm:0,id:""}};
 const nomesMutacaoEvento={anjo:"Anjo",hacker:"Hacker",galaxia:"Galáxia"};
 function obterMutacoesEventoAtivas(){const agora=Date.now();return Object.keys(eventosMutacao).filter(k=>eventosMutacao[k].ativo&&eventosMutacao[k].expiraEm>agora);}
+function multiplicadorBonusMutacoes(mutacoes){const fatores={anjo:1.5,hacker:2,galaxia:2.5};return [...new Set(Array.isArray(mutacoes)?mutacoes:[])].reduce((total,k)=>total*(fatores[k]||1),1);}
 let cancelarMonitoramentoEvento=null;
 let ultimoAvisoAdminId="";
 
@@ -1310,8 +1328,10 @@ function abrirOvosQuantidade(quantidade=1,automatico=false){
  moedas-=custo;
  const encontrados=[],vendidos=[];
  sorteios.forEach((base)=>{
+  // Cada pet nascido recebe todas as mutações globais que estiverem ativas naquele instante.
   const mutacoesEvento=obterMutacoesEventoAtivas();
-  const pet={id:"pet_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:base.mult,cor:base.cor,borda:base.borda||"",dourado:false,mutacoesEvento};
+  const multMutacoes=multiplicadorBonusMutacoes(mutacoesEvento);
+  const pet={id:"pet_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:base.mult*multMutacoes,cor:base.cor,borda:base.borda||"",dourado:false,mutacoesEvento};
   ovosAbertos++;
   if(petsVendaAutomatica.includes(base.nome)){
    const valor=VALOR_VENDA_PET[pet.raridade]||0;moedas+=valor;vendidos.push({pet,valor});
@@ -1400,7 +1420,7 @@ function criarPetEvoluido(id,nivelDestino){
  petsInventario=petsInventario.filter(x=>!ids.has(x.id));
  petsEquipados=petsEquipados.filter(x=>!ids.has(x));
  const base=catalogoPets.find(x=>x.nome===selecionado.nome)||selecionado;
- const evoluido={id:"pet_"+nomeNivelPet(nivelDestino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,nivelDestino),cor:base.cor,borda:base.borda||"",dourado:nivelDestino>=1,diamante:nivelDestino>=2,rainbow:nivelDestino>=3,void:nivelDestino>=4,mutacoesEvento:[...new Set(iguais.flatMap(x=>Array.isArray(x.mutacoesEvento)?x.mutacoesEvento:[]))]};
+ const evoluido={id:"pet_"+nomeNivelPet(nivelDestino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,nivelDestino)*multiplicadorBonusMutacoes([...new Set(iguais.flatMap(x=>Array.isArray(x.mutacoesEvento)?x.mutacoesEvento:[]))]),cor:base.cor,borda:base.borda||"",dourado:nivelDestino>=1,diamante:nivelDestino>=2,rainbow:nivelDestino>=3,void:nivelDestino>=4,mutacoesEvento:[...new Set(iguais.flatMap(x=>Array.isArray(x.mutacoesEvento)?x.mutacoesEvento:[]))]};
  petsInventario.push(evoluido);
  if(eraEquipado&&petsEquipados.length<3)petsEquipados.push(evoluido.id);
  petSelecionadoId=evoluido.id;salvar();renderizarPets();somRaro();
@@ -1410,7 +1430,7 @@ function criarPetEvoluido(id,nivelDestino){
 function criarPetDourado(id){return criarPetEvoluido(id,1);}
 function fundirTodosPetsDourados(){
  // Cada clique avança somente um estágio global: normal, dourado, diamante, rainbow e void.
- // Assim, o resultado de uma fusão nunca é fundido novamente no mesmo clique.
+ // Cada trio mantém apenas as mutações que realmente estavam nos seus três pets.
  let nivelAlvo=-1;
  for(let nivel=0;nivel<4;nivel++){
   const temGrupo=catalogoPets.some(base=>Math.floor(petsInventario.filter(p=>p.nome===base.nome&&nivelEvolucaoPet(p)===nivel).length/3)>0);
@@ -1425,7 +1445,9 @@ function fundirTodosPetsDourados(){
   const deveEquipar=usados.some(p=>petsEquipados.includes(p.id));
   for(let i=0;i<grupos;i++){
    const destino=nivelAlvo+1;
-   const novo={id:"pet_"+nomeNivelPet(destino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9)+"_"+totalGrupos,nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,destino),cor:base.cor,borda:base.borda||"",dourado:destino>=1,diamante:destino>=2,rainbow:destino>=3,void:destino>=4,mutacoesEvento:[...new Set(usados.flatMap(x=>Array.isArray(x.mutacoesEvento)?x.mutacoesEvento:[]))]};
+   const trio=usados.slice(i*3,i*3+3);
+   const mutacoesEvento=[...new Set(trio.flatMap(x=>Array.isArray(x.mutacoesEvento)?x.mutacoesEvento:[]))];
+   const novo={id:"pet_"+nomeNivelPet(destino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9)+"_"+totalGrupos,nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,destino)*multiplicadorBonusMutacoes(mutacoesEvento),cor:base.cor,borda:base.borda||"",dourado:destino>=1,diamante:destino>=2,rainbow:destino>=3,void:destino>=4,mutacoesEvento};
    novos.push(novo);if(deveEquipar&&i===0)equiparNovos.push(novo.id);totalGrupos++;
   }
  }
@@ -1672,7 +1694,7 @@ if(typeof atualizarStatusEventoAdmin==="function")atualizarStatusEventoAdmin();
 },error=>console.error("Erro ao acompanhar evento global:",error));
 }
 let ultimoEventoGlobalAvisado="";
-setInterval(()=>{atualizarBadgeEvento();atualizarBadgeEventoSorte();},500);
+setInterval(()=>{atualizarBadgeEvento();atualizarBadgeEventoSorte();atualizarBadgesMutacao();},500);
 
 function precoRenascimento(){
 // Começa em 10 milhões e triplica a cada renascimento realizado.
@@ -3226,6 +3248,10 @@ function atualizarBadgeEventoSorte(){
  document.getElementById("eventoSorteMultiplicador").textContent=eventoSorteGlobal.multiplicador+"x";
  document.getElementById("eventoSorteTempo").textContent=String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
 }
+function atualizarBadgesMutacao(){
+ const cfg={anjo:{id:"eventoAnjoBadge",tempo:"eventoAnjoTempo",rotulo:"ANJO"},hacker:{id:"eventoHackerBadge",tempo:"eventoHackerTempo",rotulo:"HACKER"},galaxia:{id:"eventoGalaxiaBadge",tempo:"eventoGalaxiaTempo",rotulo:"GALÁXIA"}};
+ Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(ativo){const seg=Math.ceil(restante/1000),mm=Math.floor(seg/60),ss=seg%60;document.getElementById(c.tempo).textContent=c.rotulo+" "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");}});
+}
 function iniciarMonitoramentoEventoSorte(){
  if(cancelarMonitoramentoSorte){try{cancelarMonitoramentoSorte();}catch(e){}}
  cancelarMonitoramentoSorte=db.collection("eventos").doc("sorteGlobal").onSnapshot(snap=>{
@@ -3266,7 +3292,7 @@ function iniciarMonitoramentoMutacoes(){
    const dados=snap.exists?(snap.data()||{}):{};const exp=dados.expiraEm&&typeof dados.expiraEm.toMillis==="function"?dados.expiraEm.toMillis():Number(dados.expiraEm)||0;const ativo=dados.ativo===true&&exp>Date.now();const mudou=ativo&&(!eventosMutacao[chave].ativo||eventosMutacao[chave].id!==String(dados.id||""));
    eventosMutacao[chave]={ativo,expiraEm:exp,id:String(dados.id||"")};
    if(mudou)mostrarAviso("EVENTO "+nomesMutacaoEvento[chave].toUpperCase()+" ATIVADO! Todos os pets dos ovos receberão essa mutação.","ok");
-   atualizarStatusMutacoesAdmin();
+   atualizarStatusMutacoesAdmin();atualizarBadgesMutacao();
   },err=>console.error("Erro ao acompanhar evento de mutação "+chave,err));
  });
 }
@@ -4018,19 +4044,9 @@ mostrarRecompensa=false;
 }
 }
 
-const eventoNaTela=multiplicadorEventoAtual()>1;
-if(eventoNaTela){
-  // Indicador bem pequeno: somente multiplicador e tempo restante.
-  texto("$ "+formatarDinheiro(moedas),365,288,18,"#ffdc00","right");
-  const restante=Math.max(0,Math.ceil((eventoGlobal.expiraEm-Date.now())/1000));
-  const mm=String(Math.floor(restante/60)).padStart(2,"0");
-  const ss=String(restante%60).padStart(2,"0");
-  retangulo(373,275,119,17,"#3d2a0b",4);
-  texto(eventoGlobal.multiplicador+"x",402,287,10,"#ffe08a","center");
-  texto(mm+":"+ss,484,287,9,"#ffffff","right");
-}else{
-  texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
-}
+// O indicador amarelo antigo do evento de dinheiro foi removido.
+// O saldo permanece no local original; eventos ativos aparecem nos badges do canto.
+texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
 
 // BOTÃO DE RENASCIMENTO (canto superior esquerdo)
 const gradRen=ctx.createLinearGradient(7,5,132,35);
