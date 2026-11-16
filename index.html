@@ -2275,12 +2275,16 @@ dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
 iniciarMonitoramentoEventoGlobal();
 iniciarPresenca(user.uid);
-await publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true);
-if(user.uid===ADMIN_UID)await sincronizarRankingHistoricoAdmin();
+// O login não deve esperar as tarefas secundárias do ranking/Firebase.
+// Primeiro libera o jogo; a publicação do ranking acontece em segundo plano.
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
 salvarContaUsada(nomeCanonico);
+Promise.resolve().then(()=>publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true)).catch(error=>console.warn("Ranking será atualizado posteriormente:",error));
+if(user.uid===ADMIN_UID){
+  setTimeout(()=>{sincronizarRankingHistoricoAdmin().catch(error=>console.warn("Sincronização do ranking adiada:",error));},0);
+}
 return true;
 }catch(error){
 usuarioAtual=null;
