@@ -2122,7 +2122,7 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
 await publicarResumoRanking(id,nomeRanking,copia,true);
 }catch(error){console.error("Erro ao salvar no Firebase:",error);}
-},500);
+},30000);
 }
 
 function salvar(){
@@ -2223,7 +2223,7 @@ ultimaPresencaUid=uid;
 atualizarPresenca(true,uid);
 timerPresenca=setInterval(()=>{
 if(usuarioAtual&&usuarioAtual.uid===uid)atualizarPresenca(true,uid);
-},15000);
+},60000);
 }
 function pararPresenca(uid){
 if(timerPresenca){clearInterval(timerPresenca);timerPresenca=null;}
@@ -2529,8 +2529,10 @@ await entrarNoJogo(user,nome);
 
 // Salva na nuvem na hora (aba escondida ou página fechando).
 // Nunca salva antes do progresso carregar, para não apagar o save com valores zerados.
+let salvamentoFinalEmAndamento=false;
 function salvarNuvemAgora(){
-if(!jogoPronto()||carregandoDados||!usuarioAtual)return;
+if(!jogoPronto()||carregandoDados||!usuarioAtual||salvamentoFinalEmAndamento)return;
+salvamentoFinalEmAndamento=true;
 if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
 const id=usuarioAtual.uid;
 const dados=limparDadosParaFirestore(dadosDoJogo());
@@ -2542,7 +2544,7 @@ nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
 dados,
 ranking:{moedas:Number(moedas)||0,renascimentos:Number(renascimentos)||0},
 atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
-},{merge:true}).then(()=>publicarResumoRanking(id,usuarioAtual&&usuarioAtual.uid===id?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"Jogador",dados,true)).catch(error=>console.error("Erro ao salvar:",error));
+},{merge:true}).then(()=>publicarResumoRanking(id,usuarioAtual&&usuarioAtual.uid===id?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"Jogador",dados,true)).catch(error=>console.error("Erro ao salvar:",error)).finally(()=>{salvamentoFinalEmAndamento=false;});
 }
 
 document.addEventListener("visibilitychange",()=>{
