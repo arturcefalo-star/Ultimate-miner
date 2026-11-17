@@ -607,6 +607,9 @@ background:#10101c;color:#fff;font-size:16px;outline:none
   <button id="admAtualizarJogadores" type="button" class="adm-b roxo" style="max-width:112px">Atualizar lista</button>
 </div>
 <div id="admResumoJogador" class="adm-resumo" aria-live="polite"></div>
+<label class="adm-dica" for="admCategoria" style="display:block;margin:8px 0 4px">CATEGORIA</label>
+<select id="admCategoria" class="adm-in" aria-label="Categoria de gerenciamento"></select>
+<label class="adm-dica" for="admAcao" style="display:block;margin:8px 0 4px">AÇÃO</label>
 <select id="admAcao" class="adm-in" aria-label="Ação"></select>
 
 <div id="admCampoValor">
@@ -2616,6 +2619,7 @@ const admJogador=document.getElementById("admJogador");
 const admJogadorAbrir=document.getElementById("admJogadorAbrir");
 const admJogadorSelecionado=document.getElementById("admJogadorSelecionado");
 const admJogadorLista=document.getElementById("admJogadorLista");
+const admCategoria=document.getElementById("admCategoria");
 const admAcao=document.getElementById("admAcao");
 const admRemotoValor=document.getElementById("admRemotoValor");
 const admRemotoItem=document.getElementById("admRemotoItem");
@@ -2661,6 +2665,36 @@ setMultiplier:{rotulo:"Definir nível do multiplicador",campo:"nivel"},
 givePet:{rotulo:"Dar pet para jogador",campo:"pet"},
 viewInventory:{rotulo:"Ver inventário",campo:"inventario"}
 };
+
+// Categorias do gerenciamento remoto. As ações originais continuam disponíveis,
+// apenas organizadas por tipo para facilitar o uso no painel.
+const CATEGORIAS_ADMIN={
+moedas:{rotulo:"Moedas",acoes:["addMoney","removeMoney","clearMoney"]},
+picaretas:{rotulo:"Picaretas",acoes:["givePickaxe","removePickaxe","resetPickaxes"]},
+minerios:{rotulo:"Minérios",acoes:["giveOre","removeOre","resetOres"]},
+melhorias:{rotulo:"Melhorias",acoes:["giveAuto","removeAuto","givePro","removePro","setMultiplier"]},
+renascimentos:{rotulo:"Renascimentos",acoes:["resetRebirths"]},
+mundos:{rotulo:"Mundos",acoes:["giveWorld","removeWorld"]},
+pets:{rotulo:"Pets",acoes:["givePet"]},
+inventario:{rotulo:"Inventário",acoes:["viewInventory"]},
+gerais:{rotulo:"Geral",acoes:["resetAll"]}
+};
+
+function preencherAcoesCategoriaAdmin(){
+const categoria=CATEGORIAS_ADMIN[admCategoria.value];
+admAcao.textContent="";
+if(!categoria)return;
+for(const chave of categoria.acoes){
+const def=ACOES_REMOTAS[chave];
+if(!def)continue;
+const opcao=document.createElement("option");
+opcao.value=chave;
+opcao.textContent=def.rotulo;
+admAcao.appendChild(opcao);
+}
+admAcao.dispatchEvent(new Event("change",{bubbles:true}));
+if(admAcao._renderSeletor)admAcao._renderSeletor();
+}
 
 function preencherLista(select,lista,inicio){
 select.textContent="";
@@ -3534,13 +3568,17 @@ preencherLista(admMinerio,minerios,1);
 instalarSeletorPersonalizado(admPicareta);
 instalarSeletorPersonalizado(admMinerio);
 instalarSeletorPersonalizado(admRemotoItem);
-for(const [chave,def] of Object.entries(ACOES_REMOTAS)){
+for(const [chave,def] of Object.entries(CATEGORIAS_ADMIN)){
 const opcao=document.createElement("option");
 opcao.value=chave;
 opcao.textContent=def.rotulo;
-admAcao.appendChild(opcao);
+admCategoria.appendChild(opcao);
 }
+admCategoria.addEventListener("change",preencherAcoesCategoriaAdmin);
 admAcao.addEventListener("change",atualizarCamposRemotos);
+preencherAcoesCategoriaAdmin();
+instalarSeletorPersonalizado(admCategoria);
+instalarSeletorPersonalizado(admAcao);
 document.getElementById("admAtualizarJogadores").addEventListener("click",carregarJogadoresAdmin);
 atualizarCamposRemotos();
 
