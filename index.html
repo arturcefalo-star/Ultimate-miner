@@ -117,23 +117,23 @@ z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
 #eventoGlobalBadge{
 display:none;position:fixed;top:12px;right:12px;z-index:8;
 width:48px;height:46px;padding:4px 3px;
-background:linear-gradient(145deg,#168b3c,#075522);
-border:2px solid #56d879;border-radius:5px;
+background:linear-gradient(145deg,#35d96b,#159b45);
+border:2px solid #8affaa;border-radius:5px;
 box-shadow:0 2px 8px #0009,0 0 10px #27d85b66;
 color:#fff;text-align:center;font-family:Arial,sans-serif;
 flex-direction:column;align-items:center;justify-content:center;
 line-height:1.05;pointer-events:none;
 }
-#eventoSorteBadge{background:linear-gradient(145deg,#72f58a,#25c85a);border-color:#c4ffd0;box-shadow:0 2px 8px #0009,0 0 10px #42f07866}
+#eventoSorteBadge{background:linear-gradient(145deg,#a56bff,#6130bd);border-color:#dfc4ff}
 #eventoSorteBadge strong{display:block;font-size:15px;font-weight:900;color:#fff}
-#eventoSorteBadge span{display:block;margin-top:3px;font-size:9px;font-weight:900;color:#f0fff3;text-shadow:0 1px 2px #08752b}
+#eventoSorteBadge span{display:block;margin-top:3px;font-size:9px;font-weight:800;color:#f5eaff}
 #eventoGlobalBadge strong{
 display:block;font-size:15px;font-weight:900;color:#fff;
 text-shadow:0 1px 2px #075b27;
 }
 #eventoGlobalBadge span{
 display:block;margin-top:3px;font-size:10px;font-weight:800;
-color:#d9ffe2;text-shadow:0 1px 2px #022d12;
+color:#eaffef;text-shadow:0 1px 2px #075b27;
 }
 #adminModal{
 display:none;position:fixed;inset:0;background:#000c;
@@ -287,17 +287,6 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .pet-slot.void.equipado{border-color:#35e879!important;box-shadow:0 0 0 1px #35e87988,0 0 14px #35e87966!important}
 .pet-slot.void .pet-iniciais{border-color:#d7c2ff!important;color:#fff!important;background:linear-gradient(135deg,#171026,#542a83,#111)!important}
 .pet-slot.dourado.equipado{border-color:#35e879!important;box-shadow:0 0 0 1px #35e87966,0 0 13px #35e87955}
-
-/* Etiquetas compactas de mutação no canto superior direito do pet. */
-.pet-slot{position:relative;overflow:visible}
-.pet-mutacao-canto{position:absolute;top:4px;right:4px;z-index:4;display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:calc(100% - 8px);pointer-events:none}
-.pet-mutacao-canto span{display:block;padding:2px 5px;border:1px solid;border-radius:4px;font-size:8px;line-height:1.1;font-weight:1000;letter-spacing:.35px;text-shadow:0 1px 2px #0009;white-space:nowrap;box-shadow:0 1px 4px #0009}
-.pet-mutacao-canto .hacker{background:#020805;color:#62ff91;border-color:#31ff78}
-.pet-mutacao-canto .anjo{background:linear-gradient(135deg,#fff,#fff0a8);color:#725400;border-color:#f5d75e;text-shadow:none}
-.pet-mutacao-canto .galaxia{background:linear-gradient(135deg,#16072d,#6d2bb2);color:#f1d8ff;border-color:#d39aff}
-/* A borda verde do equipado tem prioridade sobre Rainbow, Void e qualquer mutação. */
-.pet-slot.equipado,.pet-slot.equipado.rainbow,.pet-slot.equipado.dourado,.pet-slot.equipado.diamante,.pet-slot.equipado.void,.pet-slot.equipado.mutacao-anjo,.pet-slot.equipado.mutacao-hacker,.pet-slot.equipado.mutacao-galaxia{border:3px solid #35e879!important;border-color:#35e879!important;box-shadow:0 0 0 1px #35e87988,0 0 13px #35e87966!important}
-.pet-slot.equipado .pet-iniciais{border-color:#35e879!important}
 .pet-dourado-tag{display:inline-block;margin-top:3px;padding:2px 6px;border:1px solid #f4cf55;border-radius:10px;color:#ffe27a;font-size:9px;font-weight:900}
 #fazerPetDourado{margin-top:7px;background:linear-gradient(180deg,#e4bd42,#99721b);color:#211900;border:1px solid #ffe58a;font-weight:900}
 #fazerPetDiamante{margin-top:7px;background:linear-gradient(180deg,#55dfff,#147da0);color:#05212a;border:1px solid #aaf2ff;font-weight:900}
@@ -411,6 +400,18 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .adm-select-option{display:block;width:100%;padding:10px;border:0;border-radius:7px;background:transparent;color:#fff;text-align:left;font-size:13px;cursor:pointer}
 .adm-select-option+.adm-select-option{border-top:1px solid #ffffff12}
 .adm-select-option:hover,.adm-select-option.selecionada{background:#293957}
+
+/* AJUSTES VISUAIS: etiquetas quadradas de mutação e eventos */
+.pet-slot{position:relative;overflow:visible}
+.pet-mutacao-quadradinhos{position:absolute;top:3px;right:3px;z-index:3;display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:calc(100% - 6px);pointer-events:none}
+.pet-mutacao-quadrado{display:inline-flex;align-items:center;justify-content:center;min-height:15px;padding:2px 4px;border:1px solid;border-radius:2px;font-size:7px;line-height:1;font-weight:1000;letter-spacing:.25px;white-space:nowrap;box-shadow:0 1px 3px #000b}
+.pet-slot .pet-iniciais{margin-top:5px}
+#eventoGlobalBadge{background:linear-gradient(145deg,#168c43,#075326)!important;border-color:#55e887!important}
+#eventoGlobalBadge span{font-size:8px!important;color:#eaffef!important}
+#eventoSorteBadge{background:linear-gradient(145deg,#a8ffbf,#43d979)!important;border-color:#d6ffe1!important}
+#eventoSorteBadge strong,#eventoSorteBadge span{color:#06451f!important;text-shadow:none!important}
+#eventoSorteBadge span{font-size:8px!important}
+
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -500,16 +501,12 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 </div></div>
 <div id="venderPetsModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Vender pets">
  <div class="novo-topo"><h2>VENDER PETS</h2><button id="fecharVendaPets" class="novo-fechar" type="button">X</button></div>
- <p class="novo-desc">Marque as raridades que deseja vender. Todos os pets dessas raridades serão vendidos, inclusive os equipados.</p>
- <div class="pet-venda"><div class="pet-venda-titulo">SELECIONE AS RARIDADES</div><div style="font-size:10px;color:#bdc9da;margin-bottom:7px">Valores: Comum $10K | Incomum $15K | Raro $25K | Épico $50K | Lendário $100K | Mítico $250K | Secreto $500K</div>
-  <div class="pet-venda-opcoes">
-   <label><input type="checkbox" data-vender-raridade="Comum"> Comum</label><label><input type="checkbox" data-vender-raridade="Incomum"> Incomum</label>
-   <label><input type="checkbox" data-vender-raridade="Raro"> Raro</label><label><input type="checkbox" data-vender-raridade="Épico"> Épico</label>
-   <label><input type="checkbox" data-vender-raridade="Lendário"> Lendário</label><label><input type="checkbox" data-vender-raridade="Mítico"> Mítico</label>
-   <label><input type="checkbox" data-vender-raridade="Secreto"> Secreto</label>
-  </div>
-  <button id="venderPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS DAS RARIDADES MARCADAS</button>
+ <p class="novo-desc">Escolha como deseja vender. A venda inclui pets equipados quando eles estiverem dentro da seleção.</p>
+ <div class="pets-ordenacao" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+  <button type="button" data-modo-venda="todos">SELECIONAR TODOS</button><button type="button" data-modo-venda="raridade" class="ativa">POR RARIDADE</button><button type="button" data-modo-venda="multiplos">MÚLTIPLOS</button>
  </div>
+ <div id="vendaPetsConteudo" class="pet-venda"></div>
+ <button id="venderPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030);width:100%;margin-top:8px">VENDER PETS</button>
 </div></div>
 <div id="rankingModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Ranking global">
  <div class="novo-topo"><h2>RANKING GLOBAL</h2><button class="novo-fechar" data-fechar-novo="ranking">X</button></div>
@@ -653,6 +650,13 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <div class="adm-mutacao-evento" data-mutacao-evento="hacker"><strong>💻 EVENTO HACKER — 2x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoHackerMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoHackerAtivar" type="button">Ativar evento Hacker</button><button class="adm-b vermelho grande" id="admMutacaoHackerEncerrar" type="button">Encerrar evento Hacker</button><div class="adm-dica" id="admMutacaoHackerStatus">Nenhum evento ativo.</div></div>
 <div class="adm-mutacao-evento" data-mutacao-evento="galaxia"><strong>🌌 EVENTO DE GALÁXIA — 2.5x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoGalaxiaMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoGalaxiaAtivar" type="button">Ativar evento de Galáxia</button><button class="adm-b vermelho grande" id="admMutacaoGalaxiaEncerrar" type="button">Encerrar evento de Galáxia</button><div class="adm-dica" id="admMutacaoGalaxiaStatus">Nenhum evento ativo.</div></div>
 </div></details>
+<div class="adm-evento-conteudo" style="margin-top:10px;padding:10px;border:1px solid #52627a;border-radius:9px;background:#101b2a">
+<label for="admTodosEventosMinutos" class="adm-dica" style="display:block;margin:0 0 6px">⏱️ SELECIONAR O TEMPO DOS EVENTOS (MINUTOS)</label>
+<input id="admTodosEventosMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Duração em minutos">
+<div class="adm-dica">O mesmo tempo será usado para dinheiro, sorte, Anjo, Hacker e Galáxia.</div>
+</div>
+<button id="admAtivarTodosEventos" type="button" class="adm-b verde grande" style="width:100%;margin-top:10px">⚡ ATIVAR TODOS OS EVENTOS</button>
+<div class="adm-dica" style="margin-top:5px">Ativa dinheiro, sorte, Anjo, Hacker e Galáxia usando as durações e multiplicadores configurados acima.</div>
 </div>
 
 <h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">HISTORICO DA SESSAO</h3>
@@ -1203,7 +1207,12 @@ let eventoSorteGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:"
 const eventosMutacao={anjo:{ativo:false,expiraEm:0,id:"",ativadoEm:0},hacker:{ativo:false,expiraEm:0,id:"",ativadoEm:0},galaxia:{ativo:false,expiraEm:0,id:"",ativadoEm:0}};
 const nomesMutacaoEvento={anjo:"Anjo",hacker:"Hacker",galaxia:"Galáxia"};
 function obterMutacoesEventoAtivas(){const agora=Date.now();return Object.keys(eventosMutacao).filter(k=>eventosMutacao[k].ativo&&eventosMutacao[k].expiraEm>agora);}
-function multiplicadorBonusMutacoes(mutacoes){const fatores={anjo:1.5,hacker:2,galaxia:2.5};return [...new Set(Array.isArray(mutacoes)?mutacoes:[])].reduce((total,k)=>total*(fatores[k]||1),1);}
+function multiplicadorBonusMutacoes(mutacoes){
+ // Bônus aditivos: Anjo +0,5x, Hacker +1x e Galáxia +1,5x.
+ // Exemplo: as três juntas = 1x + 0,5x + 1x + 1,5x = 4x.
+ const bonus={anjo:0.5,hacker:1,galaxia:1.5};
+ return 1+[...new Set(Array.isArray(mutacoes)?mutacoes:[])].reduce((total,k)=>total+(bonus[k]||0),0);
+}
 let cancelarMonitoramentoEvento=null;
 let ultimoAvisoAdminId="";
 
@@ -1227,6 +1236,15 @@ let mundoAtual=0;
 let mundosDesbloqueados=[0];
 let petsInventario=[];
 let petsEquipados=[];
+let melhoriaInventarioPets=0; // 0=50 slots; até 6=200
+let melhoriaPetsEquipados=0; // 0=3 slots; até 3=6
+let paginaMelhorias=0;
+let scrollMelhorias=0, arrastandoMelhorias=false, inicioYMelhorias=0, scrollInicialMelhorias=0;
+const ALTURA_LINHA_MELHORIA=42, TOPO_LISTA_MELHORIAS=52, ALTURA_LISTA_MELHORIAS=211;
+let modoVendaPets="raridade";
+let petsMarcadosVenda=new Set();
+function limiteInventarioPets(){return 50+25*Math.max(0,Math.min(6,Number(melhoriaInventarioPets)||0));}
+function limitePetsEquipados(){return 3+Math.max(0,Math.min(3,Number(melhoriaPetsEquipados)||0));}
 let petsConseguidosSessao=[];
 let painelAFKAberto=false;
 let ovosAbertos=0;
@@ -1251,9 +1269,14 @@ const ORDEM_RARIDADE_PETS={"Comum":0,"Incomum":1,"Raro":2,"Épico":3,"Lendário"
 const CORES_RARIDADE_PETS={"Comum":"#d1d5db","Incomum":"#45d36b","Raro":"#4295ff","Épico":"#b66cff","Lendário":"#ffd43b","Mítico":"#ff4545","Secreto":"#ffffff"};
 let petsOrdenacao="melhores";
 function multiplicadorPets(){
- const base=petsEquipados.reduce((total,id)=>{const pet=petsInventario.find(p=>p.id===id);return total*(pet?Number(pet.mult)||1:1);},1);
+ // Soma os multiplicadores individuais dos pets equipados.
+ const soma=petsEquipados.reduce((total,id)=>{
+  const pet=petsInventario.find(p=>p.id===id);
+  return total+(pet?Math.max(0,Number(pet.mult)||0):0);
+ },0);
  if(!petsEquipados.length)return 1;
- return base*(1+Math.max(0,impulsoPetsNivel)*0.15);
+ // O impulso continua sendo um bônus percentual sobre a soma, sem multiplicar os pets entre si.
+ return soma*(1+Math.max(0,Number(impulsoPetsNivel)||0)*0.15);
 }
 function pesoPetComSorte(p){
  const nivel=Math.max(0,Math.min(20,Number(sorteOvoNivel)||0));
@@ -1345,7 +1368,7 @@ function abrirOvosQuantidade(quantidade=1,automatico=false){
  }
  const sorteios=Array.from({length:quantidade},()=>escolherPetAleatorio());
  const novosNoInventario=sorteios.filter(base=>!petsVendaAutomatica.includes(base.nome)).length;
- if(petsInventario.length+novosNoInventario>50){
+ if(petsInventario.length+novosNoInventario>limiteInventarioPets()){
   if(automatico){autoOvoAtivo=false;salvar();atualizarControlesOvo();mostrarAviso("Ovos automáticos pausados: inventário cheio.","erro");}
   else mostrarAviso("Não há espaço suficiente no inventário para abrir essa quantidade de ovos.","erro");
   return false;
@@ -1399,14 +1422,14 @@ function processarOvosAutomaticos(){
 function alternarPet(id){
  const i=petsEquipados.indexOf(id);
  if(i>=0)petsEquipados.splice(i,1);
- else if(petsEquipados.length>=3){mostrarAviso("Você só pode equipar 3 mascotes.","erro");return;}
+ else if(petsEquipados.length>=limitePetsEquipados()){mostrarAviso("Seu limite atual é de "+limitePetsEquipados()+" pets equipados. Compre melhorias de pets equipados para liberar mais espaços.","erro");return;}
  else petsEquipados.push(id);
  petSelecionadoId=id;salvar();renderizarPets();
 }
 let petSelecionadoId=null;
 const VALOR_VENDA_PET={"Comum":10000,"Incomum":15000,"Raro":25000,"Épico":50000,"Lendário":100000,"Mítico":250000,"Secreto":500000};
 function renderizarResumoPets(){
- const texto="Mascotes: "+petsInventario.length+"/50 | Equipados: "+petsEquipados.length+"/3 | Bônus equipado: "+multiplicadorPets().toFixed(2)+"x | Ovos abertos: "+ovosAbertos+" | Sorte: nível "+sorteOvoNivel;
+ const texto="Mascotes: "+petsInventario.length+"/"+limiteInventarioPets()+" | Equipados: "+petsEquipados.length+"/"+limitePetsEquipados()+" | Bônus equipado: "+multiplicadorPets().toFixed(2)+"x | Ovos abertos: "+ovosAbertos+" | Sorte: nível "+sorteOvoNivel;
  const resumo=document.getElementById("petsResumo");if(resumo)resumo.textContent=texto;
  const ovos=document.getElementById("ovosResumo");if(ovos)ovos.textContent="Saldo: $ "+formatarDinheiro(moedas)+" | "+texto;
 }
@@ -1447,7 +1470,7 @@ function criarPetEvoluido(id,nivelDestino){
  const base=catalogoPets.find(x=>x.nome===selecionado.nome)||selecionado;
  const evoluido={id:"pet_"+nomeNivelPet(nivelDestino).toLowerCase()+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),nome:base.nome,sigla:base.sigla,raridade:base.raridade,peso:base.peso,mult:multiplicadorNivelPet(base,nivelDestino)*multiplicadorBonusMutacoes([...new Set(iguais.flatMap(x=>Array.isArray(x.mutacoesEvento)?x.mutacoesEvento:[]))]),cor:base.cor,borda:base.borda||"",dourado:nivelDestino>=1,diamante:nivelDestino>=2,rainbow:nivelDestino>=3,void:nivelDestino>=4,mutacoesEvento:[...new Set(iguais.flatMap(x=>Array.isArray(x.mutacoesEvento)?x.mutacoesEvento:[]))]};
  petsInventario.push(evoluido);
- if(eraEquipado&&petsEquipados.length<3)petsEquipados.push(evoluido.id);
+ if(eraEquipado&&petsEquipados.length<limitePetsEquipados())petsEquipados.push(evoluido.id);
  petSelecionadoId=evoluido.id;salvar();renderizarPets();somRaro();
  mostrarAviso("PET "+nomeNivelPet(nivelDestino)+" CRIADO! "+evoluido.nome+" agora tem multiplicador "+evoluido.mult.toFixed(2)+"x.","ok");
  return true;
@@ -1478,7 +1501,7 @@ function fundirTodosPetsDourados(){
  }
  petsInventario=petsInventario.filter(p=>!removidos.has(p.id)).concat(novos);
  petsEquipados=petsEquipados.filter(id=>!removidos.has(id));
- for(const id of equiparNovos){if(petsEquipados.length<3)petsEquipados.push(id);}
+ for(const id of equiparNovos){if(petsEquipados.length<limitePetsEquipados())petsEquipados.push(id);}
  petSelecionadoId=novos[novos.length-1]?.id||petsInventario[0]?.id||null;salvar();renderizarPets();somRaro();
  mostrarAviso("FUSÃO CONCLUÍDA: "+totalGrupos+" PET(S) " +nomeNivelPet(nivelAlvo+1)+" CRIADO(S)!","ok");
 }
@@ -1518,42 +1541,78 @@ function renderizarPets(){
  if(!petsInventario.some(p=>p.id===petSelecionadoId))petSelecionadoId=petsInventario[0].id;
  petsInventario.slice().sort(ordenar).forEach(p=>{
   const cor=petCor(p);const equipado=petsEquipados.includes(p.id);const card=document.createElement("button");card.type="button";card.className="pet-slot"+(p.id===petSelecionadoId?" selecionado":"")+(p.void?" void":p.rainbow?" rainbow":p.diamante?" diamante":p.dourado?" dourado":"")+((p.mutacoesEvento||[]).length?" mutacao-"+p.mutacoesEvento[0]:"")+(equipado?" equipado":"");card.style.borderColor=equipado?"#35e879":(p.void?"#b58aff":p.rainbow?"#ff75e8":p.diamante?"#55dfff":p.dourado?"#f4cf55":cor);card.addEventListener("click",()=>selecionarPetInventario(p.id));
-  const mutacoesPet=Array.isArray(p.mutacoesEvento)?p.mutacoesEvento.filter(k=>["hacker","anjo","galaxia"].includes(k)):[];
-  if(mutacoesPet.length){const canto=document.createElement("span");canto.className="pet-mutacao-canto";const nomes={hacker:"HACKER",anjo:"ANJO",galaxia:"GALÁXIA"};mutacoesPet.forEach(k=>{const chip=document.createElement("span");chip.className=k;chip.textContent=nomes[k];canto.appendChild(chip);});card.appendChild(canto);}
   const sigla=document.createElement("span");sigla.className="pet-iniciais";sigla.textContent=p.sigla||p.nome.slice(0,2).toUpperCase();sigla.style.color=cor;sigla.style.borderColor=cor;sigla.style.background=p.raridade==="Secreto"?"#050505":"#202d40";
   const nome=document.createElement("strong");nome.textContent=p.nome;
-  const rar=document.createElement("small");rar.textContent=p.raridade+(nivelEvolucaoPet(p)?" | "+nomeNivelPet(nivelEvolucaoPet(p)):"")+((p.mutacoesEvento||[]).length?" | "+p.mutacoesEvento.map(k=>nomesMutacaoEvento[k]||k).join(" + "):"")+(petsEquipados.includes(p.id)?" | EQUIPADO":"");
-  card.append(sigla,nome,rar);el.appendChild(card);
+  const rar=document.createElement("small");rar.textContent=p.raridade+(nivelEvolucaoPet(p)?" | "+nomeNivelPet(nivelEvolucaoPet(p)):"")+(equipado?" | EQUIPADO":"");
+  const tags=document.createElement("span");tags.className="pet-mutacao-quadradinhos";
+  const estilosMutacao={hacker:{texto:"HACKER",fundo:"#06140b",borda:"#42ff83",cor:"#7dffab"},galaxia:{texto:"GALÁXIA",fundo:"#24103d",borda:"#c18aff",cor:"#ead2ff"},anjo:{texto:"ANJO",fundo:"#fff8d8",borda:"#e8c64d",cor:"#725600"}};
+  (p.mutacoesEvento||[]).forEach(k=>{const cfg=estilosMutacao[k];if(!cfg)return;const tag=document.createElement("span");tag.className="pet-mutacao-quadrado mutacao-"+k;tag.textContent=cfg.texto;tag.style.background=cfg.fundo;tag.style.borderColor=cfg.borda;tag.style.color=cfg.cor;tags.appendChild(tag);});
+  card.append(sigla,nome,rar);if(tags.childElementCount)card.appendChild(tags);el.appendChild(card);
  });
  renderizarStatusPet();
 }
 function equiparMelhoresPets(){
  if(!petsInventario.length){mostrarAviso("Você ainda não tem mascotes.","erro");return;}
- const melhores=petsInventario.slice().sort((a,b)=>Number(b.mult)-Number(a.mult)||(ORDEM_RARIDADE_PETS[b.raridade]??-1)-(ORDEM_RARIDADE_PETS[a.raridade]??-1)).slice(0,3);
- petsEquipados=melhores.map(p=>p.id);petSelecionadoId=melhores[0]?.id||null;salvar();renderizarPets();mostrarAviso("Seus 3 melhores mascotes foram equipados.","ok");
+ const melhores=petsInventario.slice().sort((a,b)=>Number(b.mult)-Number(a.mult)||(ORDEM_RARIDADE_PETS[b.raridade]??-1)-(ORDEM_RARIDADE_PETS[a.raridade]??-1)).slice(0,limitePetsEquipados());
+ petsEquipados=melhores.map(p=>p.id);petSelecionadoId=melhores[0]?.id||null;salvar();renderizarPets();mostrarAviso("Seus "+melhores.length+" melhores mascotes foram equipados.","ok");
+}
+function renderizarModoVendaPets(){
+ const area=document.getElementById("vendaPetsConteudo"),botao=document.getElementById("venderPetsSelecionados");if(!area||!botao)return;
+ document.querySelectorAll("[data-modo-venda]").forEach(b=>b.classList.toggle("ativa",b.dataset.modoVenda===modoVendaPets));
+ area.innerHTML="";
+ if(modoVendaPets==="todos"){
+  area.innerHTML='<div class="pet-venda-titulo">VENDER TODO O INVENTÁRIO</div><p class="novo-desc">Todos os '+petsInventario.length+' pets serão selecionados, inclusive os equipados.</p>';
+ }else if(modoVendaPets==="raridade"){
+  const titulo=document.createElement("div");titulo.className="pet-venda-titulo";titulo.textContent="SELECIONE AS RARIDADES";area.appendChild(titulo);
+  const valores=document.createElement("div");valores.style.cssText="font-size:10px;color:#bdc9da;margin-bottom:7px";valores.textContent="Comum $10K | Incomum $15K | Raro $25K | Épico $50K | Lendário $100K | Mítico $250K | Secreto $500K";area.appendChild(valores);
+  const grade=document.createElement("div");grade.className="pet-venda-opcoes";
+  Object.keys(VALOR_VENDA_PET).forEach(r=>{const label=document.createElement("label"),input=document.createElement("input");input.type="checkbox";input.dataset.vendaRaridade=r;label.append(input,document.createTextNode(" "+r));grade.appendChild(label);});area.appendChild(grade);
+ }else{
+  const titulo=document.createElement("div");titulo.className="pet-venda-titulo";titulo.textContent="SELECIONE OS PETS INDIVIDUALMENTE";area.appendChild(titulo);
+  const aviso=document.createElement("p");aviso.className="novo-desc";aviso.textContent="Toque nos pets para marcar. Os selecionados recebem um X vermelho.";area.appendChild(aviso);
+  const grade=document.createElement("div");grade.style.cssText="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;max-height:38vh;overflow:auto";
+  petsInventario.forEach(p=>{const label=document.createElement("label");label.style.cssText="display:flex;align-items:center;gap:6px;padding:7px;border:1px solid #52647d;border-radius:7px;background:#172438;color:#fff;font-size:11px";const input=document.createElement("input");input.type="checkbox";input.checked=petsMarcadosVenda.has(p.id);input.addEventListener("change",()=>{if(input.checked)petsMarcadosVenda.add(p.id);else petsMarcadosVenda.delete(p.id);renderizarModoVendaPets();});const x=document.createElement("strong");x.textContent=input.checked?"✖":"";x.style.cssText="color:#ff4141;font-size:17px";label.append(input,x,document.createTextNode(p.nome+" • "+p.raridade));grade.appendChild(label);});area.appendChild(grade);
+ }
+ botao.textContent="VENDER PETS";botao.dataset.confirmar="nao";
 }
 function venderPetsSelecionados(){
- const raridades=[...document.querySelectorAll("[data-vender-raridade]:checked")].map(x=>x.dataset.venderRaridade);
- if(!raridades.length){mostrarAviso("Marque pelo menos uma raridade para vender.","erro");return;}
- const vender=petsInventario.filter(p=>raridades.includes(p.raridade));
- if(!vender.length){mostrarAviso("Você não possui pets das raridades marcadas.","erro");return;}
- const total=vender.reduce((s,p)=>s+(VALOR_VENDA_PET[p.raridade]||0),0);
- if(!confirm("Vender "+vender.length+" pet(s) das raridades selecionadas por $ "+formatarDinheiro(total)+"? Esta ação não pode ser desfeita."))return;
+ let vender=[];
+ if(modoVendaPets==="todos")vender=petsInventario.slice();
+ else if(modoVendaPets==="raridade"){
+  const raridades=[...document.querySelectorAll("[data-venda-raridade]:checked")].map(x=>x.dataset.vendaRaridade);
+  if(!raridades.length){mostrarAviso("Selecione pelo menos uma raridade.","erro");return;}
+  vender=petsInventario.filter(p=>raridades.includes(p.raridade));
+ }else vender=petsInventario.filter(p=>petsMarcadosVenda.has(p.id));
+ if(!vender.length){mostrarAviso("Nenhum pet foi selecionado para venda.","erro");return;}
+ const total=vender.reduce((s,p)=>s+(VALOR_VENDA_PET[p.raridade]||0),0),botao=document.getElementById("venderPetsSelecionados");
+ if(botao.dataset.confirmar!=="sim"){
+  botao.dataset.confirmar="sim";botao.textContent="CLIQUE NOVAMENTE PARA CONFIRMAR • "+vender.length+" PET(S)";
+  mostrarAviso("Confira a seleção. Clique novamente em VENDER PETS para confirmar.","info");return;
+ }
  const ids=new Set(vender.map(p=>p.id));petsInventario=petsInventario.filter(p=>!ids.has(p.id));petsEquipados=petsEquipados.filter(id=>!ids.has(id));
- moedas+=total;petSelecionadoId=petsInventario[0]?.id||null;
- document.querySelectorAll("[data-vender-raridade]").forEach(x=>x.checked=false);
- salvar();renderizarPets();document.getElementById("venderPetsModal").style.display="none";mostrarAviso(vender.length+" pet(s) vendidos. Você recebeu $ "+formatarDinheiro(total)+".","ok");
+ ids.forEach(id=>petsMarcadosVenda.delete(id));moedas+=total;petSelecionadoId=petsInventario[0]?.id||null;
+ salvar();renderizarPets();renderizarModoVendaPets();document.getElementById("venderPetsModal").style.display="none";mostrarAviso(vender.length+" pet(s) vendidos. Você recebeu $ "+formatarDinheiro(total)+".","ok");
 }
 
 function jogadorEstaOnline(registro){
- const pres=(registro&&registro.presenca)||{};
- let atualizado=0;
- try{
-  const valor=pres.atualizadoEm;
-  atualizado=valor&&typeof valor.toMillis==="function"?valor.toMillis():(typeof valor==="number"?valor:0);
- }catch(e){}
- // O heartbeat é enviado a cada 20 segundos; 65 segundos toleram pequenos atrasos de rede.
- return pres.online===true&&atualizado>0&&(Date.now()-atualizado)<65000;
+ const r=registro||{};
+ const nested=r.presenca||{};
+ // heartbeatAt é um horário numérico escrito junto com o status; evita depender
+ // da conversão de serverTimestamp em snapshots recém-gravados.
+ const pres=(typeof r.online==="boolean"&&(r.heartbeatAt||r.atualizadoEm))?r:nested;
+ const onlineMarcado=pres.online===true;
+ let atualizado=Number(pres.heartbeatAt)||0;
+ if(!atualizado){
+  try{
+   const valor=pres.atualizadoEm;
+   if(valor&&typeof valor.toMillis==="function") atualizado=valor.toMillis();
+   else if(valor&&typeof valor.toDate==="function") atualizado=valor.toDate().getTime();
+   else if(valor&&typeof valor.seconds==="number") atualizado=valor.seconds*1000;
+   else if(typeof valor==="number") atualizado=valor>100000000000?valor:valor*1000;
+  }catch(e){atualizado=0;}
+ }
+ const idade=Date.now()-atualizado;
+ return onlineMarcado&&atualizado>0&&idade>=-15000&&idade<70000;
 }
 
 function criarEtiquetaPresenca(online){
@@ -1564,16 +1623,24 @@ function criarEtiquetaPresenca(online){
  return tag;
 }
 
-function renderizarListaRanking(snap){
+async function renderizarListaRanking(snap){
  const el=document.getElementById("listaRanking");
- const lista=[];
- snap.forEach(doc=>{
-  const d=doc.data()||{};
-  // A coleção pública contém somente os campos necessários ao ranking.
-  const valorDinheiro=Number(d.moedas)||0;
-  const valorRenascimentos=Number(d.renascimentos)||0;
-  lista.push({nome:String(d.nome||("Jogador "+doc.id.slice(0,6))),moedas:Number.isFinite(valorDinheiro)?valorDinheiro:0,renascimentos:Number.isFinite(valorRenascimentos)?valorRenascimentos:0,uid:doc.id,online:d.online===true});
+ const mapa=new Map();
+ // rankingGlobal é a lista pública; jogadores contém o cadastro histórico de toda conta criada.
+ // Unimos os dois formatos para não limitar o ranking a quem entrou recentemente.
+ const docs=Array.isArray(snap)?snap:(snap&&snap.docs?snap.docs:[]);
+ docs.forEach(doc=>{
+  const d=typeof doc.data==="function"?(doc.data()||{}):(doc.data||{});
+  const uid=doc.id||d.uid;if(!uid)return;
+  const dados=d.dados||{};const ranking=d.ranking||{};
+  const nome=String(d.nome||d.displayName||d.emailNome||("Jogador "+String(uid).slice(0,6)));
+  const moedas=Number(d.moedas??ranking.moedas??dados.moedas)||0;
+  const renascimentos=Number(d.renascimentos??ranking.renascimentos??dados.renascimentos)||0;
+  const anterior=mapa.get(uid)||{};
+  mapa.set(uid,{uid,nome:(nome&&nome!=="Jogador "+String(uid).slice(0,6))?nome:(anterior.nome||nome),moedas:Number.isFinite(moedas)?moedas:(anterior.moedas||0),renascimentos:Number.isFinite(renascimentos)?renascimentos:(anterior.renascimentos||0),registroJogador:(d.presenca||typeof d.online==="boolean")?d:anterior.registroJogador||null,online:false});
  });
+ const lista=[...mapa.values()];
+ lista.forEach(j=>{j.online=!!(j.registroJogador&&jogadorEstaOnline(j.registroJogador));});
  lista.sort((a,b)=>{
   const diferenca=rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos;
   return diferenca||a.nome.localeCompare(b.nome,"pt-BR");
@@ -1588,14 +1655,34 @@ function renderizarListaRanking(snap){
   const nome=document.createElement("strong");nome.textContent=j.nome+(usuarioAtual&&j.uid===usuarioAtual.uid?" (Você)":"");nome.appendChild(criarEtiquetaPresenca(j.online));
   const desc=document.createElement("small");
   if(rankingTipo==="dinheiro"){
-   desc.className="valor-dinheiro";
-   desc.textContent="$ "+formatarDinheiro(j.moedas);
-  }else{
-   desc.className="valor-renascimentos";
-   desc.textContent=String(j.renascimentos);
-  }
+   desc.className="valor-dinheiro";desc.textContent="$ "+formatarDinheiro(j.moedas);
+  }else{desc.className="valor-renascimentos";desc.textContent=String(j.renascimentos);}
   info.append(nome,desc);card.append(n,info);el.appendChild(card);
  });
+}
+
+async function sincronizarRankingHistoricoAdmin(){
+ // Somente o administrador pode ler a coleção privada completa de jogadores.
+ // Ele publica apenas nome e estatísticas no rankingGlobal, sem expor inventário ou dados privados.
+ if(!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+ try{
+  const snap=await comTempoLimite(db.collection("jogadores").get(),25000,"recuperar todas as contas já criadas para o ranking");
+  const docs=snap.docs||[];
+  for(let i=0;i<docs.length;i+=400){
+   const lote=db.batch();
+   docs.slice(i,i+400).forEach(doc=>{
+    const d=doc.data()||{},dados=d.dados||{},ranking=d.ranking||{};
+    lote.set(db.collection("rankingGlobal").doc(doc.id),{
+     nome:String(d.nome||("Jogador "+doc.id.slice(0,6))),
+     moedas:Math.max(0,Number(ranking.moedas??dados.moedas)||0),
+     renascimentos:Math.max(0,Number(ranking.renascimentos??dados.renascimentos)||0),
+     presenca:d.presenca||{online:false}
+    },{merge:true});
+   });
+   await lote.commit();
+  }
+  console.info("Ranking histórico sincronizado: "+docs.length+" conta(s).");
+ }catch(error){console.warn("Não foi possível sincronizar todas as contas antigas no ranking:",error);}
 }
 
 function pararRankingAoVivo(){
@@ -1607,51 +1694,35 @@ function pararRankingAoVivo(){
 async function carregarRanking(forcar=false){
  const modal=document.getElementById("rankingModal");
  if(!modal||modal.style.display!=="flex"||rankingBuscaEmAndamento)return;
- const expirou=(Date.now()-rankingUltimaBusca)>=60000;
+ const expirou=(Date.now()-rankingUltimaBusca)>=30000;
  if(!forcar&&rankingUltimoSnapshot&&!expirou){renderizarListaRanking(rankingUltimoSnapshot);return;}
  rankingBuscaEmAndamento=true;
  const el=document.getElementById("listaRanking");
  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Carregando ranking...";}
  try{
-  // A lista antiga era montada somente com rankingGlobal, que não continha
-  // contas antigas. A coleção jogadores é a base completa de contas/progressos.
-  // Mantemos rankingGlobal como complemento para contas já publicadas nela.
-  const resultados=await Promise.allSettled([
-   comTempoLimite(db.collection("jogadores").get(),20000,"buscar todas as contas"),
-   comTempoLimite(db.collection("rankingGlobal").get(),20000,"atualizar ranking")
-  ]);
-  const porUid=new Map();
-  if(resultados[0].status==="fulfilled"){
-   resultados[0].value.forEach(doc=>{
-    const d=doc.data()||{};
-    const r=d.ranking||{};
-    const dados=d.dados||{};
-    const pres=d.presenca||{};
-    porUid.set(doc.id,{id:doc.id,data:()=>({
-     nome:d.nome||d.email||("Jogador "+doc.id.slice(0,6)),
-     moedas:Number(r.moedas??dados.moedas)||0,
-     renascimentos:Number(r.renascimentos??dados.renascimentos)||0,
-     online:pres.online===true && (function(){const t=pres.atualizadoEm;const n=t&&typeof t.toMillis==="function"?t.toMillis():(typeof t==="number"?t:0);return n>0&&Date.now()-n<65000;})()
-    })});
-   });
+  // Busca o índice público sem esperar a sincronização histórica do administrador.
+  const rankingPromise=comTempoLimite(db.collection("rankingGlobal").get(),18000,"ler rankingGlobal");
+  let docs=[];
+  if(usuarioAtual&&usuarioAtual.uid===ADMIN_UID){
+   const [rankingSnap,jogadoresSnap]=await Promise.all([
+    rankingPromise,
+    comTempoLimite(db.collection("jogadores").get(),18000,"ler contas dos jogadores")
+   ]);
+   docs=[...(rankingSnap.docs||[]),...(jogadoresSnap.docs||[])];
+   // A sincronização histórica publica os registros antigos para os outros jogadores,
+   // mas não bloqueia a exibição do ranking nesta tela.
+   sincronizarRankingHistoricoAdmin().catch(e=>console.warn("Sincronização histórica adiada:",e));
+  }else{
+   const rankingSnap=await rankingPromise;
+   docs=rankingSnap.docs||[];
   }
-  if(resultados[1].status==="fulfilled"){
-   resultados[1].value.forEach(doc=>{
-    const d=doc.data()||{};
-    const anterior=porUid.get(doc.id);
-    if(anterior){
-     const a=anterior.data();
-     porUid.set(doc.id,{id:doc.id,data:()=>({...a,nome:a.nome||d.nome,moedas:Math.max(Number(a.moedas)||0,Number(d.moedas)||0),renascimentos:Math.max(Number(a.renascimentos)||0,Number(d.renascimentos)||0),online:d.online===true||a.online===true})});
-    }else porUid.set(doc.id,doc);
-   });
-  }
-  if(resultados[0].status==="rejected"&&resultados[1].status==="rejected")throw resultados[0].reason||resultados[1].reason;
-  rankingUltimoSnapshot=Array.from(porUid.values());
+  rankingUltimoSnapshot=docs;
   rankingUltimaBusca=Date.now();
-  renderizarListaRanking(rankingUltimoSnapshot);
+  await renderizarListaRanking(docs);
  }catch(error){
   console.error("Falha ao atualizar ranking:",error);
-  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent=(error&&error.code==="permission-denied")?"O ranking global está bloqueado pelas regras de leitura do Firestore. Libere a leitura das coleções jogadores e rankingGlobal para contas autenticadas.":"Não foi possível carregar o ranking. Verifique a conexão e tente novamente.";}
+  el.className="novo-vazio";
+  el.textContent=(error&&error.code==="permission-denied")?"O Firestore bloqueou a leitura do ranking. Confira as regras de rankingGlobal.":"Não foi possível carregar o ranking. Toque para tentar novamente.";
  }finally{rankingBuscaEmAndamento=false;}
 }
 
@@ -1799,7 +1870,7 @@ autoClickerProComprado=false;
 autoClickerAtivo=false;
 autoClickerProAtivo=false;
 autoOvoComprado=false;autoOvoAtivo=false;ultimoAutoOvo=Date.now();triploOvoComprado=false;
-sorteOvoNivel=0;precoSorteOvo=200;impulsoPetsNivel=0;precoImpulsoPets=500000;
+sorteOvoNivel=0;precoSorteOvo=200;impulsoPetsNivel=0;precoImpulsoPets=500000;melhoriaInventarioPets=0;melhoriaPetsEquipados=0;
 ultimoAutoClick=Date.now();
 salvar();
 somRaro();
@@ -2036,6 +2107,8 @@ mundoAtual,
 mundosDesbloqueados,
 petsInventario,
 petsEquipados,
+melhoriaInventarioPets,
+melhoriaPetsEquipados,
 ovosAbertos:ovosAbertos
 };
 }
@@ -2100,7 +2173,7 @@ autoClickerAtivo=false;
 autoClickerProAtivo=false;
 autoOvoComprado=false;autoOvoAtivo=false;ultimoAutoOvo=Date.now();triploOvoComprado=false;
 sorteOvoNivel=0;precoSorteOvo=200;impulsoPetsNivel=0;precoImpulsoPets=500000;petsVendaAutomatica=[];
-mundoAtual=0;mundosDesbloqueados=[0];petsInventario=[];petsEquipados=[];ovosAbertos=0;
+mundoAtual=0;mundosDesbloqueados=[0];petsInventario=[];petsEquipados=[];melhoriaInventarioPets=0;melhoriaPetsEquipados=0;ovosAbertos=0;
 
 if(!dados||typeof dados!=="object")return;
 moedas=Math.max(0,Number(dados.moedas)||0);
@@ -2140,8 +2213,10 @@ if(autoClickerAtivo&&autoClickerProAtivo)autoClickerAtivo=false;
 mundoAtual=Math.max(0,Math.min(mundosJogo.length-1,Math.floor(Number(dados.mundoAtual)||0)));
 mundosDesbloqueados=Array.isArray(dados.mundosDesbloqueados)?dados.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
 if(!mundosDesbloqueados.includes(0))mundosDesbloqueados.push(0);
-petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,50).map(p=>{const base=catalogoPets.find(c=>c.nome===p.nome);const voidPet=!!p.void,rainbow=!!p.rainbow&&!voidPet,diamante=!!p.diamante&&!rainbow&&!voidPet,dourado=!!p.dourado||diamante||rainbow||voidPet,nivel=voidPet?4:rainbow?3:diamante?2:dourado?1:0;return {...p,sigla:p.sigla||base.sigla,dourado,diamante,rainbow,void:voidPet,mutacoesEvento:Array.isArray(p.mutacoesEvento)?p.mutacoesEvento.filter(k=>["anjo","hacker","galaxia"].includes(k)):[],mult:Number(p.mult)||multiplicadorNivelPet(base,nivel),emoji:undefined};}):[];
-petsEquipados=Array.isArray(dados.petsEquipados)?dados.petsEquipados.filter(id=>petsInventario.some(p=>p.id===id)).slice(0,3):[];
+melhoriaInventarioPets=Math.max(0,Math.min(6,Math.floor(Number(dados.melhoriaInventarioPets)||0)));
+melhoriaPetsEquipados=Math.max(0,Math.min(3,Math.floor(Number(dados.melhoriaPetsEquipados)||0)));
+petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoPets.some(c=>c.nome===p.nome)).slice(0,limiteInventarioPets()).map(p=>{const base=catalogoPets.find(c=>c.nome===p.nome);const voidPet=!!p.void,rainbow=!!p.rainbow&&!voidPet,diamante=!!p.diamante&&!rainbow&&!voidPet,dourado=!!p.dourado||diamante||rainbow||voidPet,nivel=voidPet?4:rainbow?3:diamante?2:dourado?1:0;const mutacoesEvento=Array.isArray(p.mutacoesEvento)?[...new Set(p.mutacoesEvento.filter(k=>["anjo","hacker","galaxia"].includes(k)))]:[];return {...p,sigla:p.sigla||base.sigla,dourado,diamante,rainbow,void:voidPet,mutacoesEvento,mult:multiplicadorNivelPet(base,nivel)*multiplicadorBonusMutacoes(mutacoesEvento),emoji:undefined};}):[];
+petsEquipados=Array.isArray(dados.petsEquipados)?dados.petsEquipados.filter(id=>petsInventario.some(p=>p.id===id)).slice(0,limitePetsEquipados()):[];
 ovosAbertos=Math.max(0,Math.floor(Number(dados.ovosAbertos)||0));
 atualizarMundosDesbloqueados();
 }
@@ -2153,9 +2228,12 @@ let operacaoManualDeConta=false;
 // Presença online/offline compartilhada pelo Firestore.
 async function atualizarPresenca(online,uidForcado){
 const uid=uidForcado||(usuarioAtual&&usuarioAtual.uid);
-if(!uid)return;
+if(!uid||!db)return;
+const agora=Date.now();
+const marca={online:!!online,heartbeatAt:agora,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
 try{
-await db.collection("jogadores").doc(uid).set({presenca:{online:!!online,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()}},{merge:true});
+ await db.collection("jogadores").doc(uid).set({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm,presenca:marca},{merge:true});
+ await db.collection("rankingGlobal").doc(uid).set({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm},{merge:true});
 }catch(error){console.warn("Não foi possível atualizar a presença:",error);}
 }
 function iniciarPresenca(uid){
@@ -2163,8 +2241,8 @@ if(timerPresenca)clearInterval(timerPresenca);
 ultimaPresencaUid=uid;
 atualizarPresenca(true,uid);
 timerPresenca=setInterval(()=>{
-if(usuarioAtual&&usuarioAtual.uid===uid&&document.visibilityState!=="hidden")atualizarPresenca(true,uid);
-},20000);
+if(usuarioAtual&&usuarioAtual.uid===uid)atualizarPresenca(true,uid);
+},15000);
 }
 function pararPresenca(uid){
 if(timerPresenca){clearInterval(timerPresenca);timerPresenca=null;}
@@ -2172,9 +2250,7 @@ if(uid)atualizarPresenca(false,uid);
 }
 window.addEventListener("pagehide",()=>{if(ultimaPresencaUid)atualizarPresenca(false,ultimaPresencaUid);});
 document.addEventListener("visibilitychange",()=>{
-if(!usuarioAtual)return;
-if(document.visibilityState==="hidden")atualizarPresenca(false,usuarioAtual.uid);
-else atualizarPresenca(true,usuarioAtual.uid);
+if(usuarioAtual&&document.visibilityState!=="hidden")atualizarPresenca(true,usuarioAtual.uid);
 });
 
 function nomeDoAdminAtual(){
@@ -2192,14 +2268,20 @@ dadosCarregados=false;
 usuarioAtual=user;
 ultimoAvisoAdminId="";
 try{
-mensagemDeLogin("Conectado! Consultando seus dados salvos...",false);
+mensagemDeLogin("Conectado! Buscando seu progresso salvo...",false);
 const ref=db.collection("jogadores").doc(user.uid);
-const snap=await comTempoLimite(ref.get(),15000,"consultar os dados da conta");
-// O Firebase usa o e-mail em minúsculas para autenticar, mas o nome público
-// mantém exatamente a capitalização cadastrada. Nome oficial do administrador: Artur.
-const nomeCanonico=user.uid===ADMIN_UID?"Artur":String(nome||user.displayName||user.email.split("@")[0]);
-if(user.displayName!==nomeCanonico){
-try{await comTempoLimite(user.updateProfile({displayName:nomeCanonico}),10000,"atualizar o nome de exibição");}catch(e){console.warn("Não foi possível atualizar displayName:",e);}
+// Fazemos uma única leitura do documento por entrada. A versão anterior
+// consultava o mesmo documento duas vezes e ainda aguardava updateProfile.
+const snap=await comTempoLimite(ref.get(),12000,"consultar os dados da conta");
+const registroInicial=snap.exists?(snap.data()||{}):{};
+// O Firebase autentica e-mails sem diferenciar maiúsculas, mas o nome público
+// continua respeitando exatamente a capitalização originalmente cadastrada.
+const nomeCanonico=user.uid===ADMIN_UID?"Artur":String(registroInicial.nome||user.displayName||nome||user.email.split("@")[0]);
+if(nome&&nomeCanonico!==nome){
+  try{await auth.signOut();}catch(e){}
+  const erroNome=new Error("Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas.");
+  erroNome.code="auth/username-case-mismatch";
+  throw erroNome;
 }
 let dadosConta={};
 let dadosLocais={};
@@ -2211,9 +2293,9 @@ const versaoNuvem=Number(dadosNuvem&&dadosNuvem._saveUpdatedAt)||0;
 // Recupera inventário, pets equipados e preferências de venda mais recentes do aparelho.
 dadosConta=versaoLocal>versaoNuvem?dadosLocais:dadosNuvem;
 ultimoAvisoAdminId="";
-// Corrige também o nome antigo salvo no registro do jogador.
-if(String((snap.data()||{}).nome||"")!==nomeCanonico){
-await comTempoLimite(ref.set({nome:nomeCanonico},{merge:true}),10000,"corrigir o nome salvo");
+// Corrige registros antigos sem bloquear a abertura do jogo.
+if(!registroInicial.nome){
+  ref.set({nome:nomeCanonico},{merge:true}).catch(e=>console.warn("Não foi possível atualizar o nome público:",e));
 }
 }else{
 try{dadosConta=JSON.parse(localStorage.getItem("mining_game_save_"+user.uid)||"{}");}catch(e){dadosConta={};}
@@ -2229,7 +2311,7 @@ if(masterGain&&audio){try{masterGain.gain.cancelScheduledValues(audio.currentTim
 try{localStorage.setItem("mining_game_save_"+user.uid,JSON.stringify(dadosConta));}catch(e){}
 carregandoDados=false;
 if(snap.exists&&Number(dadosConta&&dadosConta._saveUpdatedAt)>Number(((snap.data()||{}).dados||{})._saveUpdatedAt||0)){
-try{await comTempoLimite(ref.set({dados:dadosConta,ranking:{moedas:Number(dadosConta.moedas)||0,renascimentos:Number(dadosConta.renascimentos)||0},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),10000,"recuperar o salvamento mais recente");}catch(e){console.warn("Não foi possível sincronizar imediatamente o salvamento recuperado:",e);}
+ref.set({dados:dadosConta,ranking:{moedas:Number(dadosConta.moedas)||0,renascimentos:Number(dadosConta.renascimentos)||0},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(e=>console.warn("Não foi possível sincronizar imediatamente o salvamento recuperado:",e));
 }
 adminDesbloqueado=(user.uid===ADMIN_UID);
 codigoAdminSessao="";
@@ -2237,7 +2319,12 @@ dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
 iniciarMonitoramentoEventoGlobal();
 iniciarPresenca(user.uid);
-await publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true);
+// O ranking é complementar: nunca pode bloquear a entrada no jogo.
+// As gravações continuam acontecendo em segundo plano, sem prender a tela de login.
+publicarResumoRanking(user.uid,nomeCanonico,dadosConta,true).catch(error=>console.warn("Falha ao publicar ranking após login:",error));
+if(user.uid===ADMIN_UID){
+  sincronizarRankingHistoricoAdmin().catch(error=>console.warn("Falha ao sincronizar ranking histórico:",error));
+}
 loginModal.style.display="none";
 mensagemLogin.textContent="";
 senhaLogin.value="";
@@ -2277,15 +2364,10 @@ await comTempoLimite(auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL),1
 const cred=await comTempoLimite(auth.signInWithEmailAndPassword(usuarioEmail(nome),senha),20000,"entrar na conta");
 // O Firebase trata o e-mail sem diferenciar maiúsculas/minúsculas.
 // Esta conferência adicional mantém o nome de usuário realmente exato.
-const registroSnap=await comTempoLimite(db.collection("jogadores").doc(cred.user.uid).get(),15000,"conferir o nome exato da conta");
-const registroConta=registroSnap.exists?(registroSnap.data()||{}):{};
-const nomeCadastrado=cred.user.uid===ADMIN_UID?"Artur":String(registroConta.nome||cred.user.displayName||"");
-if(nomeCadastrado!==nome){
-await auth.signOut();
-throw {code:"auth/username-case-mismatch",message:"Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas."};
-}
-mensagemDeLogin("ETAPA 2/2: conta reconhecida; carregando progresso...",false);
-const ok=await entrarNoJogo(cred.user,nomeCadastrado);
+// A validação do nome e a leitura dos dados são feitas juntas em entrarNoJogo.
+// Isso evita duas viagens de rede seguidas ao Firestore em todo login.
+mensagemDeLogin("Conta reconhecida! Abrindo seu jogo...",false);
+const ok=await entrarNoJogo(cred.user,nome);
 if(!ok&&auth.currentUser)await auth.signOut();
 }catch(error){
 console.error("Erro no login:",error);
@@ -2915,7 +2997,11 @@ const carregando=document.createElement("option");
 carregando.value="";carregando.textContent="Carregando jogadores...";
 select.appendChild(carregando);
 try{
-const snapshot=await comTempoLimite(db.collection("jogadores").get(),20000,"listar jogadores");
+// Presença é independente da listagem: nunca espere a gravação de heartbeat
+// para buscar os jogadores. Uma falha nas gravações de ON/OFF não pode travar
+// o seletor administrativo.
+atualizarPresenca(true,usuarioAtual.uid).catch(error=>console.warn("Falha ao atualizar presença antes da lista:",error));
+const snapshot=await comTempoLimite(db.collection("jogadores").get(),15000,"listar jogadores");
 jogadoresAdmin=snapshot.docs.map(doc=>{
 const registro=doc.data()||{};
 const online=jogadorEstaOnline(registro);
@@ -3009,7 +3095,7 @@ async function excluirPetsRemotosSelecionados(){
   let dadosAtualizados=null;
   await db.runTransaction(async tx=>{
    const snap=await tx.get(ref);if(!snap.exists)throw new Error("Jogador não encontrado.");
-   const registro=snap.data()||{},dados=Object.assign({},registro.dados||{});
+   const registro=snap.data()||{},dados=Object.assign({},dadosOriginais);
    const inventario=Array.isArray(dados.petsInventario)?dados.petsInventario:[];
    const idsValidos=new Set(ids);
    dados.petsInventario=inventario.filter(p=>!p||!idsValidos.has(p.id));
@@ -3087,6 +3173,7 @@ const ref=db.collection("jogadores").doc(uid);
 const snap=await comTempoLimite(ref.get(),15000,"consultar jogador selecionado");
 if(!snap.exists)throw new Error("Essa conta não existe mais.");
 const registro=snap.data()||{};
+const dadosOriginais=registro.dados&&typeof registro.dados==="object"?JSON.parse(JSON.stringify(registro.dados)):{};
 const dados=Object.assign({
 moedas:0,renascimentos:0,picaretasCompradas:[0],mineriosComprados:[0],picaretaAtual:0,minerioAtual:0,
 volumeGeral:1,codigosUsados:[],multiplicadorCompras:0,precoMultiplicador:100,
@@ -3124,7 +3211,7 @@ if(acao==="resetAll"){
  dados.autoOvoComprado=false;dados.autoOvoAtivo=false;dados.triploOvoComprado=false;
  dados.sorteOvoNivel=0;dados.precoSorteOvo=200;dados.impulsoPetsNivel=0;dados.precoImpulsoPets=500000;dados.petsVendaAutomatica=[];
  dados.mundoAtual=0;dados.mundosDesbloqueados=[0];
- dados.petsInventario=[];dados.petsEquipados=[];dados.ovosAbertos=0;
+ dados.petsInventario=[];dados.petsEquipados=[];dados.melhoriaInventarioPets=0;dados.melhoriaPetsEquipados=0;dados.ovosAbertos=0;
  dados.codigosUsados=[];
 }
 if(acao==="givePickaxe"){
@@ -3240,7 +3327,18 @@ if(acao==="giveWorld"||acao==="removeWorld"){
   tx.set(ref,{dados:dadosAtuais,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
  }),20000,"salvar mundo do jogador");
 }else{
- await comTempoLimite(ref.set({dados,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"salvar alteração do jogador");
+ // Atualiza somente os campos que mudaram. Isso evita reenviar inventários
+ // grandes e reduz conflitos com salvamentos simultâneos do próprio jogador.
+ const atualizacao={avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
+ const chaves=new Set([...Object.keys(dadosOriginais),...Object.keys(dados)]);
+ for(const chave of chaves){
+  const antes=JSON.stringify(dadosOriginais[chave]);
+  const depois=JSON.stringify(dados[chave]);
+  if(antes!==depois){
+   atualizacao["dados."+chave]=dados[chave]===undefined?firebase.firestore.FieldValue.delete():dados[chave];
+  }
+ }
+ await comTempoLimite(ref.update(atualizacao),20000,"salvar alteração do jogador");
 }
 await publicarResumoRanking(uid,nome,dados,jogadorEstaOnline(registro));
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
@@ -3309,7 +3407,8 @@ function atualizarBadgeEventoSorte(){
 }
 function atualizarBadgesMutacao(){
  const cfg={anjo:{id:"eventoAnjoBadge",tempo:"eventoAnjoTempo",rotulo:"ANJO"},hacker:{id:"eventoHackerBadge",tempo:"eventoHackerTempo",rotulo:"HACKER"},galaxia:{id:"eventoGalaxiaBadge",tempo:"eventoGalaxiaTempo",rotulo:"GALÁXIA"}};
- const ativos=Object.keys(cfg).filter(k=>eventosMutacao[k].ativo&&Number(eventosMutacao[k].expiraEm)>Date.now()).sort((a,b)=>(Number(eventosMutacao[a].ativadoEm)||0)-(Number(eventosMutacao[b].ativadoEm)||0)||a.localeCompare(b));
+ const momentoAtivacao=k=>{const ev=eventosMutacao[k]||{};const direto=Number(ev.ativadoEm)||0;if(direto>0)return direto;const doId=Number((String(ev.id||"").match(/-(\d{10,})-/)||[])[1])||0;if(doId>0)return doId;return Math.max(0,(Number(ev.expiraEm)||0)-(Number(ev.duracaoMinutos)||0)*60000);};
+ const ativos=Object.keys(cfg).filter(k=>eventosMutacao[k].ativo&&Number(eventosMutacao[k].expiraEm)>Date.now()).sort((a,b)=>momentoAtivacao(a)-momentoAtivacao(b)||a.localeCompare(b));
  Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(ativo){const pos=ativos.indexOf(k);badge.style.top=(116+Math.max(0,pos)*52)+"px";const seg=Math.ceil(restante/1000),mm=Math.floor(seg/60),ss=seg%60;document.getElementById(c.tempo).textContent=c.rotulo+" "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");}});
 }
 function iniciarMonitoramentoEventoSorte(){
@@ -3342,6 +3441,24 @@ async function encerrarEventoSorteGlobal(){
  catch(error){admResultado("Não foi possível encerrar o evento de sorte: "+(error.message||"erro no Firestore"),"erro");}
 }
 
+// Ativa todos os cinco eventos com um único lote no Firestore.
+async function ativarTodosEventos(){
+ if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+ const dinheiro=Number(admEventoMultiplicador.value);
+ const sorte=Number(admEventoSorteMultiplicador.value);
+ const minutos=Number(document.getElementById("admTodosEventosMinutos").value);
+ if(!Number.isInteger(dinheiro)||dinheiro<2||dinheiro>1000000||!Number.isInteger(sorte)||sorte<2||sorte>1000000||!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("Confira os multiplicadores de dinheiro e sorte e escolha um tempo entre 1 e 10.080 minutos.","erro");return;}
+ const agora=Date.now(),admin=nomeDoAdminAtual(),batch=db.batch();
+ const adicionar=(id,dados)=>batch.set(db.collection("eventos").doc(id),dados,{merge:true});
+ adicionar("multiplicadorGlobal",{ativo:true,multiplicador:dinheiro,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(agora+minutos*60000)),duracaoMinutos:minutos,admin,id:"todos-dinheiro-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+ adicionar("sorteGlobal",{ativo:true,multiplicador:sorte,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(agora+minutos*60000)),duracaoMinutos:minutos,admin,id:"todos-sorte-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+ for(const chave of Object.keys(eventosMutacao)){
+  adicionar("mutacao_"+chave,{ativo:true,mutacao:chave,ativadoEm:agora,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(agora+minutos*60000)),duracaoMinutos:minutos,admin,id:"mutacao-"+chave+"-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+ }
+ try{await comTempoLimite(batch.commit(),25000,"ativar todos os eventos");admResultado("Todos os eventos foram ativados com sucesso!","ok");atualizarStatusEventoAdmin();atualizarStatusMutacoesAdmin();}
+ catch(error){console.error("Erro ao ativar todos os eventos:",error);admResultado("Não foi possível ativar todos os eventos: "+(error.message||"erro no Firestore"),"erro");}
+}
+
 // Eventos globais de mutação: cada um usa seu próprio documento no Firestore.
 function atualizarStatusMutacoesAdmin(){
  Object.keys(eventosMutacao).forEach(chave=>{const el=document.getElementById("admMutacao"+chave[0].toUpperCase()+chave.slice(1)+"Status");if(!el)return;const ev=eventosMutacao[chave];const ativo=ev.ativo&&ev.expiraEm>Date.now();const falta=ativo?Math.max(1,Math.ceil((ev.expiraEm-Date.now())/60000)):0;el.textContent=ativo?"Evento "+nomesMutacaoEvento[chave]+" ativo. Restam aproximadamente "+falta+" minuto(s).":"Nenhum evento ativo.";});
@@ -3351,7 +3468,7 @@ function iniciarMonitoramentoMutacoes(){
   db.collection("eventos").doc("mutacao_"+chave).onSnapshot(snap=>{
    const dados=snap.exists?(snap.data()||{}):{};const exp=dados.expiraEm&&typeof dados.expiraEm.toMillis==="function"?dados.expiraEm.toMillis():Number(dados.expiraEm)||0;const ativo=dados.ativo===true&&exp>Date.now();const mudou=ativo&&(!eventosMutacao[chave].ativo||eventosMutacao[chave].id!==String(dados.id||""));
    const idEvento=String(dados.id||"");const ativadoEm=Number(dados.ativadoEm)||Number((idEvento.match(/-(\d{10,})-/)||[])[1])||0;
-   eventosMutacao[chave]={ativo,expiraEm:exp,id:idEvento,ativadoEm};
+   eventosMutacao[chave]={ativo,expiraEm:exp,id:idEvento,ativadoEm,duracaoMinutos:Number(dados.duracaoMinutos)||0};
    if(mudou)mostrarAviso("EVENTO "+nomesMutacaoEvento[chave].toUpperCase()+" ATIVADO! Todos os pets dos ovos receberão essa mutação.","ok");
    atualizarStatusMutacoesAdmin();atualizarBadgesMutacao();
   },err=>console.error("Erro ao acompanhar evento de mutação "+chave,err));
@@ -3376,6 +3493,7 @@ document.getElementById("admEventoSorteEncerrar").addEventListener("click",encer
 document.getElementById("admEventoSortePresets").addEventListener("click",e=>{const b=e.target.closest("button[data-sorte-mult]");if(b)admEventoSorteMultiplicador.value=b.dataset.sorteMult;});
 document.getElementById("admEventoAtivar").addEventListener("click",ativarEventoGlobal);
 document.getElementById("admEventoEncerrar").addEventListener("click",encerrarEventoGlobal);
+document.getElementById("admAtivarTodosEventos").addEventListener("click",ativarTodosEventos);
 document.getElementById("admEventoPresets").addEventListener("click",e=>{const b=e.target.closest("button[data-evento-mult]");if(b)admEventoMultiplicador.value=b.dataset.eventoMult;});
 
 // Transforma selects do painel em menus suspensos internos, sem abrir a interface nativa do celular.
@@ -3931,22 +4049,45 @@ categoria==="picaretas"
 
 // PAINEL UPGRADES
 
-function desenharMelhorias(){
- retangulo(25,25,450,270,"#171722",12);
- const fundo=ctx.createLinearGradient(25,25,475,295);fundo.addColorStop(0,"#263d55");fundo.addColorStop(1,"#171722");
- retangulo(27,27,446,266,fundo,10);
- ctx.strokeStyle="#64b4ff";ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(25,25,450,270,12);ctx.stroke();
- texto("UPGRADES",45,53,22,"#64b4ff");retangulo(435,32,28,28,"#b42828",6);texto("X",449,53,19,"#fff","center");
- const linhas=[
-  {y:59,t:"MELHORIA DE DINHEIRO",d:"Nível "+multiplicadorCompras+" | Bônus "+multiplicadorMelhoria().toFixed(1)+"x",b:"$ "+formatarDinheiro(precoMultiplicador),c:moedas>=precoMultiplicador?"#218b4a":"#754044"},
-  {y:92,t:"AUTO CLICKER",d:autoClickerComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia 5 cliques por segundo",b:autoClickerComprado?"MAX":"$ 100K",c:autoClickerComprado?"#777777":(moedas>=100000?"#218b4a":"#754044"),max:autoClickerComprado},
-  {y:125,t:"AUTO CLICKER PRO",d:autoClickerProComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia 25 cliques por segundo",b:autoClickerProComprado?"MAX":"$ 10M",c:autoClickerProComprado?"#777777":(moedas>=10000000?"#218b4a":"#754044"),max:autoClickerProComprado},
-  {y:158,t:"TRIPLO OVO",d:triploOvoComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia abertura de 3 ovos por vez",b:triploOvoComprado?"MAX":"$ 25M",c:triploOvoComprado?"#777777":(moedas>=CUSTO_TRIPLO_OVO?"#218b4a":"#754044"),max:triploOvoComprado},
-  {y:191,t:"SORTE DE OVO",d:sorteOvoNivel>=20?"NÍVEL MÁXIMO ALCANÇADO":"Nível "+sorteOvoNivel+" | Mais chance de raridades altas",b:sorteOvoNivel>=20?"MAX":"$ "+formatarDinheiro(precoSorteOvo),c:sorteOvoNivel>=20?"#777777":(moedas>=precoSorteOvo?"#218b4a":"#754044"),max:sorteOvoNivel>=20},
-  {y:224,t:"IMPULSO DE PETS",d:impulsoPetsNivel>=20?"NÍVEL MÁXIMO ALCANÇADO":"Nível "+impulsoPetsNivel+" | +"+(impulsoPetsNivel*15)+"% no bônus dos pets",b:impulsoPetsNivel>=20?"MAX":"$ "+formatarDinheiro(precoImpulsoPets),c:impulsoPetsNivel>=20?"#777777":(moedas>=precoImpulsoPets?"#218b4a":"#754044"),max:impulsoPetsNivel>=20}
+function obterLinhasMelhorias(){
+ const ci=CUSTOS_INVENTARIO_PETS[melhoriaInventarioPets],ce=CUSTOS_EQUIPAR_PETS[melhoriaPetsEquipados];
+ return [
+  {id:"multiplicador",t:"MELHORIA DE DINHEIRO",d:"Nível "+multiplicadorCompras+" | Bônus "+multiplicadorMelhoria().toFixed(1)+"x",b:"$ "+formatarDinheiro(precoMultiplicador),c:moedas>=precoMultiplicador?"#218b4a":"#754044"},
+  {id:"auto",t:"AUTO CLICKER",d:autoClickerComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia 5 cliques por segundo",b:autoClickerComprado?"MAX":"$ 100K",c:autoClickerComprado?"#777777":(moedas>=100000?"#218b4a":"#754044"),max:autoClickerComprado},
+  {id:"autopro",t:"AUTO CLICKER PRO",d:autoClickerProComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia 25 cliques por segundo",b:autoClickerProComprado?"MAX":"$ 10M",c:autoClickerProComprado?"#777777":(moedas>=10000000?"#218b4a":"#754044"),max:autoClickerProComprado},
+  {id:"triplo",t:"TRIPLO OVO",d:triploOvoComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia abertura de 3 ovos por vez",b:triploOvoComprado?"MAX":"$ 25M",c:triploOvoComprado?"#777777":(moedas>=CUSTO_TRIPLO_OVO?"#218b4a":"#754044"),max:triploOvoComprado},
+  {id:"sorte",t:"SORTE DE OVO",d:sorteOvoNivel>=20?"NÍVEL MÁXIMO ALCANÇADO":"Nível "+sorteOvoNivel+" | Mais chance de raridades altas",b:sorteOvoNivel>=20?"MAX":"$ "+formatarDinheiro(precoSorteOvo),c:sorteOvoNivel>=20?"#777777":(moedas>=precoSorteOvo?"#218b4a":"#754044"),max:sorteOvoNivel>=20},
+  {id:"impulso",t:"IMPULSO DE PETS",d:impulsoPetsNivel>=20?"NÍVEL MÁXIMO ALCANÇADO":"Nível "+impulsoPetsNivel+" | +"+(impulsoPetsNivel*15)+"% no bônus dos pets",b:impulsoPetsNivel>=20?"MAX":"$ "+formatarDinheiro(precoImpulsoPets),c:impulsoPetsNivel>=20?"#777777":(moedas>=precoImpulsoPets?"#218b4a":"#754044"),max:impulsoPetsNivel>=20},
+  {id:"inventario",t:"INVENTÁRIO DE PETS",d:"ATUAL: "+limiteInventarioPets()+" | PRÓXIMO: "+(melhoriaInventarioPets>=6?"200 (MÁX.)":limiteInventarioPets()+25),b:melhoriaInventarioPets>=6?"MAX":"$ "+formatarDinheiro(ci),c:melhoriaInventarioPets>=6?"#777777":(moedas>=ci?"#218b4a":"#754044"),max:melhoriaInventarioPets>=6},
+  {id:"inventario2",t:"MAIS ESPAÇO NO INVENTÁRIO",d:"+25 vagas por melhoria | máximo: 200 pets",b:melhoriaInventarioPets>=6?"MAX":"NÍVEL "+(melhoriaInventarioPets+1)+"/6",c:melhoriaInventarioPets>=6?"#777777":"#754044",max:melhoriaInventarioPets>=6},
+  {id:"equipar",t:"PETS EQUIPADOS",d:"ATUAL: "+limitePetsEquipados()+" | PRÓXIMO: "+(melhoriaPetsEquipados>=3?"6 (MÁX.)":limitePetsEquipados()+1),b:melhoriaPetsEquipados>=3?"MAX":"$ "+formatarDinheiro(ce),c:melhoriaPetsEquipados>=3?"#777777":(moedas>=ce?"#218b4a":"#754044"),max:melhoriaPetsEquipados>=3},
+  {id:"equipar2",t:"MAIS PETS EQUIPADOS",d:"+1 vaga por melhoria | máximo: 6 pets",b:melhoriaPetsEquipados>=3?"MAX":"NÍVEL "+(melhoriaPetsEquipados+1)+"/3",c:melhoriaPetsEquipados>=3?"#777777":"#754044",max:melhoriaPetsEquipados>=3},
+  {id:"especial",t:"CUSTO ALTO — MELHORIA RARA",d:"Esses bônus aumentam muito seu poder.",b:"ESPECIAL",c:"#754044",max:true},
+  {id:"limite",t:"LIMITE FINAL",d:"200 no inventário e 6 equipados.",b:"MÁXIMO",c:"#777777",max:true}
  ];
- linhas.forEach((l,i)=>{retangulo(38,l.y,424,29,"#34394e",6);texto(l.t,48,l.y+12,10.5,i===5?"#ffe08a":(i===6?"#a8efb5":"#ffffff"));texto(l.d,48,l.y+24,8.2,l.max?"#a0a0a0":"#bdc9da");retangulo(357,l.y+3,96,23,l.c,6);texto(l.b,405,l.y+19,9.5,l.max?"#d0d0d0":"#fff","center");});
 }
+function desenharMelhorias(){
+ retangulo(15,5,470,290,"#171722",12);
+ const fundo=ctx.createLinearGradient(15,5,485,295);fundo.addColorStop(0,"#263d55");fundo.addColorStop(1,"#171722");retangulo(17,7,466,286,fundo,10);
+ ctx.strokeStyle="#64b4ff";ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(15,5,470,290,12);ctx.stroke();
+ texto("UPGRADES",34,35,22,"#64b4ff");
+ retangulo(435,15,34,32,"#b42828",6);texto("X",452,38,21,"#fff","center");
+ const linhas=obterLinhasMelhorias(),maxScroll=Math.max(0,linhas.length*ALTURA_LINHA_MELHORIA-ALTURA_LISTA_MELHORIAS);
+ scrollMelhorias=Math.max(0,Math.min(maxScroll,scrollMelhorias));
+ ctx.save();ctx.beginPath();ctx.rect(25,TOPO_LISTA_MELHORIAS,450,ALTURA_LISTA_MELHORIAS);ctx.clip();
+ linhas.forEach((l,i)=>{const y=TOPO_LISTA_MELHORIAS+i*ALTURA_LINHA_MELHORIA-scrollMelhorias;
+  retangulo(29,y+2,442,38,"#34394e",6);texto(l.t,40,y+16,12,l.id==="inventario"||l.id==="equipar"?"#ffe08a":"#ffffff");texto(l.d,40,y+31,10,l.max?"#a0a0a0":"#bdc9da");retangulo(365,y+7,96,27,l.c,5);texto(l.b,413,y+25,10,l.max?"#d0d0d0":"#fff","center");
+ });ctx.restore();
+ retangulo(477,TOPO_LISTA_MELHORIAS,4,ALTURA_LISTA_MELHORIAS,"#414150",2);
+ const altura=Math.max(28,ALTURA_LISTA_MELHORIAS*ALTURA_LISTA_MELHORIAS/(linhas.length*ALTURA_LINHA_MELHORIA));
+ retangulo(477,TOPO_LISTA_MELHORIAS+(ALTURA_LISTA_MELHORIAS-altura)*(maxScroll?scrollMelhorias/maxScroll:0),4,altura,"#64b4ff",2);
+ texto("ROLE, USE AS SETAS OU ARRASTE PARA VER TODAS AS MELHORIAS",250,282,9,"#a9bed8","center");
+}
+function comprarMelhoriaPorIndice(indice){
+ const ids=obterLinhasMelhorias().map(l=>l.id),id=ids[indice];
+ if(id==="multiplicador")comprarMultiplicador();else if(id==="auto")comprarAutoClicker();else if(id==="autopro")comprarAutoClickerPro();else if(id==="triplo")comprarTriploOvo();else if(id==="sorte")comprarSorteOvo();else if(id==="impulso")comprarImpulsoPets();else if(id==="inventario"||id==="inventario2")comprarEspacoInventarioPets();else if(id==="equipar"||id==="equipar2")comprarEspacoPetsEquipados();else if(id==="especial"||id==="limite")mostrarAviso("Esta é uma informação sobre os limites das melhorias.","info");
+}
+
 function comprarTriploOvo(){
  if(triploOvoComprado){mostrarAviso("O upgrade TRIPLO OVO já está no máximo.","info");return;}
  if(moedas<CUSTO_TRIPLO_OVO){mostrarAviso("Você precisa de $ 25M para desbloquear o TRIPLO OVO.","erro");return;}
@@ -3962,6 +4103,21 @@ function comprarImpulsoPets(){
  if(moedas<precoImpulsoPets){mostrarAviso("Saldo insuficiente para melhorar o impulso de pets.","erro");return;}
  moedas-=precoImpulsoPets;impulsoPetsNivel++;precoImpulsoPets*=2;salvar();renderizarResumoPets();somRaro();mostrarAviso("Impulso de pets aumentado! Bônus adicional: +"+(impulsoPetsNivel*15)+"%.","ok");
 }
+const CUSTOS_INVENTARIO_PETS=[2000000,8000000,25000000,75000000,200000000,500000000];
+const CUSTOS_EQUIPAR_PETS=[15000000,75000000,300000000];
+function comprarEspacoInventarioPets(){
+ if(melhoriaInventarioPets>=6){mostrarAviso("O inventário já está no máximo: 200 pets.","info");return;}
+ const custo=CUSTOS_INVENTARIO_PETS[melhoriaInventarioPets];
+ if(moedas<custo){mostrarAviso("Você precisa de $ "+formatarDinheiro(custo)+" para aumentar o inventário para "+(limiteInventarioPets()+25)+" pets.","erro");return;}
+ moedas-=custo;melhoriaInventarioPets++;salvar();renderizarResumoPets();somRaro();mostrarAviso("Inventário aumentado! Novo limite: "+limiteInventarioPets()+" pets.","ok");
+}
+function comprarEspacoPetsEquipados(){
+ if(melhoriaPetsEquipados>=3){mostrarAviso("Você já atingiu o máximo de 6 pets equipados.","info");return;}
+ const custo=CUSTOS_EQUIPAR_PETS[melhoriaPetsEquipados];
+ if(moedas<custo){mostrarAviso("Você precisa de $ "+formatarDinheiro(custo)+" para liberar o espaço de número "+(limitePetsEquipados()+1)+".","erro");return;}
+ moedas-=custo;melhoriaPetsEquipados++;salvar();renderizarResumoPets();somRaro();mostrarAviso("Melhoria comprada! Agora você pode equipar até "+limitePetsEquipados()+" pets.","ok");
+}
+function alternarPaginaMelhorias(){paginaMelhorias=paginaMelhorias?0:1;somClique();}
 function comprarOuAlternarAutoOvo(){
  if(!autoOvoComprado){if(moedas<5000000){mostrarAviso("Você precisa de $ 5M para desbloquear ovos automáticos.","erro");return;}moedas-=5000000;autoOvoComprado=true;autoOvoAtivo=false;mostrarAviso("Ovos automáticos desbloqueados! Toque novamente para ativar.","ok");}
  else{autoOvoAtivo=!autoOvoAtivo;ultimoAutoOvo=Date.now();mostrarAviso(autoOvoAtivo?"Abertura automática de ovos ativada.":"Abertura automática de ovos desativada.","info");}
@@ -4301,22 +4457,17 @@ return;
 
 if(melhoriasAbertas){
 
-if(p.x>=435&&p.x<=463&&p.y>=40&&p.y<=68){
+if(p.x>=435&&p.x<=463&&p.y>=18&&p.y<=46){
 melhoriasAbertas=false;
 somFecharLoja();
 return;
 }
 
-// Sete melhorias em linhas compactas.
-if(p.x>=355&&p.x<=455){
- if(p.y>=62&&p.y<=88){comprarMultiplicador();return;}
- if(p.y>=95&&p.y<=121){comprarAutoClicker();return;}
- if(p.y>=128&&p.y<=154){comprarAutoClickerPro();return;}
- if(p.y>=161&&p.y<=187){comprarTriploOvo();return;}
- if(p.y>=194&&p.y<=220){comprarSorteOvo();return;}
- if(p.y>=227&&p.y<=253){comprarImpulsoPets();return;}
+// Lista única: todas as melhorias ficam no mesmo painel e podem ser roladas.
+if(p.y>=TOPO_LISTA_MELHORIAS&&p.y<=TOPO_LISTA_MELHORIAS+ALTURA_LISTA_MELHORIAS){
+ if(p.x>=350&&p.x<=465){const indice=Math.floor((p.y-TOPO_LISTA_MELHORIAS+scrollMelhorias)/ALTURA_LINHA_MELHORIA);comprarMelhoriaPorIndice(indice);return;}
+ arrastandoMelhorias=true;inicioYMelhorias=p.y;scrollInicialMelhorias=scrollMelhorias;canvas.setPointerCapture(evento.pointerId);return;
 }
-
 return;
 }
 
@@ -4400,6 +4551,8 @@ salvar();
 return;
 }
 
+if(arrastandoMelhorias){const p=posicao(evento);scrollMelhorias=Math.max(0,Math.min(Math.max(0,obterLinhasMelhorias().length*ALTURA_LINHA_MELHORIA-ALTURA_LISTA_MELHORIAS),scrollInicialMelhorias+(inicioYMelhorias-p.y)*1.25));return;}
+
 if(!arrastando)return;
 
 const p=posicao(evento);
@@ -4416,9 +4569,18 @@ Math.min(scrollInicial+Math.round(movimento/55),total-3)
 
 });
 
+// Rolagem por mouse/trackpad na lista de upgrades.
+canvas.addEventListener("wheel",evento=>{
+ if(!melhoriasAbertas)return;const r=canvas.getBoundingClientRect();const x=(evento.clientX-r.left)*500/r.width,y=(evento.clientY-r.top)*300/r.height;
+ if(x>=15&&x<=485&&y>=TOPO_LISTA_MELHORIAS&&y<=TOPO_LISTA_MELHORIAS+ALTURA_LISTA_MELHORIAS){evento.preventDefault();const max=Math.max(0,obterLinhasMelhorias().length*ALTURA_LINHA_MELHORIA-ALTURA_LISTA_MELHORIAS);scrollMelhorias=Math.max(0,Math.min(max,scrollMelhorias+Math.sign(evento.deltaY)*ALTURA_LINHA_MELHORIA));}
+},{passive:false});
+window.addEventListener("keydown",evento=>{if(!melhoriasAbertas)return;const max=Math.max(0,obterLinhasMelhorias().length*ALTURA_LINHA_MELHORIA-ALTURA_LISTA_MELHORIAS);if(evento.key==="ArrowDown"){scrollMelhorias=Math.min(max,scrollMelhorias+ALTURA_LINHA_MELHORIA);evento.preventDefault();}else if(evento.key==="ArrowUp"){scrollMelhorias=Math.max(0,scrollMelhorias-ALTURA_LINHA_MELHORIA);evento.preventDefault();}});
+
 // SOLTAR
 
 canvas.addEventListener("pointerup",evento=>{
+
+if(arrastandoMelhorias){arrastandoMelhorias=false;return;}
 
 if(volumeArrastando){
 volumeArrastando=false;
@@ -4442,6 +4604,7 @@ arrastando=false;
 
 canvas.addEventListener("pointercancel",()=>{
 arrastando=false;
+arrastandoMelhorias=false;
 volumeArrastando=false;
 });
 
@@ -4510,7 +4673,7 @@ somClique();
  document.querySelectorAll("[data-fechar-novo]").forEach(b=>b.addEventListener("click",fecharNovosModais));
  ["mundosModal","ovosPetsModal","inventarioPetsModal","rankingModal"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target.id===id)fecharNovosModais();}));
  document.getElementById("venderPetsModal").addEventListener("click",e=>{if(e.target.id==="venderPetsModal")document.getElementById("venderPetsModal").style.display="none";});
- document.getElementById("abrirVendaPets").addEventListener("click",()=>{document.querySelectorAll("[data-vender-raridade]").forEach(x=>x.checked=false);document.getElementById("venderPetsModal").style.display="flex";});
+ document.getElementById("abrirVendaPets").addEventListener("click",()=>{modoVendaPets="raridade";petsMarcadosVenda.clear();renderizarModoVendaPets();document.getElementById("venderPetsModal").style.display="flex";});
  document.getElementById("fecharVendaPets").addEventListener("click",()=>{document.getElementById("venderPetsModal").style.display="none";});
  document.getElementById("comprarOvoPet").addEventListener("click",()=>abrirOvoPet(false));
  document.getElementById("abrirTresOvosPet").addEventListener("click",abrirTresOvosPet);
@@ -4521,6 +4684,7 @@ somClique();
  document.getElementById("fundirTodosDourados").addEventListener("click",fundirTodosPetsDourados);
  document.getElementById("desequiparPets").addEventListener("click",()=>{petsEquipados=[];salvar();renderizarPets();mostrarAviso("Todos os pets foram desequipados.","ok");});
  document.getElementById("venderPetsSelecionados").addEventListener("click",venderPetsSelecionados);
+document.querySelectorAll("[data-modo-venda]").forEach(b=>b.addEventListener("click",()=>{modoVendaPets=b.dataset.modoVenda;petsMarcadosVenda.clear();renderizarModoVendaPets();}));
  document.getElementById("rankDinheiro").addEventListener("click",()=>{rankingTipo="dinheiro";document.getElementById("rankDinheiro").classList.add("ativa");document.getElementById("rankRenascimentos").classList.remove("ativa");if(rankingUltimoSnapshot)renderizarListaRanking(rankingUltimoSnapshot);else carregarRanking();});
  document.getElementById("rankRenascimentos").addEventListener("click",()=>{rankingTipo="renascimentos";document.getElementById("rankRenascimentos").classList.add("ativa");document.getElementById("rankDinheiro").classList.remove("ativa");if(rankingUltimoSnapshot)renderizarListaRanking(rankingUltimoSnapshot);else carregarRanking();});
  setInterval(atualizarContagemRanking,1000);
