@@ -404,12 +404,12 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 /* AJUSTES VISUAIS: etiquetas quadradas de mutação e eventos */
 .pet-slot{position:relative;overflow:visible}
 .pet-mutacao-quadradinhos{position:absolute;top:3px;right:3px;z-index:3;display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:calc(100% - 6px);pointer-events:none}
-.pet-mutacao-quadrado{display:inline-flex;align-items:center;justify-content:center;min-height:15px;padding:2px 4px;border:1px solid;border-radius:2px;font-size:7px;line-height:1;font-weight:1000;letter-spacing:.25px;white-space:nowrap;box-shadow:0 1px 3px #000b}
+.pet-mutacao-quadrado{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:16px;padding:1px 4px;border:1px solid;border-radius:2px;font-size:7px;line-height:1;font-weight:700;letter-spacing:.15px;white-space:nowrap;box-shadow:0 1px 3px #000b}
 .pet-slot .pet-iniciais{margin-top:5px}
 #eventoGlobalBadge{background:linear-gradient(145deg,#168c43,#075326)!important;border-color:#55e887!important}
 #eventoGlobalBadge span{font-size:8px!important;color:#eaffef!important}
-#eventoSorteBadge{background:linear-gradient(145deg,#a8ffbf,#43d979)!important;border-color:#d6ffe1!important}
-#eventoSorteBadge strong,#eventoSorteBadge span{color:#06451f!important;text-shadow:none!important}
+#eventoSorteBadge{background:linear-gradient(145deg,#238b46,#12632f)!important;border-color:#075126!important}
+#eventoSorteBadge strong,#eventoSorteBadge span{color:#ffffff!important;text-shadow:0 1px 2px #0009!important}
 #eventoSorteBadge span{font-size:8px!important}
 
 </style>
@@ -4061,8 +4061,6 @@ function obterLinhasMelhorias(){
   {id:"inventario",t:"INVENTÁRIO DE PETS",d:"ATUAL: "+limiteInventarioPets()+" | PRÓXIMO: "+(melhoriaInventarioPets>=6?"200 (MÁX.)":limiteInventarioPets()+25),b:melhoriaInventarioPets>=6?"MAX":"$ "+formatarDinheiro(ci),c:melhoriaInventarioPets>=6?"#777777":(moedas>=ci?"#218b4a":"#754044"),max:melhoriaInventarioPets>=6},
   {id:"inventario2",t:"MAIS ESPAÇO NO INVENTÁRIO",d:"+25 vagas por melhoria | máximo: 200 pets",b:melhoriaInventarioPets>=6?"MAX":"NÍVEL "+(melhoriaInventarioPets+1)+"/6",c:melhoriaInventarioPets>=6?"#777777":"#754044",max:melhoriaInventarioPets>=6},
   {id:"equipar",t:"PETS EQUIPADOS",d:"ATUAL: "+limitePetsEquipados()+" | PRÓXIMO: "+(melhoriaPetsEquipados>=3?"6 (MÁX.)":limitePetsEquipados()+1),b:melhoriaPetsEquipados>=3?"MAX":"$ "+formatarDinheiro(ce),c:melhoriaPetsEquipados>=3?"#777777":(moedas>=ce?"#218b4a":"#754044"),max:melhoriaPetsEquipados>=3},
-  {id:"equipar2",t:"MAIS PETS EQUIPADOS",d:"+1 vaga por melhoria | máximo: 6 pets",b:melhoriaPetsEquipados>=3?"MAX":"NÍVEL "+(melhoriaPetsEquipados+1)+"/3",c:melhoriaPetsEquipados>=3?"#777777":"#754044",max:melhoriaPetsEquipados>=3},
-  {id:"especial",t:"CUSTO ALTO — MELHORIA RARA",d:"Esses bônus aumentam muito seu poder.",b:"ESPECIAL",c:"#754044",max:true},
   {id:"limite",t:"LIMITE FINAL",d:"200 no inventário e 6 equipados.",b:"MÁXIMO",c:"#777777",max:true}
  ];
 }
@@ -4085,7 +4083,7 @@ function desenharMelhorias(){
 }
 function comprarMelhoriaPorIndice(indice){
  const ids=obterLinhasMelhorias().map(l=>l.id),id=ids[indice];
- if(id==="multiplicador")comprarMultiplicador();else if(id==="auto")comprarAutoClicker();else if(id==="autopro")comprarAutoClickerPro();else if(id==="triplo")comprarTriploOvo();else if(id==="sorte")comprarSorteOvo();else if(id==="impulso")comprarImpulsoPets();else if(id==="inventario"||id==="inventario2")comprarEspacoInventarioPets();else if(id==="equipar"||id==="equipar2")comprarEspacoPetsEquipados();else if(id==="especial"||id==="limite")mostrarAviso("Esta é uma informação sobre os limites das melhorias.","info");
+ if(id==="multiplicador")comprarMultiplicador();else if(id==="auto")comprarAutoClicker();else if(id==="autopro")comprarAutoClickerPro();else if(id==="triplo")comprarTriploOvo();else if(id==="sorte")comprarSorteOvo();else if(id==="impulso")comprarImpulsoPets();else if(id==="inventario"||id==="inventario2")comprarEspacoInventarioPets();else if(id==="equipar")comprarEspacoPetsEquipados();else if(id==="limite")mostrarAviso("Esta é uma informação sobre os limites das melhorias.","info");
 }
 
 function comprarTriploOvo(){
