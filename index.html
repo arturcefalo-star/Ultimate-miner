@@ -496,8 +496,8 @@ button:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
 .evento-badge::before{font-size:16px;animation:none}
 .evento-badge strong{font-size:13px;line-height:1.0}
 .evento-badge span{font-size:7px;line-height:1.1;margin-top:2px}
-#eventoGlobalBadge{top:8px}#eventoSorteBadge{top:68px}#eventoAnjoBadge{top:128px}#eventoHackerBadge{top:188px}#eventoGalaxiaBadge{top:240px}
-@media(max-width:600px){.evento-badge{width:46px;min-height:45px;padding:3px 2px;border-radius:9px}.evento-badge::before{font-size:13px}.evento-badge strong{font-size:11px}.evento-badge span{font-size:6px}#eventoGlobalBadge{top:6px}#eventoSorteBadge{top:55px}#eventoAnjoBadge{top:104px}#eventoHackerBadge{top:153px}#eventoGalaxiaBadge{top:202px}}
+#eventoGlobalBadge{top:8px}#eventoSorteBadge{top:80px}#eventoAnjoBadge{top:152px}#eventoHackerBadge{top:224px}#eventoGalaxiaBadge{top:296px}
+@media(max-width:600px){.evento-badge{width:46px;min-height:45px;padding:3px 2px;border-radius:9px}.evento-badge::before{font-size:13px}.evento-badge strong{font-size:11px}.evento-badge span{font-size:6px}#eventoGlobalBadge{top:6px}#eventoSorteBadge{top:60px}#eventoAnjoBadge{top:114px}#eventoHackerBadge{top:168px}#eventoGalaxiaBadge{top:222px}}
 </style>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Ultimate Miner</title>
@@ -1007,11 +1007,20 @@ function atualizarResolucaoUltimate(){
   const largura=canvas.getBoundingClientRect().width||500;
   const altura=canvas.getBoundingClientRect().height||300;
   const dpr=Math.min(window.devicePixelRatio||1,2);
-  const escala=Math.max(1,Math.min(4,Math.ceil(Math.max(largura/UM_BASE_W,altura/UM_BASE_H)*dpr)));
-  if(escala===umRenderScale&&canvas.width===500*escala&&canvas.height===300*escala)return;
+  // A qualidade reduz a resolução interna do canvas, sem alterar seu tamanho na tela.
+  let fatorQualidade=0.75;
+  try{
+    const nivel=localStorage.getItem("ultimateMiner_qualidadeGraficos")||"medio";
+    fatorQualidade=nivel==="baixo"?0.5:(nivel==="alto"?1:0.75);
+  }catch(e){}
+  const escalaBase=Math.max(1,Math.min(4,Math.ceil(Math.max(largura/UM_BASE_W,altura/UM_BASE_H)*dpr)));
+  const escala=Math.max(0.5,Math.round(escalaBase*fatorQualidade*100)/100);
+  const novaLargura=Math.max(1,Math.round(UM_BASE_W*escala));
+  const novaAltura=Math.max(1,Math.round(UM_BASE_H*escala));
+  if(escala===umRenderScale&&canvas.width===novaLargura&&canvas.height===novaAltura)return;
   umRenderScale=escala;
-  canvas.width=UM_BASE_W*escala;
-  canvas.height=UM_BASE_H*escala;
+  canvas.width=novaLargura;
+  canvas.height=novaAltura;
   ctx.imageSmoothingEnabled=true;
   ctx.imageSmoothingQuality='high';
 }
@@ -4357,7 +4366,7 @@ texto("VOLUME DOS EFEITOS",250,67,15,"#fff","center");
 retangulo(90,79,320,10,"#414150",6);retangulo(90,79,320*volumeGeral,10,"#42a5ff",6);retangulo(82+320*volumeGeral,71,18,26,"#fff",7);
 texto(Math.round(volumeGeral*100)+"%",250,108,13,"#ffdc00","center");
 // QUALIDADE DOS GRÁFICOS
-texto("GRÁFICOS",57,137,13,"#fff");
+texto("RESOLUÇÃO DOS GRÁFICOS",57,137,12,"#fff");
 const opcoes=[{id:"baixo",x:205,label:"BAIXO"},{id:"medio",x:286,label:"MÉDIO"},{id:"alto",x:367,label:"ALTO"}];
 opcoes.forEach(o=>{const ativo=qualidadeGraficos===o.id;retangulo(o.x,119,72,25,ativo?"#176b9f":"#414150",6);texto(o.label,o.x+36,136,10,ativo?"#fff":"#bbb","center");});
 // AUTO CLICK NORMAL
@@ -4668,6 +4677,7 @@ if(p.y>=119&&p.y<=144){
  let nova=p.x<277?"baixo":p.x<358?"medio":"alto";
  qualidadeGraficos=nova;
  try{localStorage.setItem("ultimateMiner_qualidadeGraficos",nova);}catch(e){}
+ atualizarResolucaoUltimate();
  ultimoQuadroRender=0;
  somClique();
  return;
