@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR" lang="EN">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Ultimate Miner</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+</head>
+<body>
+
+<canvas id="game" width="500" height="300"></canvas>
+
+<div id="renascimentoModal">
+  <div id="renascimentoBox">
+    <h2>RENASCIMENTO</h2>
+    <p id="renascimentoInfo"></p>
+    <p>Ao renascer, você perde seu dinheiro, picaretas, minérios e melhorias. Seus renascimentos e o multiplicador permanente serão mantidos.</p>
+    <button id="confirmarRenascimento" type="button">FAZER RENASCIMENTO</button>
+    <button id="cancelarRenascimento" class="cancel" type="button">CANCELAR</button>
+  </div>
+</div>
+
+<div id="loginModal">
+  <div id="loginBox">
+    <h2>ULTIMATE MINER</h2>
+    <p>Entre na sua conta ou crie uma nova para salvar seu progresso.</p>
+    <div id="contasSalvas" aria-label="Contas usadas anteriormente"></div>
+    <input id="nomeLogin" name="username" placeholder="Nome de usuário" maxlength="20" autocomplete="username">
+    <input id="senhaLogin" name="password" type="password" placeholder="Senha (mínimo 6 caracteres)" autocomplete="current-password">
+    <button id="botaoEntrar" type="button">ENTRAR</button>
+    <button id="botaoCriar" class="secondary" type="button">CRIAR CONTA</button>
+    <p id="mensagemLogin"></p>
+  </div>
+</div>
+
+<div id="senhaModal">
+  <div id="senhaBox" role="dialog" aria-modal="true" aria-label="Trocar senha">
+    <h2>TROCAR SENHA</h2>
+    <p>Confirme sua senha atual e escolha uma nova senha.</p>
+    <input id="senhaAtual" type="password" placeholder="Senha atual" autocomplete="current-password">
+    <input id="senhaNova" type="password" placeholder="Nova senha (mínimo 6 caracteres)" autocomplete="new-password">
+    <input id="senhaConfirmar" type="password" placeholder="Confirmar nova senha" autocomplete="new-password">
+    <button id="botaoAtualizarSenha" type="button">ATUALIZAR SENHA</button>
+    <button id="botaoCancelarSenha" class="cancel" type="button">CANCELAR</button>
+    <p id="mensagemSenha"></p>
+  </div>
+</div>
+
+<div id="codeModal">
+<div class="modal">
+<h2>REDEEM CODE</h2>
+<p>Digite um código para receber recompensas ou desbloquear funções especiais.</p>
+<input id="codeInput" placeholder="Digite seu código..." autocomplete="off">
+<button id="redeemButton">RESGATAR CÓDIGO</button>
+<button class="cancel" id="cancelButton">CANCELAR</button>
+</div>
+</div>
+
+<div id="aviso" role="status" aria-live="polite"></div>
+
+<div id="mundosModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Mundos">
+ <div class="novo-topo"><h2>MUNDOS</h2><button class="novo-fechar" data-fechar-novo="mundos">X</button></div>
+ <p class="novo-desc">Explore novas dimensões. Cada mundo desbloqueado aumenta o dinheiro recebido em todas as minerações.</p>
+ <div id="listaMundos"></div>
+</div></div>
+<div id="ovosPetsModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Ovos de mascotes">
+ <div class="novo-topo"><h2>OVOS</h2><button class="novo-fechar" data-fechar-novo="ovos">X</button></div>
+ <p class="novo-desc">Abra ovos para conseguir mascotes. Toque em um pet para marcar ou desmarcar a venda automática: quando ele sair, será vendido na hora.</p>
+ <div id="ovosResumo" class="novo-desc"></div>
+ <div class="ovos-acoes">
+  <button id="comprarOvoPet" class="novo-acao" type="button">ABRIR 1 OVO - $ 100K</button>
+  <button id="abrirTresOvosPet" class="novo-acao triplo-bloqueado" type="button" disabled>TRIPLO OVO BLOQUEADO</button>
+  <button id="alternarAutoOvoPet" class="novo-acao auto-ovo-desligado" type="button">DESBLOQUEAR ABERTURA AUTOMÁTICA - $ 5M</button>
+  <button id="botaoAFKOvos" class="novo-acao" type="button" hidden>AFK • PETS OBTIDOS</button>
+ </div>
+ <div id="painelAFKOvos" class="pet-venda" hidden><div class="pet-venda-titulo">PETS CONSEGUIDOS NESTA SESSÃO</div><div id="listaAFKOvos" class="novo-desc">Nenhum pet conseguido ainda.</div></div>
+ <h3 class="pets-subtitulo">CHANCES E MULTIPLICADORES</h3><div id="listaChancesPets"></div>
+</div></div>
+<div id="inventarioPetsModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Inventário de mascotes">
+ <div class="novo-topo"><h2>INVENTARIO DE PETS</h2><button class="novo-fechar" data-fechar-novo="inventario">X</button></div>
+ <div id="petsResumo" class="novo-desc"></div>
+ <div class="inventario-layout">
+  <aside class="pet-status" id="petStatusPainel"><h3>STATUS DO PET</h3><p>Selecione um mascote para ver os detalhes.</p></aside>
+  <section class="pet-grade-area">
+   <div class="pet-ferramentas"><button id="equiparMelhoresPets" class="novo-acao" type="button">EQUIPAR MELHORES</button><button id="desequiparPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#e34b4b,#9d2020)">DESEQUIPAR TODOS</button><button id="abrirVendaPets" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030)">VENDER PETS</button><button id="fundirTodosDourados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#e4bd42,#99721b);color:#211900;border:1px solid #ffe58a">FUNDIR TODOS</button></div>
+   <div class="pets-ordenacao" aria-label="Ordenar inventario"><button type="button" data-pets-ordem="melhores" class="ativa">MELHORES</button><button type="button" data-pets-ordem="nome">NOME A-Z</button><button type="button" data-pets-ordem="raridade">RARIDADE</button></div>
+   <div id="listaPets" class="pet-grade"></div>
+  </section>
+ </div>
+</div></div>
+<div id="venderPetsModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Vender pets">
+ <div class="novo-topo"><h2>VENDER PETS</h2><button id="fecharVendaPets" class="novo-fechar" type="button">X</button></div>
+ <p class="novo-desc">Escolha como deseja vender. A venda inclui pets equipados quando eles estiverem dentro da seleção.</p>
+ <div class="pets-ordenacao" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+  <button type="button" data-modo-venda="todos">SELECIONAR TODOS</button><button type="button" data-modo-venda="raridade" class="ativa">POR RARIDADE</button><button type="button" data-modo-venda="multiplos">MÚLTIPLOS</button>
+ </div>
+ <div id="vendaPetsConteudo" class="pet-venda"></div>
+ <button id="venderPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d65a5a,#8e3030);width:100%;margin-top:8px">VENDER PETS</button>
+</div></div>
+<div id="rankingModal" class="novo-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Ranking global">
+ <div class="novo-topo"><h2>RANKING GLOBAL</h2><button class="novo-fechar" data-fechar-novo="ranking">X</button></div>
+ <p class="novo-desc">Todos os jogadores que já entraram no Ultimate Miner.</p>
+ <div class="ranking-relogio">PRÓXIMA ATUALIZAÇÃO EM <strong id="rankingContagem">01:00</strong></div>
+ <div class="novo-tabs"><button id="rankDinheiro" class="ativa">DINHEIRO</button><button id="rankRenascimentos">RENASCIMENTOS</button></div>
+ <div id="listaRanking" class="novo-vazio">Carregando ranking...</div>
+</div></div>
+
+<div id="adminInventarioModal" class="novo-modal admin-inventario-modal"><div class="novo-box" role="dialog" aria-modal="true" aria-label="Inventário do jogador">
+ <div class="novo-topo"><h2 id="adminInventarioTitulo">INVENTÁRIO DO JOGADOR</h2><button id="fecharAdminInventario" class="novo-fechar" type="button">X</button></div>
+ <p class="novo-desc" id="adminInventarioDescricao">Pets do jogador selecionado, incluindo os equipados.</p>
+ <div class="pet-ferramentas"><button id="adminSelecionarMultiplos" class="novo-acao" type="button">SELECIONAR MÚLTIPLOS</button><button id="adminLimparSelecaoPets" class="novo-acao" type="button">LIMPAR SELEÇÃO</button></div>
+ <div id="adminInventarioLista" class="pet-grade admin-inventario-grade"></div>
+ <button id="adminExcluirPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d64a4a,#922323)" disabled>EXCLUIR SELECIONADOS (0)</button>
+</div></div>
+
+<div id="admMundosModal" class="adm-mundos-modal" role="dialog" aria-modal="true" aria-label="Mundos liberados"><div class="adm-mundos-caixa"><div class="adm-mundos-cabecalho"><h3>🌎 MUNDOS LIBERADOS</h3><button id="admMundosFechar" class="adm-mundos-fechar" type="button">FECHAR</button></div><div id="admMundosLista"></div></div></div>
+
+<div id="eventoGlobalBadge" class="evento-badge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">DINHEIRO 00:00</span></div>
+<div id="eventoSorteBadge" class="evento-badge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span id="eventoSorteTempo">SORTE 00:00</span></div>
+<div id="eventoAnjoBadge" class="evento-badge"><strong>1.5x</strong><span id="eventoAnjoTempo">ANJO</span></div>
+<div id="eventoHackerBadge" class="evento-badge"><strong>2x</strong><span id="eventoHackerTempo">HACKER</span></div>
+<div id="eventoGalaxiaBadge" class="evento-badge"><strong>2.5x</strong><span id="eventoGalaxiaTempo">GALÁXIA</span></div>
+
+<div id="adminModal">
+<div id="adminBox" role="dialog" aria-modal="true" aria-label="Painel de administração">
+
+<div class="adm-topo">
+<h2>🛡️ CENTRAL ADMIN <small>Ultimate Miner</small></h2>
+<button id="adminFechar" class="adm-x" type="button" aria-label="Fechar painel">X</button>
+</div>
+
+
+<div class="adm-abas">
+<button type="button" class="ativa" data-aba="outro">👥 Jogadores</button>
+<button type="button" data-aba="evento">✨ Eventos</button>
+</div>
+
+<div id="abaEu" class="adm-aba">
+
+<h3>DINHEIRO</h3>
+<input id="admValor" class="adm-in" placeholder="Quantidade (ex.: 5000, 2,5M, 10K)" autocomplete="off" autocapitalize="characters" spellcheck="false">
+<div class="adm-linha">
+<button type="button" class="adm-b azul" data-acao="moedas-add">Adicionar</button>
+<button type="button" class="adm-b laranja" data-acao="moedas-remover">Remover</button>
+<button type="button" class="adm-b roxo" data-acao="moedas-definir">Definir</button>
+<button type="button" class="adm-b vermelho" data-acao="moedas-zerar" data-perigo>Zerar</button>
+</div>
+
+<h3>PICARETAS</h3>
+<select id="admPicareta" class="adm-in" aria-label="Picareta"></select>
+<div class="adm-linha">
+<button type="button" class="adm-b azul" data-acao="picareta-dar">Liberar</button>
+<button type="button" class="adm-b laranja" data-acao="picareta-remover">Remover</button>
+<button type="button" class="adm-b verde" data-acao="picareta-todas">Liberar todas</button>
+<button type="button" class="adm-b vermelho" data-acao="picareta-resetar" data-perigo>Resetar</button>
+</div>
+
+<h3>MINERIOS</h3>
+<select id="admMinerio" class="adm-in" aria-label="Minério"></select>
+<div class="adm-linha">
+<button type="button" class="adm-b azul" data-acao="minerio-dar">Liberar</button>
+<button type="button" class="adm-b laranja" data-acao="minerio-remover">Remover</button>
+<button type="button" class="adm-b verde" data-acao="minerio-todos">Liberar todos</button>
+<button type="button" class="adm-b vermelho" data-acao="minerio-resetar" data-perigo>Resetar</button>
+</div>
+
+<h3>⬆ Melhorias</h3>
+<div class="adm-linha">
+<button type="button" class="adm-b verde" data-acao="auto-liberar">Auto clicker: liberar</button>
+<button type="button" class="adm-b laranja" data-acao="auto-remover">Auto clicker: remover</button>
+<button type="button" class="adm-b verde" data-acao="pro-liberar">Auto clicker Pro: liberar</button>
+<button type="button" class="adm-b laranja" data-acao="pro-remover">Auto clicker Pro: remover</button>
+</div>
+<div class="adm-linha" style="margin-top:6px">
+<input id="admMult" class="adm-in" style="margin:0" placeholder="Nível do multiplicador (0 a 500)" inputmode="numeric" autocomplete="off">
+<button type="button" class="adm-b roxo" data-acao="mult-definir">Aplicar nível</button>
+</div>
+
+<button type="button" class="adm-b verde grande" data-acao="tudo">Liberar todas as picaretas e minérios</button>
+</div>
+
+<div id="abaOutro" class="adm-aba" hidden>
+<div class="adm-intro"><strong>👥 Gerenciar jogadores</strong><span>Selecione um jogador e escolha o que deseja alterar. As mudanças são salvas no Firebase.</span></div>
+<div class="adm-etapa">1. Selecione o jogador</div>
+<div class="adm-linha adm-seletor-linha">
+  <div class="adm-seletor-wrap">
+    <select id="admJogador" class="adm-in" aria-label="Selecionar jogador" style="margin:0" tabindex="-1" aria-hidden="true"></select>
+    <button id="admJogadorAbrir" class="adm-seletor-botao" type="button" aria-haspopup="listbox" aria-expanded="false">
+      <span id="admJogadorSelecionado">Carregando jogadores...</span><span class="adm-seta">▾</span>
+    </button>
+    <div id="admJogadorLista" class="adm-seletor-lista" role="listbox" aria-label="Jogadores cadastrados" hidden></div>
+  </div>
+  <button id="admAtualizarJogadores" type="button" class="adm-b roxo" style="max-width:112px">Atualizar lista</button>
+</div>
+<div id="admResumoJogador" class="adm-resumo" aria-live="polite"></div>
+<div class="adm-etapa">2. Escolha o que deseja alterar</div>
+<label class="adm-dica" for="admCategoria" style="display:block;margin:8px 0 4px">CATEGORIA</label>
+<select id="admCategoria" class="adm-in" aria-label="Categoria de gerenciamento"></select>
+<label class="adm-dica" for="admAcao" style="display:block;margin:8px 0 4px">AÇÃO</label>
+<select id="admAcao" class="adm-in" aria-label="Ação"></select>
+
+<div id="admCampoValor">
+<input id="admRemotoValor" class="adm-in" placeholder="Quantidade de moedas (ex.: 5000, 2,5M)" autocomplete="off" autocapitalize="characters" spellcheck="false">
+</div>
+<div id="admCampoItem" hidden>
+<select id="admRemotoItem" class="adm-in" aria-label="Item"></select>
+</div>
+<div id="admCampoNivel" hidden>
+<input id="admRemotoNivel" class="adm-in" placeholder="Nível do multiplicador (0 a 500)" inputmode="numeric" autocomplete="off">
+</div>
+<div id="admCampoDest" hidden>
+<input id="admDestinatario" class="adm-in" placeholder="Nome de quem recebe as moedas" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false">
+</div>
+<div id="admCampoPet" hidden>
+<label class="adm-dica" for="admPetEscolhido" style="display:block;margin:5px 0">Pet que será entregue</label><select id="admPetEscolhido" class="adm-in" aria-label="Pet para dar"></select>
+<label class="adm-dica" for="admPetMutacao" style="display:block;margin:5px 0">Fusão do pet</label><select id="admPetMutacao" class="adm-in" aria-label="Fusão do pet"><option value="0">Normal</option><option value="1">Gold / Dourado</option><option value="2">Diamante</option><option value="3">Rainbow</option><option value="4">Void</option></select>
+<div class="adm-dica" style="margin-top:9px">Selecione uma ou mais mutações de evento. As opções selecionadas ficam verdes e podem ser combinadas.</div>
+<div class="adm-pet-opcoes" id="admPetMutacoesEvento">
+<label><input type="checkbox" value="anjo"> 😇 Anjo — 1.5x</label>
+<label><input type="checkbox" value="hacker"> 💻 Hacker — 2x</label>
+<label><input type="checkbox" value="galaxia"> 🌌 Galáxia — 2.5x</label>
+</div></div>
+
+<div class="adm-etapa">3. Confirme a ação</div>
+<button id="admExecutar" type="button" class="adm-b azul grande" data-acao="remoto">Executar</button>
+</div>
+
+<div id="abaEvento" class="adm-aba" hidden>
+<details class="adm-evento-card"><summary>💰 EVENTO DE DINHEIRO</summary><div class="adm-evento-conteudo">
+<p class="adm-dica">O evento aumenta o dinheiro recebido por todos os jogadores enquanto estiver ativo.</p>
+<div class="adm-linha" id="admEventoPresets"><button type="button" class="adm-b azul" data-evento-mult="2">2x dinheiro</button><button type="button" class="adm-b azul" data-evento-mult="4">4x dinheiro</button><button type="button" class="adm-b azul" data-evento-mult="8">8x dinheiro</button><button type="button" class="adm-b azul" data-evento-mult="16">16x dinheiro</button><button type="button" class="adm-b azul" data-evento-mult="64">64x dinheiro</button></div>
+<label for="admEventoMultiplicador" class="adm-dica" style="display:block;margin-top:10px">Multiplicador personalizado</label><input id="admEventoMultiplicador" class="adm-in" type="number" min="2" max="1000000" step="1" value="2" placeholder="Ex.: 50">
+<label for="admEventoMinutos" class="adm-dica" style="display:block">Duração em minutos</label><input id="admEventoMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Ex.: 10 minutos">
+<button id="admEventoAtivar" type="button" class="adm-b verde grande">Ativar evento global</button><button id="admEventoEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento</button><div id="admEventoStatus" class="adm-dica" style="margin-top:8px">Nenhum evento ativo.</div>
+</div></details>
+<details class="adm-evento-card"><summary>🍀 EVENTO DE SORTE</summary><div class="adm-evento-conteudo"><p class="adm-dica">Aumenta a chance de conseguir pets raros para todos os jogadores.</p>
+<div class="adm-linha" id="admEventoSortePresets"><button type="button" class="adm-b azul" data-sorte-mult="2">2x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="4">4x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="8">8x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="16">16x sorte</button><button type="button" class="adm-b azul" data-sorte-mult="64">64x sorte</button></div>
+<label for="admEventoSorteMultiplicador" class="adm-dica" style="display:block;margin-top:10px">Multiplicador personalizado</label><input id="admEventoSorteMultiplicador" class="adm-in" type="number" min="2" max="1000000" step="1" value="2" placeholder="Multiplicador de sorte">
+<label for="admEventoSorteMinutos" class="adm-dica" style="display:block">Duração em minutos</label><input id="admEventoSorteMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Duração em minutos">
+<button id="admEventoSorteAtivar" type="button" class="adm-b verde grande">Ativar evento de sorte</button><button id="admEventoSorteEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento de sorte</button><div id="admEventoSorteStatus" class="adm-dica" style="margin-top:8px">Nenhum evento de sorte ativo.</div>
+</div></details>
+<details class="adm-evento-card adm-mutacao-menu"><summary class="adm-mutacao-mais" aria-label="Abrir eventos de mutação dos pets">EVENTOS DE MUTAÇÃO</summary><div class="adm-evento-conteudo"><div class="adm-mutacao-titulo">✨ EVENTOS DE MUTAÇÃO DOS PETS</div><p class="adm-dica">Enquanto um evento estiver ativo, todos os pets gerados por qualquer ovo receberão a mutação correspondente. Os eventos podem funcionar ao mesmo tempo.</p>
+<div class="adm-mutacao-evento" data-mutacao-evento="anjo"><strong>😇 EVENTO DE ANJO — 1.5x</strong><label class="adm-dica">Evento permanente</label><input class="adm-in" id="admMutacaoAnjoMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoAnjoAtivar" type="button">Ativar evento de Anjo</button><button class="adm-b vermelho grande" id="admMutacaoAnjoEncerrar" type="button">Encerrar evento de Anjo</button><div class="adm-dica" id="admMutacaoAnjoStatus">Nenhum evento ativo.</div></div>
+<div class="adm-mutacao-evento" data-mutacao-evento="hacker"><strong>💻 EVENTO HACKER — 2x</strong><label class="adm-dica">Evento permanente</label><input class="adm-in" id="admMutacaoHackerMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoHackerAtivar" type="button">Ativar evento Hacker</button><button class="adm-b vermelho grande" id="admMutacaoHackerEncerrar" type="button">Encerrar evento Hacker</button><div class="adm-dica" id="admMutacaoHackerStatus">Nenhum evento ativo.</div></div>
+<div class="adm-mutacao-evento" data-mutacao-evento="galaxia"><strong>🌌 EVENTO DE GALÁXIA — 2.5x</strong><label class="adm-dica">Evento permanente</label><input class="adm-in" id="admMutacaoGalaxiaMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoGalaxiaAtivar" type="button">Ativar evento de Galáxia</button><button class="adm-b vermelho grande" id="admMutacaoGalaxiaEncerrar" type="button">Encerrar evento de Galáxia</button><div class="adm-dica" id="admMutacaoGalaxiaStatus">Nenhum evento ativo.</div></div>
+</div></details>
+
+<div class="adm-evento-conteudo" style="margin-top:10px;padding:10px;border:1px solid #52627a;border-radius:9px;background:#101b2a">
+<label for="admTodosEventosMinutos" class="adm-dica" style="display:block;margin:0 0 6px">⏱️ DURAÇÃO DE TODOS OS EVENTOS (MINUTOS)</label>
+
+<input id="admTodosEventosMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Duração em minutos">
+
+<div class="adm-dica">Todos os eventos ativados por este botão terão a duração configurada e continuarão ativos após recarregar a página, até o tempo acabar.</div>
+</div>
+
+<button id="admAtivarTodosEventos" type="button" class="adm-b verde grande" style="width:100%;margin-top:10px">⚡ ATIVAR TODOS OS EVENTOS</button>
+
+<div class="adm-dica" style="margin-top:5px">Ativa dinheiro, sorte, Anjo, Hacker e Galáxia usando os multiplicadores e a duração configurada acima.</div>
+</div>
+
+<h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">HISTORICO DA SESSAO</h3>
+<div id="admLog" class="adm-log"></div>
+
+<script src="script.js"></script>
+
+</div>
+</div>
