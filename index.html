@@ -1360,7 +1360,7 @@ function escolherPetAleatorio(){
 function abrirOvosQuantidade(quantidade=1,automatico=false){
  if(!jogoPronto())return false;
  quantidade=Math.max(1,Math.min(3,Math.floor(Number(quantidade)||1)));
- if(quantidade===3&&!triploOvoComprado){mostrarAviso("Desbloqueie o upgrade TRIPLO OVO na seção de melhorias.","erro");return false;}
+ if(quantidade===3&&!triploOvoComprado){mostrarAviso("Desbloqueie o upgrade OVOS TRIPLOS na seção de melhorias.","erro");return false;}
  const custo=CUSTO_OVO_PET*quantidade;
  if(moedas<custo){
   if(automatico){autoOvoAtivo=false;salvar();atualizarControlesOvo();mostrarAviso("Ovos automáticos pausados: saldo insuficiente.","erro");}
@@ -4155,17 +4155,13 @@ function obterLinhasMelhorias(){
  const ci=CUSTOS_INVENTARIO_PETS[melhoriaInventarioPets],ce=CUSTOS_EQUIPAR_PETS[melhoriaPetsEquipados];
  return [
   {id:"multiplicador",t:"MELHORIA DE DINHEIRO",d:"Nível "+multiplicadorCompras+" | Bônus "+multiplicadorMelhoria().toFixed(1)+"x",b:"$ "+formatarDinheiro(precoMultiplicador),c:moedas>=precoMultiplicador?"#218b4a":"#754044"},
-  {id:"auto",t:"AUTO CLICKER",d:autoClickerComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia 5 cliques por segundo",b:autoClickerComprado?"MAX":"$ 100K",c:autoClickerComprado?"#777777":(moedas>=100000?"#218b4a":"#754044"),max:autoClickerComprado},
-  {id:"autopro",t:"AUTO CLICKER PRO",d:autoClickerProComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia 25 cliques por segundo",b:autoClickerProComprado?"MAX":"$ 10M",c:autoClickerProComprado?"#777777":(moedas>=10000000?"#218b4a":"#754044"),max:autoClickerProComprado},
-  {id:"triplo",t:"TRIPLO OVO",d:triploOvoComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia abertura de 3 ovos por vez",b:triploOvoComprado?"MAX":"$ 25M",c:triploOvoComprado?"#777777":(moedas>=CUSTO_TRIPLO_OVO?"#218b4a":"#754044"),max:triploOvoComprado},
+  {id:"auto",t:"AUTO CLICK",d:autoClickerComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia 5 cliques por segundo",b:autoClickerComprado?"MAX":"$ 100K",c:autoClickerComprado?"#777777":(moedas>=100000?"#218b4a":"#754044"),max:autoClickerComprado},
+  {id:"autopro",t:"AUTO CLICK PRO",d:autoClickerProComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia 25 cliques por segundo",b:autoClickerProComprado?"MAX":"$ 10M",c:autoClickerProComprado?"#777777":(moedas>=10000000?"#218b4a":"#754044"),max:autoClickerProComprado},
+  {id:"triplo",t:"OVOS TRIPLOS",d:triploOvoComprado?"NÍVEL MÁXIMO ALCANÇADO":"Desbloqueia abertura de 3 ovos por vez",b:triploOvoComprado?"MAX":"$ 25M",c:triploOvoComprado?"#777777":(moedas>=CUSTO_TRIPLO_OVO?"#218b4a":"#754044"),max:triploOvoComprado},
   {id:"sorte",t:"SORTE DE OVO",d:sorteOvoNivel>=20?"NÍVEL MÁXIMO ALCANÇADO":"Nível "+sorteOvoNivel+" | Mais chance de raridades altas",b:sorteOvoNivel>=20?"MAX":"$ "+formatarDinheiro(precoSorteOvo),c:sorteOvoNivel>=20?"#777777":(moedas>=precoSorteOvo?"#218b4a":"#754044"),max:sorteOvoNivel>=20},
-  {id:"impulso",t:"IMPULSO DE PETS",d:impulsoPetsNivel>=20?"NÍVEL MÁXIMO ALCANÇADO":"Nível "+impulsoPetsNivel+" | +"+(impulsoPetsNivel*15)+"% no bônus dos pets",b:impulsoPetsNivel>=20?"MAX":"$ "+formatarDinheiro(precoImpulsoPets),c:impulsoPetsNivel>=20?"#777777":(moedas>=precoImpulsoPets?"#218b4a":"#754044"),max:impulsoPetsNivel>=20},
-  {id:"inventario",t:"INVENTÁRIO DE PETS",d:"ATUAL: "+limiteInventarioPets()+" | PRÓXIMO: "+(melhoriaInventarioPets>=6?"200 (MÁX.)":limiteInventarioPets()+25),b:melhoriaInventarioPets>=6?"MAX":"$ "+formatarDinheiro(ci),c:melhoriaInventarioPets>=6?"#777777":(moedas>=ci?"#218b4a":"#754044"),max:melhoriaInventarioPets>=6},
-  {id:"inventario2",t:"MAIS ESPAÇO NO INVENTÁRIO",d:"+25 vagas por melhoria | máximo: 200 pets",b:melhoriaInventarioPets>=6?"MAX":"NÍVEL "+(melhoriaInventarioPets+1)+"/6",c:melhoriaInventarioPets>=6?"#777777":"#754044",max:melhoriaInventarioPets>=6},
-  {id:"equipar",t:"PETS EQUIPADOS",d:"ATUAL: "+limitePetsEquipados()+" | PRÓXIMO: "+(melhoriaPetsEquipados>=3?"6 (MÁX.)":limitePetsEquipados()+1),b:melhoriaPetsEquipados>=3?"MAX":"$ "+formatarDinheiro(ce),c:melhoriaPetsEquipados>=3?"#777777":(moedas>=ce?"#218b4a":"#754044"),max:melhoriaPetsEquipados>=3},
-  {id:"equipar2",t:"MAIS PETS EQUIPADOS",d:"+1 vaga por melhoria | máximo: 6 pets",b:melhoriaPetsEquipados>=3?"MAX":"NÍVEL "+(melhoriaPetsEquipados+1)+"/3",c:melhoriaPetsEquipados>=3?"#777777":"#754044",max:melhoriaPetsEquipados>=3},
-  {id:"especial",t:"CUSTO ALTO — MELHORIA RARA",d:"Esses bônus aumentam muito seu poder.",b:"ESPECIAL",c:"#754044",max:true},
-  {id:"limite",t:"LIMITE FINAL",d:"200 no inventário e 6 equipados.",b:"MÁXIMO",c:"#777777",max:true}
+  {id:"impulso",t:"IMPULSO DE PET",d:impulsoPetsNivel>=20?"NÍVEL MÁXIMO ALCANÇADO":"Nível "+impulsoPetsNivel+" | +"+(impulsoPetsNivel*15)+"% no bônus dos pets",b:impulsoPetsNivel>=20?"MAX":"$ "+formatarDinheiro(precoImpulsoPets),c:impulsoPetsNivel>=20?"#777777":(moedas>=precoImpulsoPets?"#218b4a":"#754044"),max:impulsoPetsNivel>=20},
+  {id:"inventario",t:"MAIS ESPAÇO NO INVENTÁRIO",d:"ATUAL: "+limiteInventarioPets()+" | PRÓXIMO: "+(melhoriaInventarioPets>=6?"200 (MÁX.)":limiteInventarioPets()+25),b:melhoriaInventarioPets>=6?"MAX":"$ "+formatarDinheiro(ci),c:melhoriaInventarioPets>=6?"#777777":(moedas>=ci?"#218b4a":"#754044"),max:melhoriaInventarioPets>=6},
+  {id:"equipar",t:"MAIS PETS EQUIPADOS",d:"ATUAL: "+limitePetsEquipados()+" | PRÓXIMO: "+(melhoriaPetsEquipados>=3?"6 (MÁX.)":limitePetsEquipados()+1),b:melhoriaPetsEquipados>=3?"MAX":"$ "+formatarDinheiro(ce),c:melhoriaPetsEquipados>=3?"#777777":(moedas>=ce?"#218b4a":"#754044"),max:melhoriaPetsEquipados>=3}
  ];
 }
 function desenharMelhorias(){
@@ -4187,13 +4183,13 @@ function desenharMelhorias(){
 }
 function comprarMelhoriaPorIndice(indice){
  const ids=obterLinhasMelhorias().map(l=>l.id),id=ids[indice];
- if(id==="multiplicador")comprarMultiplicador();else if(id==="auto")comprarAutoClicker();else if(id==="autopro")comprarAutoClickerPro();else if(id==="triplo")comprarTriploOvo();else if(id==="sorte")comprarSorteOvo();else if(id==="impulso")comprarImpulsoPets();else if(id==="inventario"||id==="inventario2")comprarEspacoInventarioPets();else if(id==="equipar"||id==="equipar2")comprarEspacoPetsEquipados();else if(id==="especial"||id==="limite")mostrarAviso("Esta é uma informação sobre os limites das melhorias.","info");
+ if(id==="multiplicador")comprarMultiplicador();else if(id==="auto")comprarAutoClicker();else if(id==="autopro")comprarAutoClickerPro();else if(id==="triplo")comprarTriploOvo();else if(id==="sorte")comprarSorteOvo();else if(id==="impulso")comprarImpulsoPets();else if(id==="inventario")comprarEspacoInventarioPets();else if(id==="equipar")comprarEspacoPetsEquipados();
 }
 
 function comprarTriploOvo(){
- if(triploOvoComprado){mostrarAviso("O upgrade TRIPLO OVO já está no máximo.","info");return;}
- if(moedas<CUSTO_TRIPLO_OVO){mostrarAviso("Você precisa de $ 25M para desbloquear o TRIPLO OVO.","erro");return;}
- moedas-=CUSTO_TRIPLO_OVO;triploOvoComprado=true;salvar();atualizarControlesOvo();somRaro();mostrarAviso("TRIPLO OVO desbloqueado! Agora você pode abrir 3 ovos de uma vez.","ok");
+ if(triploOvoComprado){mostrarAviso("O upgrade OVOS TRIPLOS já está no máximo.","info");return;}
+ if(moedas<CUSTO_TRIPLO_OVO){mostrarAviso("Você precisa de $ 25M para desbloquear OVOS TRIPLOS.","erro");return;}
+ moedas-=CUSTO_TRIPLO_OVO;triploOvoComprado=true;salvar();atualizarControlesOvo();somRaro();mostrarAviso("OVOS TRIPLOS desbloqueados! Agora você pode abrir 3 ovos de uma vez.","ok");
 }
 function comprarSorteOvo(){
  if(sorteOvoNivel>=20){mostrarAviso("A sorte de ovo já está no nível máximo.","info");return;}
