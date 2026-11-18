@@ -490,6 +490,14 @@ body{background:radial-gradient(ellipse at 50% 40%,#25416c 0%,#0b1425 76%);overf
 button:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.novo-box button,.modal button,#loginBox button{transition:none}}
 
+
+/* Indicadores de eventos mais compactos, mantendo cores e informações. */
+.evento-badge{width:58px;min-height:54px;height:auto;padding:4px 3px;border-radius:11px;gap:0;box-shadow:inset 0 1px #ffffff55,0 3px 9px #0008;backdrop-filter:none}
+.evento-badge::before{font-size:16px;animation:none}
+.evento-badge strong{font-size:13px;line-height:1.0}
+.evento-badge span{font-size:7px;line-height:1.1;margin-top:2px}
+#eventoGlobalBadge{top:8px}#eventoSorteBadge{top:68px}#eventoAnjoBadge{top:128px}#eventoHackerBadge{top:188px}#eventoGalaxiaBadge{top:240px}
+@media(max-width:600px){.evento-badge{width:46px;min-height:45px;padding:3px 2px;border-radius:9px}.evento-badge::before{font-size:13px}.evento-badge strong{font-size:11px}.evento-badge span{font-size:6px}#eventoGlobalBadge{top:6px}#eventoSorteBadge{top:55px}#eventoAnjoBadge{top:104px}#eventoHackerBadge{top:153px}#eventoGalaxiaBadge{top:202px}}
 </style>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Ultimate Miner</title>
@@ -4337,73 +4345,28 @@ function comprarOuAlternarAutoOvo(){
 // CONFIGURAÇÕES
 
 function desenharConfiguracoes(){
-retangulo(25,30,450,250,"#171722",12);
-
-const fundo=ctx.createLinearGradient(25,30,475,280);
-fundo.addColorStop(0,"#202d49");
-fundo.addColorStop(1,"#171722");
-
-retangulo(27,32,446,246,fundo,10);
-
-ctx.strokeStyle="#64b4ff";
-ctx.lineWidth=2;
-ctx.beginPath();
-ctx.roundRect(25,30,450,250,12);
-ctx.stroke();
-
-texto("CONFIGURAÇÕES",45,62,23,"#64b4ff");
-
-retangulo(435,40,28,28,"#b42828",6);
-texto("X",449,61,19,"#fff","center");
-
+retangulo(25,8,450,284,"#171722",12);
+const fundo=ctx.createLinearGradient(25,8,475,292);
+fundo.addColorStop(0,"#202d49");fundo.addColorStop(1,"#171722");
+retangulo(27,10,446,280,fundo,10);
+ctx.strokeStyle="#64b4ff";ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(25,8,450,284,12);ctx.stroke();
+texto("CONFIGURAÇÕES",45,39,23,"#64b4ff");
+retangulo(435,18,28,28,"#b42828",6);texto("X",449,39,19,"#fff","center");
 // VOLUME
-
-texto("VOLUME DOS EFEITOS",250,91,15,"#fff","center");
-
-retangulo(90,103,320,10,"#414150",6);
-retangulo(90,103,320*volumeGeral,10,"#42a5ff",6);
-retangulo(82+320*volumeGeral,95,18,26,"#fff",7);
-
-texto(Math.round(volumeGeral*100)+"%",250,137,15,"#ffdc00","center");
-
+texto("VOLUME DOS EFEITOS",250,67,15,"#fff","center");
+retangulo(90,79,320,10,"#414150",6);retangulo(90,79,320*volumeGeral,10,"#42a5ff",6);retangulo(82+320*volumeGeral,71,18,26,"#fff",7);
+texto(Math.round(volumeGeral*100)+"%",250,108,13,"#ffdc00","center");
+// QUALIDADE DOS GRÁFICOS
+texto("GRÁFICOS",57,137,13,"#fff");
+const opcoes=[{id:"baixo",x:205,label:"BAIXO"},{id:"medio",x:286,label:"MÉDIO"},{id:"alto",x:367,label:"ALTO"}];
+opcoes.forEach(o=>{const ativo=qualidadeGraficos===o.id;retangulo(o.x,119,72,25,ativo?"#176b9f":"#414150",6);texto(o.label,o.x+36,136,10,ativo?"#fff":"#bbb","center");});
 // AUTO CLICK NORMAL
-
-if(autoClickerComprado){
-retangulo(45,145,410,30,autoClickerAtivo?"#187d43":"#414150",7);
-
-texto("AUTO CLICKER",57,165,13,"#fff");
-
-texto(
-autoClickerAtivo?"ATIVADO":"DESATIVADO",
-437,165,12,autoClickerAtivo?"#75ff9a":"#bbb","right"
-);
-}
-
+if(autoClickerComprado){retangulo(45,150,410,26,autoClickerAtivo?"#187d43":"#414150",7);texto("AUTO CLICKER",57,168,12,"#fff");texto(autoClickerAtivo?"ATIVADO":"DESATIVADO",437,168,11,autoClickerAtivo?"#75ff9a":"#bbb","right");}
 // AUTO CLICK PRO
-
-if(autoClickerProComprado){
-retangulo(45,179,410,30,autoClickerProAtivo?"#7134bd":"#414150",7);
-
-texto("AUTO CLICKER PRO",57,199,13,"#fff");
-
-texto(
-autoClickerProAtivo?"ATIVADO":"DESATIVADO",
-437,199,12,autoClickerProAtivo?"#e3baff":"#bbb","right"
-);
-}
-
-// TROCAR SENHA
-
-retangulo(45,214,410,27,"#2864a8",7);
-texto("TROCAR SENHA",250,233,13,"#fff","center");
-
-// CÓDIGOS E SAIR DA CONTA
-
-retangulo(45,246,190,28,"#7134bd",7);
-texto("CODIGOS",140,265,13,"#fff","center");
-
-retangulo(255,246,200,28,"#a83232",7);
-texto("SAIR",355,265,13,"#fff","center");
+if(autoClickerProComprado){retangulo(45,180,410,26,autoClickerProAtivo?"#7134bd":"#414150",7);texto("AUTO CLICKER PRO",57,198,12,"#fff");texto(autoClickerProAtivo?"ATIVADO":"DESATIVADO",437,198,11,autoClickerProAtivo?"#e3baff":"#bbb","right");}
+retangulo(45,211,410,25,"#2864a8",7);texto("TROCAR SENHA",250,228,12,"#fff","center");
+retangulo(45,242,190,27,"#7134bd",7);texto("CÓDIGOS",140,260,12,"#fff","center");
+retangulo(255,242,200,27,"#a83232",7);texto("SAIR",355,260,12,"#fff","center");
 }
 
 // ENGRENAGEM
@@ -4600,7 +4563,14 @@ if(agora-ultimoAutoClick>=intervalo)ultimoAutoClick=agora;
 // Renderização otimizada: limita quadros para reduzir uso de CPU/GPU,
  // especialmente em celulares. A lógica do jogo continua usando Date.now(),
  // então mineração automática, recompensas e temporizadores não dependem do FPS.
-const INTERVALO_RENDER = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) ? 1000/30 : 1000/40;
+let qualidadeGraficos="medio";
+try{const salvo=localStorage.getItem("ultimateMiner_qualidadeGraficos");if(["baixo","medio","alto"].includes(salvo))qualidadeGraficos=salvo;}catch(e){}
+function intervaloRenderAtual(){
+ const celular=window.matchMedia&&window.matchMedia("(pointer: coarse)").matches;
+ if(qualidadeGraficos==="baixo")return 1000/20;
+ if(qualidadeGraficos==="alto")return 1000/60;
+ return celular?1000/30:1000/40;
+}
 let ultimoQuadroRender = 0;
 let renderAgendado = false;
 
@@ -4613,8 +4583,9 @@ function desenhar(tempo){
     return;
   }
 
-  if(tempo - ultimoQuadroRender >= INTERVALO_RENDER){
-    ultimoQuadroRender = tempo - ((tempo - ultimoQuadroRender) % INTERVALO_RENDER);
+  const intervalo=intervaloRenderAtual();
+  if(tempo - ultimoQuadroRender >= intervalo){
+    ultimoQuadroRender = tempo - ((tempo - ultimoQuadroRender) % intervalo);
     try{
       desenharQuadro();
     }catch(erro){
@@ -4670,7 +4641,7 @@ if(!lojaAberta&&!melhoriasAbertas&&!configuracoesAbertas){
 
 if(configuracoesAbertas){
 
-if(p.x>=435&&p.x<=463&&p.y>=40&&p.y<=68){
+if(p.x>=435&&p.x<=463&&p.y>=18&&p.y<=46){
 configuracoesAbertas=false;
 somFecharLoja();
 return;
@@ -4678,7 +4649,7 @@ return;
 
 // VOLUME
 
-if(p.x>=80&&p.x<=430&&p.y>=94&&p.y<=139){
+if(p.x>=80&&p.x<=430&&p.y>=70&&p.y<=111){
 volumeArrastando=true;
 
 volumeGeral=Math.max(0,Math.min(1,(p.x-90)/320));
@@ -4692,37 +4663,46 @@ canvas.setPointerCapture(evento.pointerId);
 return;
 }
 
-// AUTO CLICK NORMAL
+// QUALIDADE DOS GRÁFICOS
+if(p.y>=119&&p.y<=144){
+ let nova=p.x<277?"baixo":p.x<358?"medio":"alto";
+ qualidadeGraficos=nova;
+ try{localStorage.setItem("ultimateMiner_qualidadeGraficos",nova);}catch(e){}
+ ultimoQuadroRender=0;
+ somClique();
+ return;
+}
 
-if(autoClickerComprado&&p.x>=45&&p.x<=455&&p.y>=145&&p.y<=175){
+// AUTO CLICK NORMAL
+if(autoClickerComprado&&p.x>=45&&p.x<=455&&p.y>=150&&p.y<=176){
 alternarAutoClicker();
 return;
 }
 
 // AUTO CLICK PRO
 
-if(autoClickerProComprado&&p.x>=45&&p.x<=455&&p.y>=179&&p.y<=209){
+if(autoClickerProComprado&&p.x>=45&&p.x<=455&&p.y>=180&&p.y<=206){
 alternarAutoClickerPro();
 return;
 }
 
 // TROCAR SENHA
 
-if(p.x>=45&&p.x<=455&&p.y>=214&&p.y<=241){
+if(p.x>=45&&p.x<=455&&p.y>=211&&p.y<=236){
 abrirTrocaSenha();
 return;
 }
 
 // CÓDIGOS
 
-if(p.x>=45&&p.x<=235&&p.y>=246&&p.y<=274){
+if(p.x>=45&&p.x<=235&&p.y>=242&&p.y<=269){
 abrirResgate();
 return;
 }
 
 // SAIR DA CONTA
 
-if(p.x>=255&&p.x<=455&&p.y>=246&&p.y<=274){
+if(p.x>=255&&p.x<=455&&p.y>=242&&p.y<=269){
 sairDaConta();
 return;
 }
