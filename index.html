@@ -543,11 +543,10 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <button id="adminFechar" class="adm-x" type="button" aria-label="Fechar painel">X</button>
 </div>
 
-<div id="adminResumo" class="adm-resumo"></div>
 
 <div class="adm-abas">
 <button type="button" class="ativa" data-aba="outro">Gerenciar jogadores</button>
-<button type="button" data-aba="evento">Evento</button>
+<button type="button" data-aba="evento">Eventos</button>
 </div>
 
 <div id="abaEu" class="adm-aba">
@@ -2609,7 +2608,6 @@ salvar();
 
 const adminModal=document.getElementById("adminModal");
 const adminBox=document.getElementById("adminBox");
-const admResumo=document.getElementById("adminResumo");
 const admResumoJogador=document.getElementById("admResumoJogador");
 const admValor=document.getElementById("admValor");
 const admPicareta=document.getElementById("admPicareta");
@@ -2640,6 +2638,8 @@ const admHistorico=[];
 let ultimaAtualizacaoAdmin=0;
 let admExecutando=false;
 let timerListaJogadoresAdmin=null;
+let cancelarMonitoramentoJogadorAdmin=null;
+let uidMonitoradoAdmin="";
 let admCarregandoJogadores=false;
 
 // Ações disponíveis para administrar outras contas pelo Firestore
@@ -2777,6 +2777,14 @@ return [
 ["Nível da melhoria",String(nivel)],
 ["Melhoria de dinheiro",melhoria.toFixed(1)+"x"],
 ["Multiplicador final",(bonus*melhoria).toFixed(1)+"x"],
+["Auto Clicker",d.autoClickerComprado?"Liberado":"Bloqueado"],
+["Auto Clicker Pro",d.autoClickerProComprado?"Liberado":"Bloqueado"],
+["Auto Ovo",d.autoOvoComprado?"Liberado":"Bloqueado"],
+["Triplo Ovo",d.triploOvoComprado?"Liberado":"Bloqueado"],
+["Sorte dos ovos",String(Math.max(0,Number(d.sorteOvoNivel)||0))],
+["Impulso dos pets",String(Math.max(0,Number(d.impulsoPetsNivel)||0))],
+["Espaço do inventário",String(Math.max(0,Number(d.melhoriaInventarioPets)||0))],
+["Espaços para equipar pets",String(Math.max(0,Number(d.melhoriaPetsEquipados)||0))],
 ["Picareta atual",picaretas[pi][0]],
 ["Picaretas liberadas",pcs.length+"/"+picaretas.length],
 ["Minério atual",minerios[mi][0]],
@@ -2788,16 +2796,40 @@ return [
 ];
 }
 function atualizarAdmin(){
-ultimaAtualizacaoAdmin=Date.now();if(!adminAberto)return;
-const nome=usuarioAtual?String(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):"-";
-const itens=estatisticasDadosAdmin(nome,dadosDoJogo(),"ONLINE");
-criarResumoAdmin(admResumo,itens);
-const abaOutroVisivel=!document.getElementById("abaOutro").hidden;
-if(abaOutroVisivel){
-const jogador=jogadoresAdmin.find(j=>j.uid===admJogador.value);
-if(jogador)criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(jogador.nome,jogador.dados,jogador.online?"ONLINE":"OFFLINE"));
-else criarResumoAdmin(admResumoJogador,[]);
+ultimaAtualizacaoAdmin=Date.now();
+if(!adminAberto)return;
+// Os dados do jogador selecionado são atualizados pelo onSnapshot dedicado.
+// Não reconstruir o painel a partir da lista antiga, para não sobrescrever valores recentes.
 }
+
+function pararMonitoramentoJogadorSelecionadoAdmin(){
+if(cancelarMonitoramentoJogadorAdmin){
+try{cancelarMonitoramentoJogadorAdmin();}catch(e){}
+}
+cancelarMonitoramentoJogadorAdmin=null;
+uidMonitoradoAdmin="";
+}
+
+function iniciarMonitoramentoJogadorSelecionadoAdmin(uid){
+if(!uid||!adminAberto||!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+if(uidMonitoradoAdmin===uid&&cancelarMonitoramentoJogadorAdmin)return;
+pararMonitoramentoJogadorSelecionadoAdmin();
+uidMonitoradoAdmin=uid;
+const ref=db.collection("jogadores").doc(uid);
+cancelarMonitoramentoJogadorAdmin=ref.onSnapshot(snapshot=>{
+if(!adminAberto||admJogador.value!==uid||!snapshot.exists)return;
+const registro=snapshot.data()||{};
+const jogador=jogadoresAdmin.find(j=>j.uid===uid);
+if(!jogador)return;
+jogador.nome=String(registro.nome||jogador.nome||"Jogador");
+jogador.dados=registro.dados&&typeof registro.dados==="object"?registro.dados:{};
+jogador.online=jogadorEstaOnline(registro);
+criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(jogador.nome,jogador.dados,jogador.online?"ONLINE":"OFFLINE"));
+// Atualiza também a etiqueta e os dados usados pelo restante do painel sem recarregar a página.
+atualizarSeletorVisualJogadores();
+},error=>{
+console.error("Erro ao acompanhar jogador selecionado em tempo real:",error);
+});
 }
 
 function abrirAdmin(){
@@ -2808,12 +2840,14 @@ trocarAbaAdmin("outro");
 atualizarAdmin();
 carregarJogadoresAdmin();
 if(timerListaJogadoresAdmin){clearInterval(timerListaJogadoresAdmin);timerListaJogadoresAdmin=null;}
+if(admJogador.value)iniciarMonitoramentoJogadorSelecionadoAdmin(admJogador.value);
 somAbrirLoja();
 }
 
 function fecharAdmin(){
 adminAberto=false;
 if(timerListaJogadoresAdmin){clearInterval(timerListaJogadoresAdmin);timerListaJogadoresAdmin=null;}
+pararMonitoramentoJogadorSelecionadoAdmin();
 adminModal.style.display="none";
  fecharInventarioRemoto();
 }
@@ -3014,7 +3048,10 @@ fecharListaJogadoresAdmin();
 document.addEventListener("click",evento=>{
 if(!evento.target.closest(".adm-seletor-wrap"))fecharListaJogadoresAdmin();
 });
-admJogador.addEventListener("change",atualizarSeletorVisualJogadores);
+admJogador.addEventListener("change",()=>{
+atualizarSeletorVisualJogadores();
+iniciarMonitoramentoJogadorSelecionadoAdmin(admJogador.value);
+});
 
 async function carregarJogadoresAdmin(silencioso){
 if(admCarregandoJogadores)return;
@@ -3052,6 +3089,7 @@ if(!jogadoresAdmin.length){const op=document.createElement("option");op.value=""
 if(jogadoresAdmin.some(j=>j.uid===valorAnterior))select.value=valorAnterior;
 else if(jogadoresAdmin.length)select.selectedIndex=0;
 atualizarSeletorVisualJogadores();
+if(admJogador.value)iniciarMonitoramentoJogadorSelecionadoAdmin(admJogador.value);
 if(!silencioso)admResultado("Lista carregada: "+jogadoresAdmin.length+" conta(s).","ok");
 }catch(error){
 console.error("Erro ao listar jogadores:",error);
@@ -4395,7 +4433,7 @@ processarOvosAutomaticos();
 if(lojaAberta)desenharLoja();
 if(melhoriasAbertas)desenharMelhorias();
 if(configuracoesAbertas)desenharConfiguracoes();
-if(adminAberto&&Date.now()-ultimaAtualizacaoAdmin>500)atualizarAdmin();
+
 }
 
 // Auto clicker por tempo decorrido: mantém 5/s (normal) e 25/s (Pro) mesmo com 30 ou 60 FPS.
