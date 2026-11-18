@@ -961,7 +961,11 @@ console.error("Erro ao sincronizar os dados do jogador em tempo real:",error);
 
 function textoErroLogin(error){
 const c=error&&error.code;
-if(c==="auth/username-case-mismatch")return "Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas.";
+if(c==="auth/username-case-mismatch")return "O nome de usuário não corresponde a esta conta. Confira o nome cadastrado.";
+if(c==="auth/unauthorized-domain")return "O Firebase bloqueou o endereço desta página. Abra o jogo pelo domínio publicado e adicione esse domínio em Firebase > Authentication > Settings > Authorized domains.";
+if(c==="auth/invalid-api-key")return "A chave do Firebase está inválida. Confira a configuração do projeto Firebase.";
+if(c==="auth/invalid-email")return "O nome de usuário gerou um e-mail inválido. Use apenas letras, números e _.";
+if(c==="auth/operation-not-allowed")return "O login por e-mail e senha está desativado em Firebase > Authentication > Sign-in method.";
 if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-login-credentials")return "Esta conta está com a senha incorreta. Digite a senha atual para entrar novamente.";
 if(c==="auth/user-not-found")return "Essa conta não foi encontrada. Confira o nome de usuário.";
 if(c==="auth/user-disabled")return "Esta conta foi banida ou desativada.";
@@ -1924,7 +1928,7 @@ if(typeof atualizarStatusEventoAdmin==="function")atualizarStatusEventoAdmin();
 },error=>console.error("Erro ao acompanhar evento global:",error));
 }
 let ultimoEventoGlobalAvisado="";
-setInterval(()=>{atualizarBadgeEvento();atualizarBadgeEventoSorte();atualizarBadgesMutacao();},500);
+setInterval(()=>{atualizarBadgeEvento();atualizarBadgeEventoSorte();atualizarBadgesMutacao();},1000);
 
 function precoRenascimento(){
 // Começa em 10 milhões e triplica a cada renascimento realizado.
@@ -2378,12 +2382,13 @@ const ref=db.collection("jogadores").doc(user.uid);
 // consultava o mesmo documento duas vezes e ainda aguardava updateProfile.
 const snap=await comTempoLimite(ref.get(),12000,"consultar os dados da conta");
 const registroInicial=snap.exists?(snap.data()||{}):{};
-// O Firebase autentica e-mails sem diferenciar maiúsculas, mas o nome público
-// continua respeitando exatamente a capitalização originalmente cadastrada.
+// O Firebase trata o e-mail de login sem diferenciar maiúsculas/minúsculas.
+// O nome público também é comparado sem diferenciar caixa, para não bloquear
+// contas válidas quando o jogador digita, por exemplo, "artur" em vez de "Artur".
 const nomeCanonico=user.uid===ADMIN_UID?"Artur":String(registroInicial.nome||user.displayName||nome||user.email.split("@")[0]);
-if(nome&&nomeCanonico!==nome){
+if(nome&&nomeCanonico.trim().toLocaleLowerCase("pt-BR")!==String(nome).trim().toLocaleLowerCase("pt-BR")){
   try{await auth.signOut();}catch(e){}
-  const erroNome=new Error("Nome de usuário incorreto. Digite exatamente como foi cadastrado, respeitando maiúsculas e minúsculas.");
+  const erroNome=new Error("O nome de usuário não corresponde a esta conta. Confira o nome cadastrado.");
   erroNome.code="auth/username-case-mismatch";
   throw erroNome;
 }
@@ -4592,11 +4597,46 @@ repeticoes++;
 if(agora-ultimoAutoClick>=intervalo)ultimoAutoClick=agora;
 }
 
-// Se um quadro falhar, o jogo continua rodando em vez de congelar
-function desenhar(){
-try{desenharQuadro();}catch(erro){console.error("Erro ao desenhar:",erro);}
-requestAnimationFrame(desenhar);
+// Renderização otimizada: limita quadros para reduzir uso de CPU/GPU,
+ // especialmente em celulares. A lógica do jogo continua usando Date.now(),
+ // então mineração automática, recompensas e temporizadores não dependem do FPS.
+const INTERVALO_RENDER = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) ? 1000/30 : 1000/40;
+let ultimoQuadroRender = 0;
+let renderAgendado = false;
+
+function desenhar(tempo){
+  renderAgendado = false;
+
+  // Não desperdiça bateria nem processamento com a aba em segundo plano.
+  if(document.hidden){
+    ultimoQuadroRender = 0;
+    return;
+  }
+
+  if(tempo - ultimoQuadroRender >= INTERVALO_RENDER){
+    ultimoQuadroRender = tempo - ((tempo - ultimoQuadroRender) % INTERVALO_RENDER);
+    try{
+      desenharQuadro();
+    }catch(erro){
+      console.error("Erro ao desenhar:",erro);
+    }
+  }
+
+  if(!renderAgendado){
+    renderAgendado = true;
+    requestAnimationFrame(desenhar);
+  }
 }
+
+// Ao voltar para o jogo, redesenha imediatamente sem tentar recuperar
+// todos os quadros perdidos enquanto a aba estava escondida.
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden && !renderAgendado){
+    ultimoQuadroRender = 0;
+    renderAgendado = true;
+    requestAnimationFrame(desenhar);
+  }
+});
 
 // POSIÇÃO
 
