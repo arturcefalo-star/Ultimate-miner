@@ -3736,7 +3736,7 @@ async function controlarEventoMutacao(chave,ativar){
 }
 Object.keys(eventosMutacao).forEach(chave=>{const nome=chave[0].toUpperCase()+chave.slice(1);document.getElementById("admMutacao"+nome+"Ativar").addEventListener("click",()=>controlarEventoMutacao(chave,true));document.getElementById("admMutacao"+nome+"Encerrar").addEventListener("click",()=>controlarEventoMutacao(chave,false));});
 iniciarMonitoramentoMutacoes();
-setInterval(atualizarStatusMutacoesAdmin,1000);
+setInterval(()=>{if(adminAberto)atualizarStatusMutacoesAdmin();},3000);
 
 document.getElementById("admEventoSorteAtivar").addEventListener("click",ativarEventoSorteGlobal);
 document.getElementById("admEventoSorteEncerrar").addEventListener("click",encerrarEventoSorteGlobal);
@@ -4609,14 +4609,36 @@ function intervaloRenderAtual(){
 let ultimoQuadroRender = 0;
 let renderAgendado = false;
 
+const IDS_INTERFACES_PESADAS = [
+  "adminModal","mundosModal","admMundosModal","ovosPetsModal",
+  "inventarioPetsModal","rankingModal","renascimentoModal",
+  "codeModal","senhaModal","adminInventarioModal","venderPetsModal"
+];
+
+function interfacePesadaAberta(){
+  for(const id of IDS_INTERFACES_PESADAS){
+    const el=document.getElementById(id);
+    if(el && getComputedStyle(el).display!=="none") return true;
+  }
+  return false;
+}
+
 function desenhar(tempo){
   renderAgendado = false;
 
-  // Não desperdiça bateria nem processamento com a aba em segundo plano.
-  if(document.hidden || adminAberto){
-    // O painel Admin é HTML; o canvas não precisa continuar sendo redesenhado atrás dele.
-    // A animação será retomada ao fechar o painel.
+  // Não redesenha o jogo por trás de painéis; mantém apenas uma verificação leve.
+  if(document.hidden || adminAberto || interfacePesadaAberta()){
     ultimoQuadroRender = 0;
+    if(!document.hidden){
+      renderAgendado = true;
+      setTimeout(()=>{
+        renderAgendado = false;
+        if(!document.hidden && !renderAgendado){
+          renderAgendado = true;
+          requestAnimationFrame(desenhar);
+        }
+      },250);
+    }
     return;
   }
 
@@ -4995,3 +5017,74 @@ desenhar();
 
 </div>
 </div>
+<style id="correcao-final-eventos-performance">
+/* Badges realmente quadrados, sem regras antigas sobrescrevendo tamanho/posição. */
+.evento-badge{
+  width:52px!important;
+  min-width:52px!important;
+  max-width:52px!important;
+  height:52px!important;
+  min-height:52px!important;
+  max-height:52px!important;
+  box-sizing:border-box!important;
+  padding:3px!important;
+  border-radius:8px!important;
+  border-width:2px!important;
+  gap:1px!important;
+  overflow:hidden!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  box-shadow:0 2px 5px #0007!important;
+  animation:none!important;
+  transform:none!important;
+}
+.evento-badge::before{
+  font-size:13px!important;
+  line-height:1!important;
+  filter:none!important;
+  animation:none!important;
+}
+.evento-badge strong{
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  text-shadow:none!important;
+}
+.evento-badge span{
+  font-size:6px!important;
+  line-height:1!important;
+  margin-top:2px!important;
+  text-shadow:none!important;
+}
+#eventoGlobalBadge{top:8px!important}
+#eventoSorteBadge{top:66px!important}
+#eventoAnjoBadge{top:124px!important}
+#eventoHackerBadge{top:182px!important}
+#eventoGalaxiaBadge{top:240px!important}
+@media(max-width:600px){
+  .evento-badge{
+    width:48px!important;min-width:48px!important;max-width:48px!important;
+    height:48px!important;min-height:48px!important;max-height:48px!important;
+    border-radius:7px!important;
+  }
+  .evento-badge::before{font-size:12px!important}
+  .evento-badge strong{font-size:10px!important}
+  .evento-badge span{font-size:5.5px!important}
+  #eventoGlobalBadge{top:6px!important}
+  #eventoSorteBadge{top:60px!important}
+  #eventoAnjoBadge{top:114px!important}
+  #eventoHackerBadge{top:168px!important}
+  #eventoGalaxiaBadge{top:222px!important}
+}
+/* Remove filtros caros dos painéis em aparelhos mais modestos. */
+#adminModal{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#adminBox{box-shadow:0 5px 18px #0008!important}
+#adminBox *,#adminBox *::before,#adminBox *::after{
+  scroll-behavior:auto!important;
+  animation:none!important;
+  transition:none!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+</style>
