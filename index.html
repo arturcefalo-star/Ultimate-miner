@@ -114,16 +114,9 @@ z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
 .adm-pet-opcoes input{width:18px;height:18px;accent-color:#20d968}
 .adm-mutacao-menu[open]>.adm-mutacao-mais{margin-bottom:0}
 .adm-mutacao-titulo{padding:8px 0;font-size:13px;font-weight:900;color:#fff}
-#eventoGlobalBadge,#eventoSorteBadge{
-width:48px;height:46px;padding:4px 3px;border-radius:5px;
-box-shadow:0 2px 8px #0009;text-align:center;font-family:Arial,sans-serif;
-flex-direction:column;align-items:center;justify-content:center;
-line-height:1.05;pointer-events:none;color:#fff;
-}
-#eventoGlobalBadge{top:12px;background:linear-gradient(145deg,#287b45,#14532e);border:2px solid #3ca665;box-shadow:0 2px 8px #0009}
-#eventoSorteBadge{top:64px;background:linear-gradient(145deg,#c9f8df,#8ee5b8);border:2px solid #8de6b8;box-shadow:0 2px 8px #0009}
-#eventoGlobalBadge strong,#eventoGlobalBadge span,#eventoGlobalBadge small{color:#fff;text-shadow:0 1px 3px #000}
-#eventoSorteBadge strong,#eventoSorteBadge span,#eventoSorteBadge small{color:#fff;text-shadow:0 1px 3px #315c45}
+/* DINHEIRO e SORTE usam o mesmo estilo visual do indicador HACKER */
+#eventoGlobalBadge{top:12px;background:linear-gradient(145deg,#123b24,#020b06);border-color:#43ff83}
+#eventoSorteBadge{top:64px;background:linear-gradient(145deg,#123b24,#020b06);border-color:#43ff83}
 #eventoAnjoBadge{top:140px}
 #eventoHackerBadge{top:192px}
 #eventoGalaxiaBadge{top:244px}
@@ -521,8 +514,8 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 
 <div id="admMundosModal" class="adm-mundos-modal" role="dialog" aria-modal="true" aria-label="Mundos liberados"><div class="adm-mundos-caixa"><div class="adm-mundos-cabecalho"><h3>🌎 MUNDOS LIBERADOS</h3><button id="admMundosFechar" class="adm-mundos-fechar" type="button">FECHAR</button></div><div id="admMundosLista"></div></div></div>
 
-<div id="eventoGlobalBadge" class="evento-badge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span>DINHEIRO</span><small id="eventoGlobalTempo">00:00</small></div>
-<div id="eventoSorteBadge" class="evento-badge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span>SORTE</span><small id="eventoSorteTempo">00:00</small></div>
+<div id="eventoGlobalBadge" class="evento-badge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">DINHEIRO 00:00</span></div>
+<div id="eventoSorteBadge" class="evento-badge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span id="eventoSorteTempo">SORTE 00:00</span></div>
 <div id="eventoAnjoBadge" class="evento-badge"><strong>1.5x</strong><span id="eventoAnjoTempo">ANJO</span></div>
 <div id="eventoHackerBadge" class="evento-badge"><strong>2x</strong><span id="eventoHackerTempo">HACKER</span></div>
 <div id="eventoGalaxiaBadge" class="evento-badge"><strong>2.5x</strong><span id="eventoGalaxiaTempo">GALÁXIA</span></div>
@@ -1767,7 +1760,7 @@ if(!ativo)return;
 const segundos=Math.max(0,Math.ceil(restante/1000));
 const min=Math.floor(segundos/60),seg=segundos%60;
 document.getElementById("eventoGlobalMultiplicador").textContent=eventoGlobal.multiplicador+"x";
-document.getElementById("eventoGlobalTempo").textContent=String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
+document.getElementById("eventoGlobalTempo").textContent="DINHEIRO "+String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
 }
 
 let estadoEventoGlobalConhecido=false;
@@ -3490,7 +3483,7 @@ function atualizarBadgeEventoSorte(){
  const ativo=eventoSorteGlobal.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(!ativo)return;
  const segundos=Math.max(0,Math.ceil(restante/1000)),min=Math.floor(segundos/60),seg=segundos%60;
  document.getElementById("eventoSorteMultiplicador").textContent=eventoSorteGlobal.multiplicador+"x";
- document.getElementById("eventoSorteTempo").textContent=String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
+ document.getElementById("eventoSorteTempo").textContent="SORTE "+String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
 }
 function atualizarBadgesMutacao(){
  const cfg={anjo:{id:"eventoAnjoBadge",tempo:"eventoAnjoTempo",rotulo:"ANJO"},hacker:{id:"eventoHackerBadge",tempo:"eventoHackerTempo",rotulo:"HACKER"},galaxia:{id:"eventoGalaxiaBadge",tempo:"eventoGalaxiaTempo",rotulo:"GALÁXIA"}};
