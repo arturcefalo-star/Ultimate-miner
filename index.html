@@ -636,14 +636,14 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 <button id="admEventoSorteAtivar" type="button" class="adm-b verde grande">Ativar evento de sorte</button><button id="admEventoSorteEncerrar" type="button" class="adm-b vermelho grande" style="margin-top:6px">Encerrar evento de sorte</button><div id="admEventoSorteStatus" class="adm-dica" style="margin-top:8px">Nenhum evento de sorte ativo.</div>
 </div></details>
 <details class="adm-evento-card adm-mutacao-menu"><summary class="adm-mutacao-mais" aria-label="Abrir eventos de mutação dos pets">EVENTOS DE MUTAÇÃO</summary><div class="adm-evento-conteudo"><div class="adm-mutacao-titulo">✨ EVENTOS DE MUTAÇÃO DOS PETS</div><p class="adm-dica">Enquanto um evento estiver ativo, todos os pets gerados por qualquer ovo receberão a mutação correspondente. Os eventos podem funcionar ao mesmo tempo.</p>
-<div class="adm-mutacao-evento" data-mutacao-evento="anjo"><strong>😇 EVENTO DE ANJO — 1.5x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoAnjoMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoAnjoAtivar" type="button">Ativar evento de Anjo</button><button class="adm-b vermelho grande" id="admMutacaoAnjoEncerrar" type="button">Encerrar evento de Anjo</button><div class="adm-dica" id="admMutacaoAnjoStatus">Nenhum evento ativo.</div></div>
-<div class="adm-mutacao-evento" data-mutacao-evento="hacker"><strong>💻 EVENTO HACKER — 2x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoHackerMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoHackerAtivar" type="button">Ativar evento Hacker</button><button class="adm-b vermelho grande" id="admMutacaoHackerEncerrar" type="button">Encerrar evento Hacker</button><div class="adm-dica" id="admMutacaoHackerStatus">Nenhum evento ativo.</div></div>
-<div class="adm-mutacao-evento" data-mutacao-evento="galaxia"><strong>🌌 EVENTO DE GALÁXIA — 2.5x</strong><label class="adm-dica">Duração em minutos</label><input class="adm-in" id="admMutacaoGalaxiaMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoGalaxiaAtivar" type="button">Ativar evento de Galáxia</button><button class="adm-b vermelho grande" id="admMutacaoGalaxiaEncerrar" type="button">Encerrar evento de Galáxia</button><div class="adm-dica" id="admMutacaoGalaxiaStatus">Nenhum evento ativo.</div></div>
+<div class="adm-mutacao-evento" data-mutacao-evento="anjo"><strong>😇 EVENTO DE ANJO — 1.5x</strong><label class="adm-dica">Evento permanente</label><input class="adm-in" id="admMutacaoAnjoMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoAnjoAtivar" type="button">Ativar evento de Anjo</button><button class="adm-b vermelho grande" id="admMutacaoAnjoEncerrar" type="button">Encerrar evento de Anjo</button><div class="adm-dica" id="admMutacaoAnjoStatus">Nenhum evento ativo.</div></div>
+<div class="adm-mutacao-evento" data-mutacao-evento="hacker"><strong>💻 EVENTO HACKER — 2x</strong><label class="adm-dica">Evento permanente</label><input class="adm-in" id="admMutacaoHackerMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoHackerAtivar" type="button">Ativar evento Hacker</button><button class="adm-b vermelho grande" id="admMutacaoHackerEncerrar" type="button">Encerrar evento Hacker</button><div class="adm-dica" id="admMutacaoHackerStatus">Nenhum evento ativo.</div></div>
+<div class="adm-mutacao-evento" data-mutacao-evento="galaxia"><strong>🌌 EVENTO DE GALÁXIA — 2.5x</strong><label class="adm-dica">Evento permanente</label><input class="adm-in" id="admMutacaoGalaxiaMinutos" type="number" min="1" max="10080" value="10"><button class="adm-b verde grande" id="admMutacaoGalaxiaAtivar" type="button">Ativar evento de Galáxia</button><button class="adm-b vermelho grande" id="admMutacaoGalaxiaEncerrar" type="button">Encerrar evento de Galáxia</button><div class="adm-dica" id="admMutacaoGalaxiaStatus">Nenhum evento ativo.</div></div>
 </div></details>
 <div class="adm-evento-conteudo" style="margin-top:10px;padding:10px;border:1px solid #52627a;border-radius:9px;background:#101b2a">
-<label for="admTodosEventosMinutos" class="adm-dica" style="display:block;margin:0 0 6px">⏱️ SELECIONAR O TEMPO DOS EVENTOS (MINUTOS)</label>
+<label for="admTodosEventosMinutos" class="adm-dica" style="display:block;margin:0 0 6px">⏱️ EVENTOS PERMANENTES (TEMPO IGNORADO)</label>
 <input id="admTodosEventosMinutos" class="adm-in" type="number" min="1" max="10080" step="1" value="10" placeholder="Duração em minutos">
-<div class="adm-dica">O mesmo tempo será usado para dinheiro, sorte, Anjo, Hacker e Galáxia.</div>
+<div class="adm-dica">Os eventos ficarão permanentes até serem encerrados manualmente no painel.</div>
 </div>
 <button id="admAtivarTodosEventos" type="button" class="adm-b verde grande" style="width:100%;margin-top:10px">⚡ ATIVAR TODOS OS EVENTOS</button>
 <div class="adm-dica" style="margin-top:5px">Ativa dinheiro, sorte, Anjo, Hacker e Galáxia usando as durações e multiplicadores configurados acima.</div>
@@ -1196,7 +1196,7 @@ let eventoGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
 let eventoSorteGlobal={ativo:false,multiplicador:1,expiraEm:0,admin:"Admin",id:""};
 const eventosMutacao={anjo:{ativo:false,expiraEm:0,id:"",ativadoEm:0},hacker:{ativo:false,expiraEm:0,id:"",ativadoEm:0},galaxia:{ativo:false,expiraEm:0,id:"",ativadoEm:0}};
 const nomesMutacaoEvento={anjo:"Anjo",hacker:"Hacker",galaxia:"Galáxia"};
-function obterMutacoesEventoAtivas(){const agora=Date.now();return Object.keys(eventosMutacao).filter(k=>eventosMutacao[k].ativo&&eventosMutacao[k].expiraEm>agora);}
+function obterMutacoesEventoAtivas(){const agora=Date.now();return Object.keys(eventosMutacao).filter(k=>eventosMutacao[k].ativo&&(eventosMutacao[k].permanente===true||eventosMutacao[k].expiraEm>agora));}
 function multiplicadorBonusMutacoes(mutacoes){const fatores={anjo:1.5,hacker:2,galaxia:2.5};return [...new Set(Array.isArray(mutacoes)?mutacoes:[])].reduce((total,k)=>total*(fatores[k]||1),1);}
 let cancelarMonitoramentoEvento=null;
 let ultimoAvisoAdminId="";
@@ -1267,7 +1267,7 @@ function multiplicadorPets(){
 function pesoPetComSorte(p){
  const nivel=Math.max(0,Math.min(20,Number(sorteOvoNivel)||0));
  const raridade=ORDEM_RARIDADE_PETS[p.raridade]||0;
- const eventoAtivo=eventoSorteGlobal.ativo&&eventoSorteGlobal.expiraEm>Date.now();
+ const eventoAtivo=eventoSorteGlobal.ativo&&(eventoSorteGlobal.permanente===true||eventoSorteGlobal.expiraEm>Date.now());
  const bonusEvento=eventoAtivo?Math.pow(Math.max(1,eventoSorteGlobal.multiplicador),raridade/6):1;
  return p.peso*(1+raridade*0.35*nivel)*bonusEvento;
 }
@@ -1743,8 +1743,8 @@ return multiplicadorRenascimento()*multiplicadorMelhoria();
 
 function multiplicadorEventoAtual(){
 const restante=Number(eventoGlobal.expiraEm)||0;
-if(!eventoGlobal.ativo||restante<=Date.now()){
-if(eventoGlobal.ativo){eventoGlobal.ativo=false;atualizarBadgeEvento();}
+if(!eventoGlobal.ativo||(eventoGlobal.permanente!==true&&restante<=Date.now())){
+if(eventoGlobal.ativo&&eventoGlobal.permanente!==true){eventoGlobal.ativo=false;atualizarBadgeEvento();}
 return 1;
 }
 return Math.max(1,Number(eventoGlobal.multiplicador)||1);
@@ -1754,13 +1754,11 @@ function atualizarBadgeEvento(){
 const badge=document.getElementById("eventoGlobalBadge");
 if(!badge)return;
 const restante=(Number(eventoGlobal.expiraEm)||0)-Date.now();
-const ativo=eventoGlobal.ativo&&restante>0;
+const ativo=eventoGlobal.ativo&&(eventoGlobal.permanente===true||restante>0);
 badge.style.display=ativo?"flex":"none";
 if(!ativo)return;
-const segundos=Math.max(0,Math.ceil(restante/1000));
-const min=Math.floor(segundos/60),seg=segundos%60;
 document.getElementById("eventoGlobalMultiplicador").textContent=eventoGlobal.multiplicador+"x";
-document.getElementById("eventoGlobalTempo").textContent="DINHEIRO "+String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
+document.getElementById("eventoGlobalTempo").textContent="DINHEIRO PERMANENTE";
 }
 
 let estadoEventoGlobalConhecido=false;
@@ -1782,19 +1780,20 @@ return;
 }
 const ev=snapshot.data()||{};
 const expira=ev.expiraEm&&typeof ev.expiraEm.toMillis==="function"?ev.expiraEm.toMillis():Number(ev.expiraEm)||0;
-const ativo=ev.ativo===true&&expira>Date.now();
+const permanente=ev.permanente===true;
+const ativo=ev.ativo===true&&(permanente||expira>Date.now());
 const id=String(ev.id||"");
 const admin=String(ev.admin||"Admin");
 const multiplicador=Math.max(1,Number(ev.multiplicador)||1);
-eventoGlobal={ativo,multiplicador,expiraEm:expira,admin,id};
+eventoGlobal={ativo,multiplicador,expiraEm:expira,permanente,admin,id};
 atualizarBadgeEvento();
 
 // Cada aparelho recebe esta atualização diretamente do mesmo documento do Firestore.
 if(ativo&&(!estadoEventoGlobalConhecido||!eventoGlobalEstavaAtivo||id!==ultimoEventoGlobalAvisado)){
 ultimoEventoGlobalAvisado=id;
-mostrarAviso("O admin "+admin+" ativou o evento de dinheiro de "+multiplicador+"x por "+(Number(ev.duracaoMinutos)||Math.max(1,Math.ceil((expira-Date.now())/60000)))+" minuto(s)!","ok");
+mostrarAviso("O admin "+admin+" ativou o evento permanente de dinheiro de "+multiplicador+"x!","ok");
 }else if(!ativo&&estavaAtivo){
-if(ev.ativo===true&&expira<=Date.now()){
+if(ev.ativo===true&&ev.permanente!==true&&expira<=Date.now()){
 mostrarAviso("O evento global de dinheiro terminou.","info");
 }else{
 mostrarAviso("O admin "+admin+" desativou o evento global de dinheiro de "+multiplicador+"x.","info");
@@ -3455,20 +3454,19 @@ async function ativarEventoGlobal(){
 if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
 const mult=Number(admEventoMultiplicador.value),minutos=Number(admEventoMinutos.value);
 if(!Number.isInteger(mult)||mult<2||mult>1000000){admResultado("Digite um multiplicador inteiro entre 2x e 1.000.000x.","erro");return;}
-if(!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("A duração deve ser de 1 a 10.080 minutos.","erro");return;}
 const adminNome=nomeDoAdminAtual();
-const expiraEm=new Date(Date.now()+minutos*60000);
+const expiraEm=new Date(0);
 const id=String(Date.now())+"-"+usuarioAtual.uid;
 try{
-await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:minutos,admin:adminNome,id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global");
-admResultado("Evento global de "+mult+"x ativado por "+minutos+" minuto(s).","ok");
+await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:true,permanente:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:0,admin:adminNome,id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global");
+admResultado("Evento global de "+mult+"x ativado permanentemente!","ok");
 }catch(error){admResultado("Não foi possível ativar o evento global: "+(error.message||"erro no Firestore"),"erro");}
 atualizarStatusEventoAdmin();
 }
 async function encerrarEventoGlobal(){
 if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
 try{
-await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoGlobal.multiplicador)||1),expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:nomeDoAdminAtual(),motivo:"desativado-pelo-admin",id:"desativado-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
+await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoGlobal.multiplicador)||1),permanente:false,expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:nomeDoAdminAtual(),motivo:"desativado-pelo-admin",id:"desativado-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
 admResultado("Evento global encerrado.","ok");
 }catch(error){admResultado("Não foi possível encerrar o evento: "+(error.message||"erro no Firestore"),"erro");}
 atualizarStatusEventoAdmin();
@@ -3480,44 +3478,44 @@ let cancelarMonitoramentoSorte=null;
 function atualizarBadgeEventoSorte(){
  const badge=document.getElementById("eventoSorteBadge");if(!badge)return;
  const restante=(Number(eventoSorteGlobal.expiraEm)||0)-Date.now();
- const ativo=eventoSorteGlobal.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(!ativo)return;
- const segundos=Math.max(0,Math.ceil(restante/1000)),min=Math.floor(segundos/60),seg=segundos%60;
+ const ativo=eventoSorteGlobal.ativo&&(eventoSorteGlobal.permanente===true||restante>0);badge.style.display=ativo?"flex":"none";if(!ativo)return;
  document.getElementById("eventoSorteMultiplicador").textContent=eventoSorteGlobal.multiplicador+"x";
- document.getElementById("eventoSorteTempo").textContent="SORTE "+String(min).padStart(2,"0")+":"+String(seg).padStart(2,"0");
+ document.getElementById("eventoSorteTempo").textContent="SORTE PERMANENTE";
 }
 function atualizarBadgesMutacao(){
  const cfg={anjo:{id:"eventoAnjoBadge",tempo:"eventoAnjoTempo",rotulo:"ANJO"},hacker:{id:"eventoHackerBadge",tempo:"eventoHackerTempo",rotulo:"HACKER"},galaxia:{id:"eventoGalaxiaBadge",tempo:"eventoGalaxiaTempo",rotulo:"GALÁXIA"}};
  const momentoAtivacao=k=>{const ev=eventosMutacao[k]||{};const direto=Number(ev.ativadoEm)||0;if(direto>0)return direto;const doId=Number((String(ev.id||"").match(/-(\d{10,})-/)||[])[1])||0;if(doId>0)return doId;return Math.max(0,(Number(ev.expiraEm)||0)-(Number(ev.duracaoMinutos)||0)*60000);};
- const ativos=Object.keys(cfg).filter(k=>eventosMutacao[k].ativo&&Number(eventosMutacao[k].expiraEm)>Date.now()).sort((a,b)=>momentoAtivacao(a)-momentoAtivacao(b)||a.localeCompare(b));
- Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(ativo){const pos=ativos.indexOf(k);badge.style.top=(116+Math.max(0,pos)*52)+"px";const seg=Math.ceil(restante/1000),mm=Math.floor(seg/60),ss=seg%60;document.getElementById(c.tempo).textContent=c.rotulo+" "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");}});
+ const ativos=Object.keys(cfg).filter(k=>eventosMutacao[k].ativo&&(eventosMutacao[k].permanente===true||Number(eventosMutacao[k].expiraEm)>Date.now())).sort((a,b)=>momentoAtivacao(a)-momentoAtivacao(b)||a.localeCompare(b));
+ Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&(ev.permanente===true||restante>0);badge.style.display=ativo?"flex":"none";if(ativo){const pos=ativos.indexOf(k);badge.style.top=(116+Math.max(0,pos)*52)+"px";document.getElementById(c.tempo).textContent=c.rotulo+" PERMANENTE";}});
 }
 function iniciarMonitoramentoEventoSorte(){
  if(cancelarMonitoramentoSorte){try{cancelarMonitoramentoSorte();}catch(e){}}
  cancelarMonitoramentoSorte=db.collection("eventos").doc("sorteGlobal").onSnapshot(snap=>{
-  const estavaAtivo=eventoSorteGlobal.ativo&&eventoSorteGlobal.expiraEm>Date.now();
+  const estavaAtivo=eventoSorteGlobal.ativo&&(eventoSorteGlobal.permanente===true||eventoSorteGlobal.expiraEm>Date.now());
   const ev=snap.exists?(snap.data()||{}):{};
   const expira=ev.expiraEm&&typeof ev.expiraEm.toMillis==="function"?ev.expiraEm.toMillis():Number(ev.expiraEm)||0;
-  const ativo=ev.ativo===true&&expira>Date.now();
+  const permanente=ev.permanente===true;
+  const ativo=ev.ativo===true&&(permanente||expira>Date.now());
   const id=String(ev.id||"");
   const novo=ativo&&(!eventoSorteGlobal.ativo||eventoSorteGlobal.id!==id);
-  eventoSorteGlobal={ativo,multiplicador:Math.max(1,Number(ev.multiplicador)||1),expiraEm:expira,admin:String(ev.admin||"Admin"),id};
+  eventoSorteGlobal={ativo,multiplicador:Math.max(1,Number(ev.multiplicador)||1),expiraEm:expira,permanente,admin:String(ev.admin||"Admin"),id};
   if(novo)mostrarAviso("Evento global de SORTE ativado: "+eventoSorteGlobal.multiplicador+"x!","ok");
   if(estavaAtivo&&!ativo)mostrarAviso("O evento global de sorte terminou.","info");
   atualizarBadgeEventoSorte();
-  if(admEventoSorteStatus)admEventoSorteStatus.textContent=ativo?"Evento de sorte ativo: "+eventoSorteGlobal.multiplicador+"x. Termina em breve.":"Nenhum evento de sorte ativo.";
+  if(admEventoSorteStatus)admEventoSorteStatus.textContent=ativo?"Evento de sorte permanente ativo: "+eventoSorteGlobal.multiplicador+"x.":"Nenhum evento de sorte ativo.";
  },err=>console.error("Erro ao acompanhar evento global de sorte:",err));
 }
 async function ativarEventoSorteGlobal(){
  if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
  const mult=Number(admEventoSorteMultiplicador.value),minutos=Number(admEventoSorteMinutos.value);
- if(!Number.isInteger(mult)||mult<2||mult>1000000||!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("Informe sorte de 2x a 1.000.000x e duração de 1 a 10.080 minutos.","erro");return;}
- const expiraEm=new Date(Date.now()+minutos*60000),id="sorte-"+Date.now()+"-"+usuarioAtual.uid;
- try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:minutos,admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global de sorte");admResultado("Evento global de sorte de "+mult+"x ativado por "+minutos+" minuto(s).","ok");}
+ if(!Number.isInteger(mult)||mult<2||mult>1000000){admResultado("Informe sorte de 2x a 1.000.000x.","erro");return;}
+ const expiraEm=new Date(0),id="sorte-"+Date.now()+"-"+usuarioAtual.uid;
+ try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:true,permanente:true,multiplicador:mult,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:0,admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"ativar evento global de sorte");admResultado("Evento global de sorte de "+mult+"x ativado permanentemente!","ok");}
  catch(error){admResultado("Não foi possível ativar o evento de sorte: "+(error.message||"erro no Firestore"),"erro");}
 }
 async function encerrarEventoSorteGlobal(){
  if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
- try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoSorteGlobal.multiplicador)||1),expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:nomeDoAdminAtual(),id:"sorte-off-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento de sorte");admResultado("Evento global de sorte encerrado.","ok");}
+ try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoSorteGlobal.multiplicador)||1),permanente:false,expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:nomeDoAdminAtual(),id:"sorte-off-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento de sorte");admResultado("Evento global de sorte encerrado.","ok");}
  catch(error){admResultado("Não foi possível encerrar o evento de sorte: "+(error.message||"erro no Firestore"),"erro");}
 }
 
@@ -3527,13 +3525,13 @@ async function ativarTodosEventos(){
  const dinheiro=Number(admEventoMultiplicador.value);
  const sorte=Number(admEventoSorteMultiplicador.value);
  const minutos=Number(document.getElementById("admTodosEventosMinutos").value);
- if(!Number.isInteger(dinheiro)||dinheiro<2||dinheiro>1000000||!Number.isInteger(sorte)||sorte<2||sorte>1000000||!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("Confira os multiplicadores de dinheiro e sorte e escolha um tempo entre 1 e 10.080 minutos.","erro");return;}
+ if(!Number.isInteger(dinheiro)||dinheiro<2||dinheiro>1000000||!Number.isInteger(sorte)||sorte<2||sorte>1000000){admResultado("Confira os multiplicadores de dinheiro e sorte.","erro");return;}
  const agora=Date.now(),admin=nomeDoAdminAtual(),batch=db.batch();
  const adicionar=(id,dados)=>batch.set(db.collection("eventos").doc(id),dados,{merge:true});
- adicionar("multiplicadorGlobal",{ativo:true,multiplicador:dinheiro,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(agora+minutos*60000)),duracaoMinutos:minutos,admin,id:"todos-dinheiro-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
- adicionar("sorteGlobal",{ativo:true,multiplicador:sorte,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(agora+minutos*60000)),duracaoMinutos:minutos,admin,id:"todos-sorte-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+ adicionar("multiplicadorGlobal",{ativo:true,permanente:true,multiplicador:dinheiro,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(0)),duracaoMinutos:0,admin,id:"todos-dinheiro-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+ adicionar("sorteGlobal",{ativo:true,permanente:true,multiplicador:sorte,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(0)),duracaoMinutos:0,admin,id:"todos-sorte-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
  for(const chave of Object.keys(eventosMutacao)){
-  adicionar("mutacao_"+chave,{ativo:true,mutacao:chave,ativadoEm:agora,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(agora+minutos*60000)),duracaoMinutos:minutos,admin,id:"mutacao-"+chave+"-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+  adicionar("mutacao_"+chave,{ativo:true,permanente:true,mutacao:chave,ativadoEm:agora,expiraEm:firebase.firestore.Timestamp.fromDate(new Date(0)),duracaoMinutos:0,admin,id:"mutacao-"+chave+"-"+agora+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
  }
  try{await batch.commit();admResultado("Todos os eventos foram ativados com sucesso!","ok");atualizarStatusEventoAdmin();atualizarStatusMutacoesAdmin();}
  catch(error){console.error("Erro ao ativar todos os eventos:",error);admResultado("Não foi possível ativar todos os eventos: "+(error.message||"erro no Firestore"),"erro");}
@@ -3541,14 +3539,14 @@ async function ativarTodosEventos(){
 
 // Eventos globais de mutação: cada um usa seu próprio documento no Firestore.
 function atualizarStatusMutacoesAdmin(){
- Object.keys(eventosMutacao).forEach(chave=>{const el=document.getElementById("admMutacao"+chave[0].toUpperCase()+chave.slice(1)+"Status");if(!el)return;const ev=eventosMutacao[chave];const ativo=ev.ativo&&ev.expiraEm>Date.now();const falta=ativo?Math.max(1,Math.ceil((ev.expiraEm-Date.now())/60000)):0;el.textContent=ativo?"Evento "+nomesMutacaoEvento[chave]+" ativo. Restam aproximadamente "+falta+" minuto(s).":"Nenhum evento ativo.";});
+ Object.keys(eventosMutacao).forEach(chave=>{const el=document.getElementById("admMutacao"+chave[0].toUpperCase()+chave.slice(1)+"Status");if(!el)return;const ev=eventosMutacao[chave];const ativo=ev.ativo&&(ev.permanente===true||ev.expiraEm>Date.now());el.textContent=ativo?"Evento "+nomesMutacaoEvento[chave]+" ativo permanentemente.":"Nenhum evento ativo.";});
 }
 function iniciarMonitoramentoMutacoes(){
  Object.keys(eventosMutacao).forEach(chave=>{
   db.collection("eventos").doc("mutacao_"+chave).onSnapshot(snap=>{
-   const dados=snap.exists?(snap.data()||{}):{};const exp=dados.expiraEm&&typeof dados.expiraEm.toMillis==="function"?dados.expiraEm.toMillis():Number(dados.expiraEm)||0;const ativo=dados.ativo===true&&exp>Date.now();const mudou=ativo&&(!eventosMutacao[chave].ativo||eventosMutacao[chave].id!==String(dados.id||""));
+   const dados=snap.exists?(snap.data()||{}):{};const exp=dados.expiraEm&&typeof dados.expiraEm.toMillis==="function"?dados.expiraEm.toMillis():Number(dados.expiraEm)||0;const permanente=dados.permanente===true;const ativo=dados.ativo===true&&(permanente||exp>Date.now());const mudou=ativo&&(!eventosMutacao[chave].ativo||eventosMutacao[chave].id!==String(dados.id||""));
    const idEvento=String(dados.id||"");const ativadoEm=Number(dados.ativadoEm)||Number((idEvento.match(/-(\d{10,})-/)||[])[1])||0;
-   eventosMutacao[chave]={ativo,expiraEm:exp,id:idEvento,ativadoEm,duracaoMinutos:Number(dados.duracaoMinutos)||0};
+   eventosMutacao[chave]={ativo,expiraEm:exp,permanente,id:idEvento,ativadoEm,duracaoMinutos:Number(dados.duracaoMinutos)||0};
    if(mudou)mostrarAviso("EVENTO "+nomesMutacaoEvento[chave].toUpperCase()+" ATIVADO! Todos os pets dos ovos receberão essa mutação.","ok");
    atualizarStatusMutacoesAdmin();atualizarBadgesMutacao();
   },err=>console.error("Erro ao acompanhar evento de mutação "+chave,err));
@@ -3558,10 +3556,10 @@ async function controlarEventoMutacao(chave,ativar){
  if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
  const nome=chave[0].toUpperCase()+chave.slice(1),minutosEl=document.getElementById("admMutacao"+nome+"Minutos");
  const minutos=Number(minutosEl&&minutosEl.value);
- if(ativar&&(!Number.isInteger(minutos)||minutos<1||minutos>10080)){admResultado("A duração deve ser de 1 a 10.080 minutos.","erro");return;}
- const expiraEm=ativar?new Date(Date.now()+minutos*60000):new Date();
+ 
+ const expiraEm=ativar?new Date(0):new Date();
  const agora=Date.now(),id="mutacao-"+chave+"-"+agora+"-"+usuarioAtual.uid;
- try{await comTempoLimite(db.collection("eventos").doc("mutacao_"+chave).set({ativo:ativar,mutacao:chave,ativadoEm:ativar?agora:0,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:ativar?minutos:0,admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,(ativar?"ativar":"encerrar")+" evento "+nome);admResultado(ativar?"Evento "+nomesMutacaoEvento[chave]+" ativado por "+minutos+" minuto(s).":"Evento "+nomesMutacaoEvento[chave]+" encerrado.","ok");}
+ try{await comTempoLimite(db.collection("eventos").doc("mutacao_"+chave).set({ativo:ativar,permanente:ativar,mutacao:chave,ativadoEm:ativar?agora:0,expiraEm:firebase.firestore.Timestamp.fromDate(expiraEm),duracaoMinutos:0,admin:nomeDoAdminAtual(),id,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,(ativar?"ativar":"encerrar")+" evento "+nome);admResultado(ativar?"Evento "+nomesMutacaoEvento[chave]+" ativado permanentemente.":"Evento "+nomesMutacaoEvento[chave]+" encerrado.","ok");}
  catch(error){admResultado("Não foi possível alterar o evento "+nome+": "+(error.message||"erro no Firestore"),"erro");}
 }
 Object.keys(eventosMutacao).forEach(chave=>{const nome=chave[0].toUpperCase()+chave.slice(1);document.getElementById("admMutacao"+nome+"Ativar").addEventListener("click",()=>controlarEventoMutacao(chave,true));document.getElementById("admMutacao"+nome+"Encerrar").addEventListener("click",()=>controlarEventoMutacao(chave,false));});
