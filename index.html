@@ -115,8 +115,8 @@ z-index:20000;pointer-events:none;opacity:0;transition:opacity .15s
 .adm-mutacao-menu[open]>.adm-mutacao-mais{margin-bottom:0}
 .adm-mutacao-titulo{padding:8px 0;font-size:13px;font-weight:900;color:#fff}
 /* DINHEIRO e SORTE usam o mesmo estilo visual do indicador HACKER */
-#eventoGlobalBadge{top:12px;background:linear-gradient(145deg,#123b24,#020b06);border-color:#43ff83}
-#eventoSorteBadge{top:64px;background:linear-gradient(145deg,#123b24,#020b06);border-color:#43ff83}
+#eventoGlobalBadge{top:12px;background:linear-gradient(145deg,#287b45,#14532e);border-color:#3ca665}
+#eventoSorteBadge{top:64px;background:linear-gradient(145deg,#c9f8df,#8ee5b8);border-color:#8de6b8}
 #eventoAnjoBadge{top:140px}
 #eventoHackerBadge{top:192px}
 #eventoGalaxiaBadge{top:244px}
@@ -3489,7 +3489,7 @@ function atualizarBadgesMutacao(){
  const cfg={anjo:{id:"eventoAnjoBadge",tempo:"eventoAnjoTempo",rotulo:"ANJO"},hacker:{id:"eventoHackerBadge",tempo:"eventoHackerTempo",rotulo:"HACKER"},galaxia:{id:"eventoGalaxiaBadge",tempo:"eventoGalaxiaTempo",rotulo:"GALÁXIA"}};
  const momentoAtivacao=k=>{const ev=eventosMutacao[k]||{};const direto=Number(ev.ativadoEm)||0;if(direto>0)return direto;const doId=Number((String(ev.id||"").match(/-(\d{10,})-/)||[])[1])||0;if(doId>0)return doId;return Math.max(0,(Number(ev.expiraEm)||0)-(Number(ev.duracaoMinutos)||0)*60000);};
  const ativos=Object.keys(cfg).filter(k=>eventosMutacao[k].ativo&&Number(eventosMutacao[k].expiraEm)>Date.now()).sort((a,b)=>momentoAtivacao(a)-momentoAtivacao(b)||a.localeCompare(b));
- Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(ativo){const pos=ativos.indexOf(k);badge.style.top=(140+Math.max(0,pos)*60)+"px";const seg=Math.ceil(restante/1000),mm=Math.floor(seg/60),ss=seg%60;document.getElementById(c.tempo).textContent=c.rotulo+" "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");}});
+ Object.keys(cfg).forEach(k=>{const c=cfg[k],ev=eventosMutacao[k],badge=document.getElementById(c.id);if(!badge)return;const restante=(Number(ev.expiraEm)||0)-Date.now(),ativo=!!ev.ativo&&restante>0;badge.style.display=ativo?"flex":"none";if(ativo){const pos=ativos.indexOf(k);badge.style.top=(116+Math.max(0,pos)*52)+"px";const seg=Math.ceil(restante/1000),mm=Math.floor(seg/60),ss=seg%60;document.getElementById(c.tempo).textContent=c.rotulo+" "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");}});
 }
 function iniciarMonitoramentoEventoSorte(){
  if(cancelarMonitoramentoSorte){try{cancelarMonitoramentoSorte();}catch(e){}}
