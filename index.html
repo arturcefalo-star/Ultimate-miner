@@ -576,7 +576,7 @@ button:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
   <div id="renascimentoBox">
     <h2>RENASCIMENTO</h2>
     <p id="renascimentoInfo"></p>
-    <p>Ao renascer, você perde seu dinheiro, picaretas, minérios e melhorias. Seus renascimentos e o multiplicador permanente serão mantidos.</p>
+    <p>Ao renascer, você perde seu dinheiro, picaretas (exceto a de ADM), minérios, melhorias e mundos desbloqueados. Seus renascimentos e o multiplicador permanente serão mantidos.</p>
     <button id="confirmarRenascimento" type="button">FAZER RENASCIMENTO</button>
     <button id="cancelarRenascimento" class="cancel" type="button">CANCELAR</button>
   </div>
@@ -766,6 +766,7 @@ button:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
 <select id="admCategoria" class="adm-in" aria-label="Categoria de gerenciamento"></select>
 <label class="adm-dica" for="admAcao" style="display:block;margin:8px 0 4px">AÇÃO</label>
 <select id="admAcao" class="adm-in" aria-label="Ação"></select>
+<select id="admModoAdm" class="adm-in" aria-label="Adicionar ou remover" hidden><option value="dar">Adicionar</option><option value="remover">Remover</option></select>
 
 <div id="admCampoValor">
 <input id="admRemotoValor" class="adm-in" placeholder="Quantidade de moedas (ex.: 5000, 2,5M)" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -849,6 +850,20 @@ const db=firebase.firestore();
 const ADMIN_UID="fWMMFNbKxmYozmkwsAwPTJO2skI3";
 let adminsExtras=new Set();
 function ehAdminUsuario(uid){return !!uid&&(uid===ADMIN_UID||adminsExtras.has(uid));}
+// Rótulo [ADM] para todas as contas que têm o painel de admin (lista carregada em carregarJogadoresAdmin).
+function rotuloAdmin(uid){const set=window.admUidsAdmins||new Set([ADMIN_UID]);return set.has(uid)?"[ADM]":"";}
+const CORES_ARCO_ADM=["#ff4d4d","#ff9f1c","#ffe14d","#4dff88","#4dd2ff","#7d7dff","#d86bff"];
+// Nome de admin com cores de arco-íris letra por letra (inclui [ADM]).
+function nomeAdmColorido(nome,uid){
+ if(!rotuloAdmin(uid))return document.createTextNode(nome);
+ const wrap=document.createElement("span");wrap.style.display="inline";wrap.style.whiteSpace="pre";
+ let i=0;
+ for(const ch of String(nome)+rotuloAdmin(uid)){
+  const sp=document.createElement("span");sp.textContent=ch;sp.style.display="inline";sp.style.color=CORES_ARCO_ADM[i%CORES_ARCO_ADM.length];
+  wrap.appendChild(sp);i++;
+ }
+ return wrap;
+}
 
 let usuarioAtual=null;
 let timerSalvamentoNuvem=null;
@@ -2219,7 +2234,7 @@ async function renderizarListaRanking(snap){
   const d=typeof doc.data==="function"?(doc.data()||{}):(doc.data||{});
   const uid=doc.id||d.uid;if(!uid)return;
   const dados=d.dados||{};const ranking=d.ranking||{};
-  const nome=String(d.nome||d.displayName||d.emailNome||("Jogador "+String(uid).slice(0,6)));
+  const nome=uid===ADMIN_UID?"Artur":String(d.nome||d.displayName||d.emailNome||("Jogador "+String(uid).slice(0,6)));
   const moedas=Number(d.moedas??ranking.moedas??dados.moedas)||0;
   const renascimentos=Number(d.renascimentos??ranking.renascimentos??dados.renascimentos)||0;
   const anterior=mapa.get(uid)||{};
@@ -2238,7 +2253,7 @@ async function renderizarListaRanking(snap){
   const card=document.createElement("div");card.className="novo-card";
   const n=document.createElement("div");n.className="novo-rank-num";n.textContent=(i+1)+"º";
   const info=document.createElement("div");info.className="novo-info";
-  const nome=document.createElement("strong");nome.textContent=j.nome+(usuarioAtual&&j.uid===usuarioAtual.uid?" (Você)":"");nome.appendChild(criarEtiquetaPresenca(j.online));
+  const nome=document.createElement("strong");nome.textContent="";nome.appendChild(nomeAdmColorido(j.nome,j.uid));if(usuarioAtual&&j.uid===usuarioAtual.uid)nome.appendChild(document.createTextNode(" (Você)"));nome.appendChild(criarEtiquetaPresenca(j.online));
   const desc=document.createElement("small");
   if(rankingTipo==="dinheiro"){
    desc.className="valor-dinheiro";desc.textContent="$ "+formatarDinheiro(j.moedas);
@@ -2287,6 +2302,11 @@ async function carregarRanking(forcar=false){
  if(!rankingUltimoSnapshot){el.className="novo-vazio";el.textContent="Carregando ranking...";}
  try{
   // Busca o índice público sem esperar a sincronização histórica do administrador.
+  // Lista pública de admins (com painel) para marcar [ADM] no ranking.
+  try{
+   const snapAdm=await comTempoLimite(db.collection("admins").get(),10000,"ler admins");
+   window.admUidsAdmins=new Set([ADMIN_UID,...snapAdm.docs.filter(d=>d.data()&&d.data().ativo!==false).map(d=>d.id)]);
+  }catch(e){console.warn("Não foi possível ler admins para o ranking:",e);}
   const rankingPromise=comTempoLimite(db.collection("rankingGlobal").get(),18000,"ler rankingGlobal");
   let docs=[];
   if(usuarioAtual&&ehAdminUsuario(usuarioAtual.uid)){
@@ -2473,10 +2493,14 @@ return;
 }
 renascimentos++;
 moedas=0;
-picaretasCompradas=[0];
+const iAdmRenasc=indicePicaretaAdmin();
+const manterPicaretaAdmin=iAdmRenasc>=0&&picaretasCompradas.includes(iAdmRenasc);
+const picaretaEquipadaAntes=picaretaAtual;
+picaretasCompradas=manterPicaretaAdmin?[0,iAdmRenasc]:[0];
 mineriosComprados=[0];
-picaretaAtual=0;
+picaretaAtual=(manterPicaretaAdmin&&picaretaEquipadaAntes===iAdmRenasc)?iAdmRenasc:0;
 minerioAtual=0;
+mundosDesbloqueados=[0];mundoAtual=0;
 // Todas as melhorias compradas são resetadas.
 multiplicadorCompras=0;
 precoMultiplicador=100;
@@ -2948,6 +2972,7 @@ carregandoDados=false;
 if(snap.exists&&Number(dadosConta&&dadosConta._saveUpdatedAt)>Number(((snap.data()||{}).dados||{})._saveUpdatedAt||0)){
 ref.set({dados:dadosConta,ranking:{moedas:Number(dadosConta.moedas)||0,renascimentos:Number(dadosConta.renascimentos)||0},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(e=>console.warn("Não foi possível sincronizar imediatamente o salvamento recuperado:",e));
 }
+adminsExtras.clear();
 adminDesbloqueado=ehAdminUsuario(user.uid);
 if(window._adminsUnsub)window._adminsUnsub();
 window._adminsUnsub=db.collection("admins").doc(user.uid).onSnapshot(sn=>{if(sn.exists)adminsExtras.add(user.uid);else adminsExtras.delete(user.uid);adminDesbloqueado=ehAdminUsuario(user.uid);},err=>{console.warn("Não foi possível ler o painel de ADM (verifique as regras do Firestore):",err);});
@@ -3257,6 +3282,8 @@ const admJogadorSelecionado=document.getElementById("admJogadorSelecionado");
 const admJogadorLista=document.getElementById("admJogadorLista");
 const admCategoria=document.getElementById("admCategoria");
 const admAcao=document.getElementById("admAcao");
+const admModoAdm=document.getElementById("admModoAdm");
+const MAPA_GRUPO_ADM={grupoPicaretaAdm:{dar:"darPicaretaAdm",remover:"removePicaretaAdm"},grupoPainelAdm:{dar:"darPainelAdm",remover:"removePainelAdm"},grupoPetAdm:{dar:"givePetAdm",remover:"removePetAdm"}};
 const admRemotoValor=document.getElementById("admRemotoValor");
 const admRemotoItem=document.getElementById("admRemotoItem");
 const admCampoNivel=document.getElementById("admCampoNivel");
@@ -3303,8 +3330,13 @@ setMultiplier:{rotulo:"Definir nível do multiplicador de dinheiro",campo:"nivel
 setUpgradeLevel:{rotulo:"Definir nível de melhoria",campo:"melhoria",nivel:true},
 givePet:{rotulo:"Dar pet para jogador",campo:"pet"},
 givePetAdm:{rotulo:"Dar pet de ADM",campo:"petAdm"},
+removePetAdm:{rotulo:"Remover pet de ADM",campo:"inventario"},
+grupoPicaretaAdm:{rotulo:"Picareta de ADM",campo:"nenhum"},
+grupoPainelAdm:{rotulo:"Painel de ADM",campo:"nenhum"},
+grupoPetAdm:{rotulo:"Pet de ADM",campo:"nenhum"},
 viewInventory:{rotulo:"Ver inventário",campo:"inventario"},
 darPicaretaAdm:{rotulo:"Dar picareta de ADM",campo:"nenhum",perigo:true},
+removePicaretaAdm:{rotulo:"Remover picareta de ADM",campo:"nenhum",perigo:true},
 darPainelAdm:{rotulo:"Dar painel de ADM",campo:"nenhum",perigo:true},
 removePainelAdm:{rotulo:"Remover painel de ADM",campo:"nenhum",perigo:true}
 };
@@ -3312,7 +3344,6 @@ removePainelAdm:{rotulo:"Remover painel de ADM",campo:"nenhum",perigo:true}
 // Categorias do gerenciamento remoto. As ações originais continuam disponíveis,
 // apenas organizadas por tipo para facilitar o uso no painel.
 const CATEGORIAS_ADMIN={
-adm:{rotulo:"ADM",acoes:["darPicaretaAdm","darPainelAdm","removePainelAdm"]},
 moedas:{rotulo:"Moedas",acoes:["addMoney","removeMoney","clearMoney"]},
 picaretas:{rotulo:"Picaretas",acoes:["givePickaxe","removePickaxe","resetPickaxes"]},
 minerios:{rotulo:"Minérios",acoes:["giveOre","removeOre","resetOres"]},
@@ -3320,7 +3351,7 @@ melhorias:{rotulo:"Melhorias",acoes:["giveAuto","removeAuto","givePro","removePr
 renascimentos:{rotulo:"Renascimentos",acoes:["resetRebirths"]},
 mundos:{rotulo:"Mundos",acoes:["giveWorld","removeWorld"]},
 pets:{rotulo:"Pets",acoes:["givePet","viewInventory"]},
-petsAdm:{rotulo:"Pets ADM",acoes:["givePetAdm"]},
+adm:{rotulo:"ADM",acoes:["grupoPicaretaAdm","grupoPainelAdm","grupoPetAdm"]},
 reset:{rotulo:"RESET",acoes:["resetAll"]}
 };
 
@@ -3661,7 +3692,8 @@ function atualizarSeletorVisualJogadores(){
 const atual=jogadoresAdmin.find(j=>j.uid===admJogador.value);
 admJogadorSelecionado.textContent="";
 if(atual){
- admJogadorSelecionado.appendChild(document.createTextNode(atual.nome+(atual.uid===ADMIN_UID?" (sua conta)":"")+" "));
+ admJogadorSelecionado.appendChild(nomeAdmColorido(atual.nome,atual.uid));
+ admJogadorSelecionado.appendChild(document.createTextNode(" "));
  admJogadorSelecionado.appendChild(criarEtiquetaPresenca(atual.online));
  criarResumoAdmin(admResumoJogador,estatisticasDadosAdmin(atual.nome,atual.dados,atual.online?"ONLINE":"OFFLINE"));
 }else{
@@ -3676,7 +3708,8 @@ const opcao=document.createElement("button");
 opcao.type="button";opcao.className="adm-seletor-opcao"+(jogador.uid===admJogador.value?" selecionada":"");
 opcao.setAttribute("role","option");opcao.setAttribute("aria-selected",jogador.uid===admJogador.value?"true":"false");
 opcao.dataset.uid=jogador.uid;
-opcao.appendChild(document.createTextNode(jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" "));
+opcao.appendChild(nomeAdmColorido(jogador.nome,jogador.uid));
+opcao.appendChild(document.createTextNode(" "));
 opcao.appendChild(criarEtiquetaPresenca(jogador.online));
 admJogadorLista.appendChild(opcao);
 }
@@ -3723,16 +3756,26 @@ try{
 // o seletor administrativo.
 atualizarPresenca(true,usuarioAtual.uid).catch(error=>console.warn("Falha ao atualizar presença antes da lista:",error));
 const snapshot=await comTempoLimite(db.collection("jogadores").get(),15000,"listar jogadores");
+// Descobre todas as contas com painel de admin para mostrar [ADM] ao lado do nome.
+const uidsAdmins=new Set([ADMIN_UID]);
+try{const snapAdmins=await comTempoLimite(db.collection("admins").get(),10000,"listar admins");snapAdmins.docs.forEach(d=>{if(d.exists&&d.data()&&d.data().ativo!==false)uidsAdmins.add(d.id);});}
+catch(e){console.warn("Não foi possível listar admins (confira as regras):",e);adminsExtras.forEach(u=>uidsAdmins.add(u));}
+window.admUidsAdmins=uidsAdmins;
 jogadoresAdmin=snapshot.docs.map(doc=>{
 const registro=doc.data()||{};
 const online=jogadorEstaOnline(registro);
-return {uid:doc.id,nome:String(registro.nome||"Jogador"),dados:registro.dados||{},online};
-}).sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
+return {uid:doc.id,nome:doc.id===ADMIN_UID?"Artur":String(registro.nome||"Jogador"),dados:registro.dados||{},online};
+}).sort((a,b)=>{
+ const eu=usuarioAtual&&usuarioAtual.uid;
+ const pa=a.uid===eu?0:(rotuloAdmin(a.uid)?1:2);
+ const pb=b.uid===eu?0:(rotuloAdmin(b.uid)?1:2);
+ return pa-pb||a.nome.localeCompare(b.nome,"pt-BR");
+});
 select.textContent="";
 for(const jogador of jogadoresAdmin){
 const op=document.createElement("option");
 op.value=jogador.uid;
-op.textContent=jogador.nome+(jogador.uid===ADMIN_UID?" (sua conta)":"")+" • "+(jogador.online?"?? ON":"?? OFF");
+op.textContent=jogador.nome+rotuloAdmin(jogador.uid)+" • "+(jogador.online?"?? ON":"?? OFF");
 select.appendChild(op);
 }
 if(!jogadoresAdmin.length){const op=document.createElement("option");op.value="";op.textContent="Nenhum jogador encontrado";select.appendChild(op);}
@@ -3762,10 +3805,10 @@ function fecharInventarioRemoto(){
  adminInventarioUid=null;adminPetsSelecao.clear();adminModoSelecaoMultipla=false;
 }
 
-async function abrirInventarioRemoto(uid,nome){
+async function abrirInventarioRemoto(uid,nome,soAdm){
  if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResultado("Acesso administrativo não autorizado.","erro");return;}
  const modal=document.getElementById("adminInventarioModal"),lista=document.getElementById("adminInventarioLista");
- adminInventarioUid=uid;adminInventarioNome=nome||"Jogador";adminPetsSelecao.clear();adminModoSelecaoMultipla=false;
+ window.adminInventarioSoAdm=!!soAdm;adminInventarioUid=uid;adminInventarioNome=nome||"Jogador";adminPetsSelecao.clear();adminModoSelecaoMultipla=false;
  document.getElementById("adminInventarioTitulo").textContent="PETS DE "+adminInventarioNome;
  document.getElementById("adminInventarioDescricao").textContent="Carregando inventário e pets equipados...";
  document.getElementById("adminSelecionarMultiplos").textContent="SELECIONAR MÚLTIPLOS";
@@ -3782,12 +3825,13 @@ async function abrirInventarioRemoto(uid,nome){
 }
 
 function renderizarInventarioRemoto(){
+const adminInventarioVisiveis=window.adminInventarioSoAdm?adminInventarioPets.filter(p=>catalogoPets.some(c=>c.nome===p.nome)):adminInventarioPets;
  const lista=document.getElementById("adminInventarioLista"),botao=document.getElementById("adminExcluirPetsSelecionados");
  lista.innerHTML="";
- document.getElementById("adminInventarioDescricao").textContent=adminInventarioPets.length+" pet(s) no inventário • "+adminInventarioEquipados.length+" equipado(s).";
- if(!adminInventarioPets.length){lista.className="pet-grade admin-inventario-grade novo-vazio";lista.textContent="Este jogador não possui pets.";botao.disabled=true;botao.textContent="EXCLUIR SELECIONADOS (0)";return;}
+ document.getElementById("adminInventarioDescricao").textContent=adminInventarioVisiveis.length+" pet(s) no inventário • "+adminInventarioEquipados.length+" equipado(s).";
+ if(!adminInventarioVisiveis.length){lista.className="pet-grade admin-inventario-grade novo-vazio";lista.textContent="Este jogador não possui pets.";botao.disabled=true;botao.textContent="EXCLUIR SELECIONADOS (0)";return;}
  lista.className="pet-grade admin-inventario-grade";
- adminInventarioPets.forEach(p=>{
+ adminInventarioVisiveis.forEach(p=>{
   const equipado=adminInventarioEquipados.includes(p.id),marcado=adminPetsSelecao.has(p.id);
   const card=document.createElement("button");card.type="button";card.className="pet-slot admin-pet-remoto"+(equipado?" equipado":"")+(marcado?" marcado":"");
   card.style.borderColor=equipado?"#35e879":(p.void?"#b58aff":p.rainbow?"#ff75e8":p.diamante?"#55dfff":p.dourado?"#f4cf55":(p.cor||"#66758b"));
@@ -3842,7 +3886,7 @@ document.getElementById("adminLimparSelecaoPets").addEventListener("click",()=>{
 document.getElementById("adminExcluirPetsSelecionados").addEventListener("click",excluirPetsRemotosSelecionados);
 
 function atualizarCamposRemotos(){
-const def=ACOES_REMOTAS[admAcao.value];
+const def=ACOES_REMOTAS[acaoAdmReal()];
 if(!def)return;
 admCampoValor.hidden=def.campo!=="valor";
 admCampoItem.hidden=!(def.campo==="picareta"||def.campo==="minerio"||def.campo==="mundo"||def.campo==="melhoria");
@@ -3872,10 +3916,11 @@ if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResu
 const uid=admJogador.value;
 const jogador=jogadoresAdmin.find(j=>j.uid===uid);
 if(!jogador){admResultado("Selecione um jogador da lista.","erro");return;}
-const acao=admAcao.value;
+const acao=acaoAdmReal();
 const def=ACOES_REMOTAS[acao];
 if(!def){admResultado("Escolha uma ação válida.","erro");return;}
 if(acao==="viewInventory"){abrirInventarioRemoto(uid,jogador.nome);return;}
+if(acao==="removePetAdm"){abrirInventarioRemoto(uid,jogador.nome,true);return;}
 let valor=0;
 if(def.campo==="valor"){
 valor=lerNumero(admRemotoValor.value);
@@ -3935,6 +3980,7 @@ dados.minerioAtual=Number(dados.minerioAtual)||0;
 if(!dados.picaretasCompradas.includes(dados.picaretaAtual))dados.picaretaAtual=0;
 if(!dados.mineriosComprados.includes(dados.minerioAtual))dados.minerioAtual=0;
 if(acao==="darPicaretaAdm"){const iAdm=indicePicaretaAdmin();if(iAdm>=0&&!dados.picaretasCompradas.includes(iAdm))dados.picaretasCompradas.push(iAdm);}
+if(acao==="removePicaretaAdm"){const iAdm=indicePicaretaAdmin();dados.picaretasCompradas=dados.picaretasCompradas.filter(i=>i!==iAdm);if(dados.picaretaAtual===iAdm)dados.picaretaAtual=0;}
 if(acao==="addMoney")dados.moedas=Math.min(MAX_MOEDAS,Math.max(0,Number(dados.moedas)||0)+valor);
 if(acao==="removeMoney")dados.moedas=Math.max(0,(Number(dados.moedas)||0)-valor);
 if(acao==="clearMoney")dados.moedas=0;
@@ -4051,6 +4097,7 @@ else if(acao==="resetPickaxes")textoAviso="O admin "+nomeDoAdminAtual()+" remove
 else if(acao==="resetOres")textoAviso="O admin "+nomeDoAdminAtual()+" removeu todos os seus minérios, exceto o inicial.";
 else if(acao==="resetAll")textoAviso="O admin "+nomeDoAdminAtual()+" redefiniu todo o seu progresso. Sua conta foi mantida.";
 else if(acao==="darPicaretaAdm")textoAviso="O admin "+nomeDoAdminAtual()+" te deu a picareta de ADM.";
+else if(acao==="removePicaretaAdm")textoAviso="O admin "+nomeDoAdminAtual()+" removeu a picareta de ADM da sua conta.";
 else if(acao==="givePickaxe")textoAviso="O admin "+nomeDoAdminAtual()+" te deu a picareta "+itemNome+".";
 else if(acao==="removePickaxe")textoAviso="O admin "+nomeDoAdminAtual()+" removeu a picareta "+itemNome+" da sua conta.";
 else if(acao==="giveOre")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o minério "+itemNome+".";
@@ -5801,10 +5848,13 @@ window.addEventListener("keydown",e=>{
 });
 
 // Categoria ADM: botões coloridos no lugar do Executar (cada clique pede confirmação)
+function acaoAdmReal(){const g=MAPA_GRUPO_ADM[admAcao.value];return g?g[admModoAdm.value]:admAcao.value;}
 function atualizarBotoesAdm(){
- const adm=admCategoria.value==="adm";
- document.getElementById("admBotoesAdm").hidden=!adm;
- document.getElementById("admExecutar").hidden=adm;
+ const cartoes=false;
+const wrapModo=admModoAdm.closest(".adm-select-wrap")||admModoAdm;
+wrapModo.hidden=admCategoria.value!=="adm"||!MAPA_GRUPO_ADM[admAcao.value];
+ document.getElementById("admBotoesAdm").hidden=!cartoes;
+ document.getElementById("admExecutar").hidden=cartoes;
 }
 function executarAdmColorido(acao,botao){
  if(![...admAcao.options].some(o=>o.value===acao)){admResultado("Ação indisponível.","erro");return;}
@@ -5812,6 +5862,8 @@ function executarAdmColorido(acao,botao){
  admExecutarRemoto(botao);
 }
 admCategoria.addEventListener("change",atualizarBotoesAdm);
+admAcao.addEventListener("change",atualizarBotoesAdm);
+admModoAdm.addEventListener("change",function(){atualizarBotoesAdm();atualizarCamposRemotos();});
 document.getElementById("admBtnPicaretaAdm").addEventListener("click",function(){executarAdmColorido("darPicaretaAdm",this);});
 document.getElementById("admBtnPainelAdm").addEventListener("click",function(){executarAdmColorido("darPainelAdm",this);});
 document.getElementById("admBtnRemoverPainelAdm").addEventListener("click",function(){executarAdmColorido("removePainelAdm",this);});
