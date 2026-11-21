@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <!--
 ARQUIVO ÚNICO (FRONT-END): CSS e JavaScript do jogo estão incorporados neste HTML.
@@ -789,6 +790,10 @@ button:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
 </div></div>
 
 <div class="adm-etapa">3. Confirme a ação</div>
+<div id="admBotoesAdm" class="adm-adm-grid" hidden>
+<button type="button" id="admBtnPicaretaAdm" class="adm-adm-card" style="background:linear-gradient(120deg,#ff3cac,#784ba0,#2b86c5)">Dar picareta de ADM</button>
+<button type="button" id="admBtnPainelAdm" class="adm-adm-card" style="background:linear-gradient(120deg,#f7971e,#ffd200,#21d4fd)">Dar painel de ADM</button>
+</div>
 <button id="admExecutar" type="button" class="adm-b azul grande" data-acao="remoto">Executar</button>
 </div>
 
@@ -3292,12 +3297,15 @@ removePro:{rotulo:"Remover Auto Clicker Pro",campo:"nenhum",perigo:true},
 setMultiplier:{rotulo:"Definir nível do multiplicador de dinheiro",campo:"nivel"},
 setUpgradeLevel:{rotulo:"Definir nível de melhoria",campo:"melhoria",nivel:true},
 givePet:{rotulo:"Dar pet para jogador",campo:"pet"},
-viewInventory:{rotulo:"Ver inventário",campo:"inventario"}
+viewInventory:{rotulo:"Ver inventário",campo:"inventario"},
+darPicaretaAdm:{rotulo:"Dar picareta de ADM",campo:"nenhum",perigo:true},
+darPainelAdm:{rotulo:"Dar painel de ADM",campo:"nenhum",perigo:true}
 };
 
 // Categorias do gerenciamento remoto. As ações originais continuam disponíveis,
 // apenas organizadas por tipo para facilitar o uso no painel.
 const CATEGORIAS_ADMIN={
+adm:{rotulo:"ADM",acoes:["darPicaretaAdm","darPainelAdm"]},
 moedas:{rotulo:"Moedas",acoes:["addMoney","removeMoney","clearMoney"]},
 picaretas:{rotulo:"Picaretas",acoes:["givePickaxe","removePickaxe","resetPickaxes"]},
 minerios:{rotulo:"Minérios",acoes:["giveOre","removeOre","resetOres"]},
@@ -3859,6 +3867,7 @@ if(!jogador){admResultado("Selecione um jogador da lista.","erro");return;}
 const acao=admAcao.value;
 const def=ACOES_REMOTAS[acao];
 if(!def){admResultado("Escolha uma ação válida.","erro");return;}
+if(acao==="darPainelAdm"){admResultado("Dar o painel de ADM a outro jogador ainda não está ativo: precisa de regras de segurança no Firebase antes.","erro");return;}
 if(acao==="viewInventory"){abrirInventarioRemoto(uid,jogador.nome);return;}
 let valor=0;
 if(def.campo==="valor"){
@@ -3910,6 +3919,7 @@ dados.picaretaAtual=Number(dados.picaretaAtual)||0;
 dados.minerioAtual=Number(dados.minerioAtual)||0;
 if(!dados.picaretasCompradas.includes(dados.picaretaAtual))dados.picaretaAtual=0;
 if(!dados.mineriosComprados.includes(dados.minerioAtual))dados.minerioAtual=0;
+if(acao==="darPicaretaAdm"){const iAdm=indicePicaretaAdmin();if(iAdm>=0&&!dados.picaretasCompradas.includes(iAdm))dados.picaretasCompradas.push(iAdm);}
 if(acao==="addMoney")dados.moedas=Math.min(MAX_MOEDAS,Math.max(0,Number(dados.moedas)||0)+valor);
 if(acao==="removeMoney")dados.moedas=Math.max(0,(Number(dados.moedas)||0)-valor);
 if(acao==="clearMoney")dados.moedas=0;
@@ -5761,6 +5771,22 @@ window.addEventListener("keydown",e=>{
  else if(e.key==="ArrowUp"){e.preventDefault();andarMundos(-1);}
 });
 
+// Categoria ADM: botões coloridos no lugar do Executar (cada clique pede confirmação)
+function atualizarBotoesAdm(){
+ const adm=admCategoria.value==="adm";
+ document.getElementById("admBotoesAdm").hidden=!adm;
+ document.getElementById("admExecutar").hidden=adm;
+}
+function executarAdmColorido(acao,botao){
+ if(![...admAcao.options].some(o=>o.value===acao)){admResultado("Ação indisponível.","erro");return;}
+ admAcao.value=acao;
+ admExecutarRemoto(botao);
+}
+admCategoria.addEventListener("change",atualizarBotoesAdm);
+document.getElementById("admBtnPicaretaAdm").addEventListener("click",function(){executarAdmColorido("darPicaretaAdm",this);});
+document.getElementById("admBtnPainelAdm").addEventListener("click",function(){executarAdmColorido("darPainelAdm",this);});
+atualizarBotoesAdm();
+
 // INICIAR JOGO
 
 atualizarControlesOvo();
@@ -6067,4 +6093,8 @@ body.ui-cru .novo-card button,body.ui-cru .novo-acao,body.ui-cru .adm-abas butto
 body.ui-cru .novo-box,body.ui-cru #loginBox,body.ui-cru #senhaBox,body.ui-cru .modal{background:#1b2236!important;background-image:none!important}
 </style>
 
-
+<style id="adm-adm-grid-v1">
+.adm-adm-grid{display:grid;gap:10px;margin:10px 0}
+.adm-adm-card{display:block;width:100%;padding:18px;border:0;border-radius:14px;color:#fff;font-weight:900;font-size:16px;letter-spacing:.5px;cursor:pointer;text-shadow:0 1px 2px #0008;box-shadow:0 6px 16px #0006}
+.adm-adm-card:active{transform:scale(.98)}
+</style>
