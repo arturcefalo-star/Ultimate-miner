@@ -793,6 +793,7 @@ button:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
 <div id="admBotoesAdm" class="adm-adm-grid" hidden>
 <button type="button" id="admBtnPicaretaAdm" class="adm-adm-card" style="background:linear-gradient(120deg,#ff3cac,#784ba0,#2b86c5)">Dar picareta de ADM</button>
 <button type="button" id="admBtnPainelAdm" class="adm-adm-card" style="background:linear-gradient(120deg,#f7971e,#ffd200,#21d4fd)">Dar painel de ADM</button>
+<button type="button" id="admBtnRemoverPainelAdm" class="adm-adm-card" style="background:linear-gradient(120deg,#c31432,#240b36)">Remover painel de ADM</button>
 </div>
 <button id="admExecutar" type="button" class="adm-b azul grande" data-acao="remoto">Executar</button>
 </div>
@@ -846,6 +847,8 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
 const ADMIN_UID="fWMMFNbKxmYozmkwsAwPTJO2skI3";
+let adminsExtras=new Set();
+function ehAdminUsuario(uid){return !!uid&&(uid===ADMIN_UID||adminsExtras.has(uid));}
 
 let usuarioAtual=null;
 let timerSalvamentoNuvem=null;
@@ -2247,7 +2250,7 @@ async function renderizarListaRanking(snap){
 async function sincronizarRankingHistoricoAdmin(){
  // Somente o administrador pode ler a coleção privada completa de jogadores.
  // Ele publica apenas nome e estatísticas no rankingGlobal, sem expor inventário ou dados privados.
- if(!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+ if(!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid))return;
  try{
   const snap=await comTempoLimite(db.collection("jogadores").get(),25000,"recuperar todas as contas já criadas para o ranking");
   const docs=snap.docs||[];
@@ -2286,7 +2289,7 @@ async function carregarRanking(forcar=false){
   // Busca o índice público sem esperar a sincronização histórica do administrador.
   const rankingPromise=comTempoLimite(db.collection("rankingGlobal").get(),18000,"ler rankingGlobal");
   let docs=[];
-  if(usuarioAtual&&usuarioAtual.uid===ADMIN_UID){
+  if(usuarioAtual&&ehAdminUsuario(usuarioAtual.uid)){
    const [rankingSnap,jogadoresSnap]=await Promise.all([
     rankingPromise,
     comTempoLimite(db.collection("jogadores").get(),18000,"ler contas dos jogadores")
@@ -2785,7 +2788,7 @@ mineriosComprados=[0];
 picaretaAtual=0;
 minerioAtual=0;
 volumeGeral=1;
-adminDesbloqueado=false;
+adminDesbloqueado=ehAdminUsuario(usuarioAtual&&usuarioAtual.uid);
 codigosUsados=[];
 multiplicadorCompras=0;
 precoMultiplicador=100;
@@ -2805,7 +2808,7 @@ mineriosComprados=Array.isArray(dados.mineriosComprados)?dados.mineriosComprados
 picaretasCompradas=[...new Set(picaretasCompradas)];
 mineriosComprados=[...new Set(mineriosComprados)];
 if(!picaretasCompradas.includes(0))picaretasCompradas.push(0);
-  if(usuarioAtual&&usuarioAtual.uid===ADMIN_UID){const paIdx=indicePicaretaAdmin();if(paIdx>=0&&!picaretasCompradas.includes(paIdx))picaretasCompradas.push(paIdx);}
+  if(usuarioAtual&&ehAdminUsuario(usuarioAtual.uid)){const paIdx=indicePicaretaAdmin();if(paIdx>=0&&!picaretasCompradas.includes(paIdx))picaretasCompradas.push(paIdx);}
 if(!mineriosComprados.includes(0))mineriosComprados.push(0);
 const picaretaSalva=Number(dados.picaretaAtual);
 const minerioSalvo=Number(dados.minerioAtual);
@@ -2817,7 +2820,7 @@ if(Number.isFinite(volumeSalvo))volumeGeral=Math.max(0,Math.min(1,volumeSalvo));
 if(masterGain&&audio){
  try{masterGain.gain.cancelScheduledValues(audio.currentTime);masterGain.gain.setValueAtTime(volumeGeral*1.8,audio.currentTime);}catch(e){masterGain.gain.value=volumeGeral*1.8;}
 }
-adminDesbloqueado=false;
+adminDesbloqueado=ehAdminUsuario(usuarioAtual&&usuarioAtual.uid);
 codigosUsados=Array.isArray(dados.codigosUsados)?dados.codigosUsados.filter(c=>typeof c==="string"):[];
 multiplicadorCompras=Math.max(0,Math.floor(Number(dados.multiplicadorCompras)||0));
 precoMultiplicador=Number(dados.precoMultiplicador);
@@ -2945,7 +2948,9 @@ carregandoDados=false;
 if(snap.exists&&Number(dadosConta&&dadosConta._saveUpdatedAt)>Number(((snap.data()||{}).dados||{})._saveUpdatedAt||0)){
 ref.set({dados:dadosConta,ranking:{moedas:Number(dadosConta.moedas)||0,renascimentos:Number(dadosConta.renascimentos)||0},atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(e=>console.warn("Não foi possível sincronizar imediatamente o salvamento recuperado:",e));
 }
-adminDesbloqueado=(user.uid===ADMIN_UID);
+adminDesbloqueado=ehAdminUsuario(user.uid);
+if(window._adminsUnsub)window._adminsUnsub();
+window._adminsUnsub=db.collection("admins").doc(user.uid).onSnapshot(sn=>{if(sn.exists)adminsExtras.add(user.uid);else adminsExtras.delete(user.uid);adminDesbloqueado=ehAdminUsuario(user.uid);},err=>{console.warn("Não foi possível ler o painel de ADM (verifique as regras do Firestore):",err);});
 codigoAdminSessao="";
 dadosCarregados=true;
 iniciarMonitoramentoJogador(user.uid);
@@ -3297,15 +3302,17 @@ removePro:{rotulo:"Remover Auto Clicker Pro",campo:"nenhum",perigo:true},
 setMultiplier:{rotulo:"Definir nível do multiplicador de dinheiro",campo:"nivel"},
 setUpgradeLevel:{rotulo:"Definir nível de melhoria",campo:"melhoria",nivel:true},
 givePet:{rotulo:"Dar pet para jogador",campo:"pet"},
+givePetAdm:{rotulo:"Dar pet de ADM",campo:"petAdm"},
 viewInventory:{rotulo:"Ver inventário",campo:"inventario"},
 darPicaretaAdm:{rotulo:"Dar picareta de ADM",campo:"nenhum",perigo:true},
-darPainelAdm:{rotulo:"Dar painel de ADM",campo:"nenhum",perigo:true}
+darPainelAdm:{rotulo:"Dar painel de ADM",campo:"nenhum",perigo:true},
+removePainelAdm:{rotulo:"Remover painel de ADM",campo:"nenhum",perigo:true}
 };
 
 // Categorias do gerenciamento remoto. As ações originais continuam disponíveis,
 // apenas organizadas por tipo para facilitar o uso no painel.
 const CATEGORIAS_ADMIN={
-adm:{rotulo:"ADM",acoes:["darPicaretaAdm","darPainelAdm"]},
+adm:{rotulo:"ADM",acoes:["darPicaretaAdm","darPainelAdm","removePainelAdm"]},
 moedas:{rotulo:"Moedas",acoes:["addMoney","removeMoney","clearMoney"]},
 picaretas:{rotulo:"Picaretas",acoes:["givePickaxe","removePickaxe","resetPickaxes"]},
 minerios:{rotulo:"Minérios",acoes:["giveOre","removeOre","resetOres"]},
@@ -3313,6 +3320,7 @@ melhorias:{rotulo:"Melhorias",acoes:["giveAuto","removeAuto","givePro","removePr
 renascimentos:{rotulo:"Renascimentos",acoes:["resetRebirths"]},
 mundos:{rotulo:"Mundos",acoes:["giveWorld","removeWorld"]},
 pets:{rotulo:"Pets",acoes:["givePet","viewInventory"]},
+petsAdm:{rotulo:"Pets ADM",acoes:["givePetAdm"]},
 reset:{rotulo:"RESET",acoes:["resetAll"]}
 };
 
@@ -3450,7 +3458,7 @@ uidMonitoradoAdmin="";
 }
 
 function iniciarMonitoramentoJogadorSelecionadoAdmin(uid){
-if(!uid||!adminAberto||!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+if(!uid||!adminAberto||!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid))return;
 if(uidMonitoradoAdmin===uid&&cancelarMonitoramentoJogadorAdmin)return;
 pararMonitoramentoJogadorSelecionadoAdmin();
 uidMonitoradoAdmin=uid;
@@ -3472,7 +3480,7 @@ console.error("Erro ao acompanhar jogador selecionado em tempo real:",error);
 }
 
 function abrirAdmin(){
-if(!adminDesbloqueado||!jogoPronto()||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+if(!adminDesbloqueado||!jogoPronto()||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid))return;
 adminAberto=true;
 adminModal.style.display="flex";
 trocarAbaAdmin("outro");
@@ -3697,7 +3705,7 @@ iniciarMonitoramentoJogadorSelecionadoAdmin(admJogador.value);
 
 async function carregarJogadoresAdmin(silencioso){
 if(admCarregandoJogadores)return;
-if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid))return;
 admCarregandoJogadores=true;
 const select=admJogador;
 const valorAnterior=select.value;
@@ -3755,7 +3763,7 @@ function fecharInventarioRemoto(){
 }
 
 async function abrirInventarioRemoto(uid,nome){
- if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+ if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResultado("Acesso administrativo não autorizado.","erro");return;}
  const modal=document.getElementById("adminInventarioModal"),lista=document.getElementById("adminInventarioLista");
  adminInventarioUid=uid;adminInventarioNome=nome||"Jogador";adminPetsSelecao.clear();adminModoSelecaoMultipla=false;
  document.getElementById("adminInventarioTitulo").textContent="PETS DE "+adminInventarioNome;
@@ -3841,7 +3849,7 @@ admCampoItem.hidden=!(def.campo==="picareta"||def.campo==="minerio"||def.campo==
 admCampoNivel.hidden=!(def.campo==="nivel"||def.campo==="melhoria");
 if(def.campo==="melhoria"){const opcoes=[ ["multiplicadorCompras","Multiplicador de dinheiro (0–500)"],["autoClickerComprado","Auto Clicker (0–1)"],["autoClickerProComprado","Auto Clicker Pro (0–1)"],["autoOvoComprado","Auto Ovo (0–1)"],["triploOvoComprado","Triplo Ovo (0–1)"],["sorteOvoNivel","Sorte dos ovos (0–20)"],["impulsoPetsNivel","Impulso dos pets (0–20)"],["melhoriaInventarioPets","Espaço do inventário de pets (0–6)"],["melhoriaPetsEquipados","Espaços para equipar pets (0–3)"]];admRemotoItem.textContent="";for(const [v,t] of opcoes){const o=document.createElement("option");o.value=v;o.textContent=t;admRemotoItem.appendChild(o);}document.getElementById("admRemotoNivel").placeholder="Nível conforme o limite da melhoria";}
 admCampoDest.hidden=true;
-admCampoPet.hidden=def.campo!=="pet";
+admCampoPet.hidden=!(def.campo==="pet"||def.campo==="petAdm");
 const botaoExecutar=document.getElementById("admExecutar");if(botaoExecutar)botaoExecutar.textContent=def.campo==="inventario"?"VER INVENTÁRIO":"Executar";
 if(def.campo==="picareta")preencherLista(admRemotoItem,picaretas,0);
 else if(def.campo==="minerio")preencherLista(admRemotoItem,minerios,0);
@@ -3850,24 +3858,23 @@ else if(def.campo==="mundo"){
  admRemotoItem.textContent="";
  mundosJogo.forEach((m,i)=>{if(i===0)return;const op=document.createElement("option");op.value=String(i);op.textContent="Mundo "+(i+1)+" — "+m.nome;admRemotoItem.appendChild(op);});
 }
-else if(def.campo==="pet"){
+else if(def.campo==="pet"||def.campo==="petAdm"){
  admPetEscolhido.textContent="";
   let indicePet=0;
-  const gruposAdminPets=[{label:"Geral",pets:catalogoPets}].concat(OVOS_MUNDO.map((o,k)=>({label:"Mundo "+(k+1)+" - "+mundosJogo[k].nome,pets:o.pets})));
+  const gruposAdminPets=[{label:(def.campo==="petAdm"?"ADM":"Geral"),pets:catalogoPets}].concat(def.campo==="petAdm"?[]:OVOS_MUNDO.map((o,k)=>({label:"Mundo "+(k+1)+" - "+mundosJogo[k].nome,pets:o.pets})));
   gruposAdminPets.forEach(g=>{const og=document.createElement("optgroup");og.label=g.label;g.pets.forEach(pet=>{const op=document.createElement("option");op.value=String(indicePet++);op.textContent=pet.nome+" | "+pet.raridade;og.appendChild(op);});admPetEscolhido.appendChild(og);});
 }
 }
 
 async function admExecutarRemoto(botao){
 if(admExecutando)return;
-if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResultado("Acesso administrativo não autorizado.","erro");return;}
 const uid=admJogador.value;
 const jogador=jogadoresAdmin.find(j=>j.uid===uid);
 if(!jogador){admResultado("Selecione um jogador da lista.","erro");return;}
 const acao=admAcao.value;
 const def=ACOES_REMOTAS[acao];
 if(!def){admResultado("Escolha uma ação válida.","erro");return;}
-if(acao==="darPainelAdm"){admResultado("Dar o painel de ADM a outro jogador ainda não está ativo: precisa de regras de segurança no Firebase antes.","erro");return;}
 if(acao==="viewInventory"){abrirInventarioRemoto(uid,jogador.nome);return;}
 let valor=0;
 if(def.campo==="valor"){
@@ -3878,7 +3885,7 @@ valor=Math.min(valor,MAX_MOEDAS);
 valor=Number(admRemotoItem.value);
 const total=def.campo==="picareta"?picaretas.length:(def.campo==="minerio"?minerios.length:mundosJogo.length);
 if(!Number.isInteger(valor)||valor<0||valor>=total||(def.campo==="mundo"&&valor===0)){admResultado("Escolha um item válido da lista.","erro");return;}
-}else if(def.campo==="pet"){
+}else if(def.campo==="pet"||def.campo==="petAdm"){
 valor=Number(admPetEscolhido.value);
 if(!Number.isInteger(valor)||!catalogoCompleto()[valor]){admResultado("Escolha um pet válido.","erro");return;}
 }else if(def.campo==="nivel"||def.campo==="melhoria"){
@@ -3888,6 +3895,14 @@ const maximo=def.campo==="melhoria"?(limites[admRemotoItem.value]??-1):500;
 if(!Number.isInteger(valor)||valor<0||valor>maximo){admResultado("Digite um nível inteiro entre 0 e "+maximo+" para essa melhoria.","erro");return;}
 }
 if(def.perigo&&!confirmarClique(botao))return;
+if(acao==="darPainelAdm"||acao==="removePainelAdm"){
+ try{
+  if(acao==="darPainelAdm")await db.collection("admins").doc(uid).set({ativo:true,concedidoPor:ADMIN_UID,concedidoEm:Date.now()});
+  else await db.collection("admins").doc(uid).delete();
+  admResultado((acao==="darPainelAdm"?"Painel de ADM liberado para ":"Painel de ADM removido de ")+jogador.nome+". O painel aparece para o jogador em alguns segundos, sem precisar sair da conta.","ok");
+ }catch(e){admResultado("Não foi possível alterar o painel de ADM: "+(e.message||e),"erro");}
+ return;
+}
 admExecutando=true;
 const comandoNaPropriaConta=uid===usuarioAtual.uid;
 if(comandoNaPropriaConta){bloqueandoSalvamentoAdmin=true;if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}}
@@ -4009,7 +4024,7 @@ if(acao==="setUpgradeLevel"){
  else if(chave==="melhoriaInventarioPets")dados.melhoriaInventarioPets=valor;
  else if(chave==="melhoriaPetsEquipados")dados.melhoriaPetsEquipados=valor;
 }
-if(acao==="givePet"){
+if(acao==="givePet"||acao==="givePetAdm"){
  const base=catalogoCompleto()[valor];
  const mutacao=Math.max(0,Math.min(4,Number(admPetMutacao.value)||0));
  const mutacoesEvento=[...new Set(Array.from(admPetMutacoesEvento.querySelectorAll("input[type=checkbox]:checked")).map(el=>el.value).filter(k=>["anjo","hacker","galaxia"].includes(k)))];
@@ -4026,7 +4041,7 @@ if(dados.autoClickerAtivo&&dados.autoClickerProAtivo)dados.autoClickerAtivo=fals
 dados.picaretasCompradas.sort((a,b)=>a-b);
 dados.mineriosComprados.sort((a,b)=>a-b);
 const nome=String(registro.nome||jogador.nome);
-const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="melhoria"?admRemotoItem.options[admRemotoItem.selectedIndex].text:def.campo==="pet"?(catalogoCompleto()[valor].nome+" ("+["Normal","Gold","Diamante","Rainbow","Void"][Number(admPetMutacao.value)||0]+(admPetMutacoesEvento.querySelectorAll("input[type=checkbox]:checked").length?" + "+Array.from(admPetMutacoesEvento.querySelectorAll("input[type=checkbox]:checked")).map(el=>nomesMutacaoEvento[el.value]).join(" + "):"")+")"):def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):def.campo==="mundo"?("Mundo "+(valor+1)+" — "+mundosJogo[valor].nome):"";
+const itemNome=def.campo==="picareta"?picaretas[valor][0]:def.campo==="minerio"?minerios[valor][0]:def.campo==="melhoria"?admRemotoItem.options[admRemotoItem.selectedIndex].text:(def.campo==="pet"||def.campo==="petAdm")?(catalogoCompleto()[valor].nome+" ("+["Normal","Gold","Diamante","Rainbow","Void"][Number(admPetMutacao.value)||0]+(admPetMutacoesEvento.querySelectorAll("input[type=checkbox]:checked").length?" + "+Array.from(admPetMutacoesEvento.querySelectorAll("input[type=checkbox]:checked")).map(el=>nomesMutacaoEvento[el.value]).join(" + "):"")+")"):def.campo==="nivel"?(valor+" ("+(Math.pow(2,Number(dados.renascimentos)||0)*(1+valor)).toFixed(1)+"x)"):def.campo==="mundo"?("Mundo "+(valor+1)+" — "+mundosJogo[valor].nome):"";
 let textoAviso="O admin "+nomeDoAdminAtual()+" alterou sua conta: "+def.rotulo.toLowerCase();
 if(acao==="addMoney")textoAviso="O admin "+nomeDoAdminAtual()+" te deu $"+formatarDinheiro(valor)+".";
 else if(acao==="removeMoney")textoAviso="O admin "+nomeDoAdminAtual()+" removeu $"+formatarDinheiro(valor)+" da sua conta.";
@@ -4035,6 +4050,7 @@ else if(acao==="resetRebirths")textoAviso="O admin "+nomeDoAdminAtual()+" zerou 
 else if(acao==="resetPickaxes")textoAviso="O admin "+nomeDoAdminAtual()+" removeu todas as suas picaretas, exceto a inicial.";
 else if(acao==="resetOres")textoAviso="O admin "+nomeDoAdminAtual()+" removeu todos os seus minérios, exceto o inicial.";
 else if(acao==="resetAll")textoAviso="O admin "+nomeDoAdminAtual()+" redefiniu todo o seu progresso. Sua conta foi mantida.";
+else if(acao==="darPicaretaAdm")textoAviso="O admin "+nomeDoAdminAtual()+" te deu a picareta de ADM.";
 else if(acao==="givePickaxe")textoAviso="O admin "+nomeDoAdminAtual()+" te deu a picareta "+itemNome+".";
 else if(acao==="removePickaxe")textoAviso="O admin "+nomeDoAdminAtual()+" removeu a picareta "+itemNome+" da sua conta.";
 else if(acao==="giveOre")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o minério "+itemNome+".";
@@ -4047,7 +4063,7 @@ else if(acao==="givePro")textoAviso="O admin "+nomeDoAdminAtual()+" liberou o Au
 else if(acao==="removePro")textoAviso="O admin "+nomeDoAdminAtual()+" removeu o Auto Clicker Pro da sua conta.";
 else if(acao==="setMultiplier")textoAviso="O admin "+nomeDoAdminAtual()+" definiu sua melhoria de dinheiro no nível "+valor+".";
 else if(acao==="setUpgradeLevel")textoAviso="O admin "+nomeDoAdminAtual()+" definiu "+itemNome+" no nível "+valor+".";
-else if(acao==="givePet")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o pet "+itemNome+".";
+else if(acao==="givePet"||acao==="givePetAdm")textoAviso="O admin "+nomeDoAdminAtual()+" te deu o pet "+itemNome+".";
 const avisoRemoto={id:String(Date.now())+"-"+uid,texto:textoAviso,criadoEm:Date.now()};
 if(acao==="giveWorld"||acao==="removeWorld"){
  await comTempoLimite(db.runTransaction(async tx=>{
@@ -4068,6 +4084,19 @@ if(acao==="giveWorld"||acao==="removeWorld"){
   Object.assign(dados,dadosAtuais);
   tx.set(ref,{dados:dadosAtuais,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
  }),20000,"salvar mundo do jogador");
+}else if(acao==="givePet"||acao==="givePetAdm"){
+ await comTempoLimite(db.runTransaction(async tx=>{
+  const atualSnap=await tx.get(ref);
+  if(!atualSnap.exists)throw new Error("Essa conta não existe mais.");
+  const dadosAtuais=Object.assign({},(atualSnap.data()||{}).dados||{});
+  const inventarioAtual=Array.isArray(dadosAtuais.petsInventario)?dadosAtuais.petsInventario.slice():[];
+  const limiteAtual=50+25*Math.max(0,Math.min(6,Math.floor(Number(dadosAtuais.melhoriaInventarioPets)||0)));
+  if(inventarioAtual.length>=limiteAtual)throw new Error("O inventário do jogador está cheio ("+inventarioAtual.length+"/"+limiteAtual+" pets).");
+  inventarioAtual.push(dados.petsInventario[dados.petsInventario.length-1]);
+  dadosAtuais.petsInventario=inventarioAtual;
+  dadosAtuais.colecaoVariantes=dados.colecaoVariantes;
+  tx.set(ref,{dados:dadosAtuais,avisoAdmin:avisoRemoto,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+ }),20000,"entregar pet ao jogador");
 }else{
  // Atualiza somente os campos que mudaram. Isso evita reenviar inventários
  // grandes e reduz conflitos com salvamentos simultâneos do próprio jogador.
@@ -4096,7 +4125,7 @@ console.error("Erro ao gerenciar jogador:",error);
 admResultado("Não foi possível alterar a conta: "+(error.message||"erro no Firestore"),"erro");
 }finally{
 bloqueandoSalvamentoAdmin=false;
-admExecutando=false;botao.disabled=false;botao.textContent=admAcao.value==="viewInventory"?"VER INVENTÁRIO":"Executar";
+admExecutando=false;botao.disabled=false;botao.textContent=(botao.classList.contains("adm-adm-card")&&botao.dataset.rotulo)?botao.dataset.rotulo:(admAcao.value==="viewInventory"?"VER INVENTÁRIO":"Executar");
 }
 }
 
@@ -4115,7 +4144,7 @@ admEventoStatus.textContent=eventoGlobal.permanente?"Evento ativo: "+eventoGloba
 }else admEventoStatus.textContent="Nenhum evento ativo.";
 }
 async function ativarEventoGlobal(){
-if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResultado("Acesso administrativo não autorizado.","erro");return;}
 const mult=Number(admEventoMultiplicador.value),minutos=Number(admEventoMinutos.value);
 if(!Number.isInteger(mult)||mult<2||mult>1000000){admResultado("Digite um multiplicador inteiro entre 2x e 1.000.000x.","erro");return;}
 const adminNome=nomeDoAdminAtual();
@@ -4129,7 +4158,7 @@ admResultado("Evento global de "+mult+"x ativado por "+minutos+" minuto(s)!","ok
 atualizarStatusEventoAdmin();
 }
 async function encerrarEventoGlobal(){
-if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResultado("Acesso administrativo não autorizado.","erro");return;}
 try{
 await comTempoLimite(db.collection("eventos").doc("multiplicadorGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoGlobal.multiplicador)||1),permanente:false,expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:nomeDoAdminAtual(),motivo:"desativado-pelo-admin",id:"desativado-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento global");
 admResultado("Evento global encerrado.","ok");
@@ -4181,7 +4210,7 @@ function iniciarMonitoramentoEventoSorte(){
  },err=>console.error("Erro ao acompanhar evento global de sorte:",err));
 }
 async function ativarEventoSorteGlobal(){
- if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+ if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResultado("Acesso administrativo não autorizado.","erro");return;}
  const mult=Number(admEventoSorteMultiplicador.value),minutos=Number(admEventoSorteMinutos.value);
  if(!Number.isInteger(mult)||mult<2||mult>1000000){admResultado("Informe sorte de 2x a 1.000.000x.","erro");return;}
  if(!Number.isInteger(minutos)||minutos<1||minutos>10080){admResultado("Informe uma duração entre 1 e 10080 minutos.","erro");return;}
@@ -4190,14 +4219,14 @@ async function ativarEventoSorteGlobal(){
  catch(error){admResultado("Não foi possível ativar o evento de sorte: "+(error.message||"erro no Firestore"),"erro");}
 }
 async function encerrarEventoSorteGlobal(){
- if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID)return;
+ if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid))return;
  try{await comTempoLimite(db.collection("eventos").doc("sorteGlobal").set({ativo:false,multiplicador:Math.max(1,Number(eventoSorteGlobal.multiplicador)||1),permanente:false,expiraEm:firebase.firestore.Timestamp.fromDate(new Date()),admin:nomeDoAdminAtual(),id:"sorte-off-"+Date.now()+"-"+usuarioAtual.uid,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}),20000,"encerrar evento de sorte");admResultado("Evento global de sorte encerrado.","ok");}
  catch(error){admResultado("Não foi possível encerrar o evento de sorte: "+(error.message||"erro no Firestore"),"erro");}
 }
 
 // Ativa todos os cinco eventos com um único lote no Firestore.
 async function ativarTodosEventos(){
- if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+ if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResultado("Acesso administrativo não autorizado.","erro");return;}
  const dinheiro=Number(admEventoMultiplicador.value);
  const sorte=Number(admEventoSorteMultiplicador.value);
  const minutos=Number(document.getElementById("admTodosEventosMinutos").value);
@@ -4216,7 +4245,7 @@ async function ativarTodosEventos(){
 
 // Desativa os cinco eventos de uma vez, com um unico lote no Firestore.
 async function desativarTodosEventos(){
- if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo nao autorizado.","erro");return;}
+ if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResultado("Acesso administrativo nao autorizado.","erro");return;}
  if(!confirm("Encerrar todos os eventos ativos (dinheiro, sorte, Anjo, Hacker e Galaxia) agora?"))return;
  const agora=Date.now(),agoraDate=new Date(agora),admin=nomeDoAdminAtual(),batch=db.batch();
  const sufixo="-"+agora+"-"+usuarioAtual.uid;
@@ -4252,7 +4281,7 @@ function iniciarMonitoramentoMutacoes(){
  });
 }
 async function controlarEventoMutacao(chave,ativar){
- if(!adminDesbloqueado||!usuarioAtual||usuarioAtual.uid!==ADMIN_UID){admResultado("Acesso administrativo não autorizado.","erro");return;}
+ if(!adminDesbloqueado||!usuarioAtual||!ehAdminUsuario(usuarioAtual.uid)){admResultado("Acesso administrativo não autorizado.","erro");return;}
  const nome=chave[0].toUpperCase()+chave.slice(1),minutosEl=document.getElementById("admMutacao"+nome+"Minutos");
  const minutos=Number(minutosEl&&minutosEl.value);
  
@@ -5114,7 +5143,7 @@ texto("? UPGRADES",80,193,15,"#fff","center");
 
 // BOTÃO ADMIN
 
-if(adminDesbloqueado&&usuarioAtual&&usuarioAtual.uid===ADMIN_UID){
+if(adminDesbloqueado&&usuarioAtual&&ehAdminUsuario(usuarioAtual.uid)){
 const gradAdmin=ctx.createLinearGradient(18,127,142,158);
 gradAdmin.addColorStop(0,"#c47bea");
 gradAdmin.addColorStop(0.48,"#914bd0");
@@ -5492,7 +5521,7 @@ return;
 configuracoesAbertas=true;
 somAbrirLoja();
 
-}else if(adminDesbloqueado&&usuarioAtual&&usuarioAtual.uid===ADMIN_UID&&p.x>=15&&p.x<=145&&p.y>=125&&p.y<=160){
+}else if(adminDesbloqueado&&usuarioAtual&&ehAdminUsuario(usuarioAtual.uid)&&p.x>=15&&p.x<=145&&p.y>=125&&p.y<=160){
 abrirAdmin();
 
 }else if(p.x>=16&&p.x<=144&&p.y>=170&&p.y<=205){
@@ -5785,6 +5814,7 @@ function executarAdmColorido(acao,botao){
 admCategoria.addEventListener("change",atualizarBotoesAdm);
 document.getElementById("admBtnPicaretaAdm").addEventListener("click",function(){executarAdmColorido("darPicaretaAdm",this);});
 document.getElementById("admBtnPainelAdm").addEventListener("click",function(){executarAdmColorido("darPainelAdm",this);});
+document.getElementById("admBtnRemoverPainelAdm").addEventListener("click",function(){executarAdmColorido("removePainelAdm",this);});
 atualizarBotoesAdm();
 
 // INICIAR JOGO
