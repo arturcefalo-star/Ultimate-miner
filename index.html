@@ -448,11 +448,11 @@ background:#10101c;color:#fff;font-size:16px;outline:none
 .evento-badge::before{content:var(--event-icon,"?");font-size:23px;line-height:1;filter:drop-shadow(0 2px 2px #0006);animation:um-icon-bob 2.3s ease-in-out infinite}
 .evento-badge strong{font-size:18px;line-height:1.05;color:#fff;text-shadow:0 2px 3px #0009}
 .evento-badge span{font-size:9px;line-height:1.2;overflow-wrap:anywhere;text-shadow:0 1px 3px #000a}
-#eventoGlobalBadge{--event-icon:"??";--event-glow:#ffd65d99;top:12px;background:linear-gradient(145deg,#eab84c,#a96919);border-color:#ffe69b}
-#eventoSorteBadge{--event-icon:"??";--event-glow:#68ff9a99;top:96px;background:linear-gradient(145deg,#43d779,#096b3a);border-color:#b9ffb4}
-#eventoAnjoBadge{--event-icon:"??";--event-glow:#ffe29b99;top:180px;background:linear-gradient(145deg,#f9d678,#c38b28);border-color:#fff2bf}
-#eventoHackerBadge{--event-icon:"??";--event-glow:#33ff8d99;top:264px;background:linear-gradient(145deg,#146d4b,#081f20);border-color:#56ffac}
-#eventoGalaxiaBadge{--event-icon:"??";--event-glow:#b56cff99;top:348px;background:linear-gradient(145deg,#9256e8,#331366);border-color:#dfbaff}
+#eventoGlobalBadge{--event-icon:"💰";--event-glow:#ffd65d99;top:12px;background:linear-gradient(145deg,#eab84c,#a96919);border-color:#ffe69b}
+#eventoSorteBadge{--event-icon:"🍀";--event-glow:#68ff9a99;top:96px;background:linear-gradient(145deg,#43d779,#096b3a);border-color:#b9ffb4}
+#eventoAnjoBadge{--event-icon:"👼";--event-glow:#ffe29b99;top:180px;background:linear-gradient(145deg,#f9d678,#c38b28);border-color:#fff2bf}
+#eventoHackerBadge{--event-icon:"💻";--event-glow:#33ff8d99;top:264px;background:linear-gradient(145deg,#146d4b,#081f20);border-color:#56ffac}
+#eventoGalaxiaBadge{--event-icon:"🌌";--event-glow:#b56cff99;top:348px;background:linear-gradient(145deg,#9256e8,#331366);border-color:#dfbaff}
 #eventoAnjoBadge strong,#eventoAnjoBadge span{color:#fff}
 /* Events in admin panel: recognizable illustrated cards */
 .adm-evento-card{border-radius:17px;border-color:#6c85a6;background:linear-gradient(145deg,#182d46,#10192a);box-shadow:inset 0 1px #ffffff20,0 6px 15px #0005}
@@ -692,7 +692,7 @@ button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-
  <button id="adminExcluirPetsSelecionados" class="novo-acao" type="button" style="background:linear-gradient(180deg,#d64a4a,#922323)" disabled>EXCLUIR SELECIONADOS (0)</button>
 </div></div>
 
-<div id="admMundosModal" class="adm-mundos-modal" role="dialog" aria-modal="true" aria-label="Mundos liberados"><div class="adm-mundos-caixa"><div class="adm-mundos-cabecalho"><h3>?? MUNDOS LIBERADOS</h3><button id="admMundosFechar" class="adm-mundos-fechar" type="button">FECHAR</button></div><div id="admMundosLista"></div></div></div>
+<div id="admMundosModal" class="adm-mundos-modal" role="dialog" aria-modal="true" aria-label="Mundos liberados"><div class="adm-mundos-caixa"><div class="adm-mundos-cabecalho"><h3>🌍 MUNDOS LIBERADOS</h3><button id="admMundosFechar" class="adm-mundos-fechar" type="button">FECHAR</button></div><div id="admMundosLista"></div></div></div>
 
 <div id="eventoGlobalBadge" class="evento-badge" aria-live="polite"><strong id="eventoGlobalMultiplicador">2x</strong><span id="eventoGlobalTempo">DINHEIRO 00:00</span></div>
 <div id="eventoSorteBadge" class="evento-badge" aria-live="polite"><strong id="eventoSorteMultiplicador">2x</strong><span id="eventoSorteTempo">SORTE 00:00</span></div>
@@ -704,13 +704,13 @@ button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-
 <div id="adminBox" role="dialog" aria-modal="true" aria-label="Painel de administração">
 
 <div class="adm-topo">
-<h2>??? CENTRAL ADMIN <small>Ultimate Miner</small></h2>
+<h2>🛠️ CENTRAL ADMIN <small>Ultimate Miner</small></h2>
 <button id="adminFechar" class="adm-x" type="button" aria-label="Fechar painel">X</button>
 </div>
 
 
 <div class="adm-abas">
-<button type="button" class="ativa" data-aba="outro">?? Jogadores</button>
+<button type="button" class="ativa" data-aba="outro">👥 Jogadores</button>
 <button type="button" data-aba="evento">Eventos</button>
 </div>
 
@@ -743,7 +743,7 @@ button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-
 <button type="button" class="adm-b vermelho" data-acao="minerio-resetar" data-perigo>Resetar</button>
 </div>
 
-<h3>? Melhorias</h3>
+<h3>⚙️ Melhorias</h3>
 <div class="adm-linha">
 <button type="button" class="adm-b verde" data-acao="auto-liberar">Auto clicker: liberar</button>
 <button type="button" class="adm-b laranja" data-acao="auto-remover">Auto clicker: remover</button>
@@ -759,7 +759,7 @@ button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-
 </div>
 
 <div id="abaOutro" class="adm-aba" hidden>
-<div class="adm-intro"><strong>?? Gerenciar jogadores</strong><span>Selecione um jogador e escolha o que deseja alterar. As mudanças são salvas no Firebase.</span></div>
+<div class="adm-intro"><strong>👥 Gerenciar jogadores</strong><span>Selecione um jogador e escolha o que deseja alterar. As mudanças são salvas no Firebase.</span></div>
 <div class="adm-etapa">1. Selecione o jogador</div>
 <div class="adm-linha adm-seletor-linha">
   <div class="adm-seletor-wrap">
@@ -796,9 +796,9 @@ button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-
 <label class="adm-dica" for="admPetMutacao" style="display:block;margin:5px 0">Fusão do pet</label><select id="admPetMutacao" class="adm-in" aria-label="Fusão do pet"><option value="0">Normal</option><option value="1">Gold / Dourado</option><option value="2">Diamante</option><option value="3">Rainbow</option><option value="4">Void</option></select>
 <div class="adm-dica" style="margin-top:9px">Selecione uma ou mais mutações de evento. As opções selecionadas ficam verdes e podem ser combinadas.</div>
 <div class="adm-pet-opcoes" id="admPetMutacoesEvento">
-<label><input type="checkbox" value="anjo"> ?? Anjo — 1.5x</label>
-<label><input type="checkbox" value="hacker"> ?? Hacker — 2x</label>
-<label><input type="checkbox" value="galaxia"> ?? Galáxia — 2.5x</label>
+<label><input type="checkbox" value="anjo"> 👼 Anjo — 1.5x</label>
+<label><input type="checkbox" value="hacker"> 💻 Hacker — 2x</label>
+<label><input type="checkbox" value="galaxia"> 🌌 Galáxia — 2.5x</label>
 </div></div>
 
 <div class="adm-etapa">3. Confirme a ação</div>
@@ -1954,7 +1954,7 @@ function renderizarIndicePets(){
    const tile=document.createElement("div");
    tile.className="colecao-pet indice-tile"+(achou?" indice-tile-"+(chavePet||"normal"):" indice-pet-oculto");
    const sigla=document.createElement("span");sigla.className="pet-iniciais";
-   sigla.textContent=achou?(p.sigla||p.nome.slice(0,2).toUpperCase()):"??";
+   sigla.textContent=achou?(p.sigla||p.nome.slice(0,2).toUpperCase()):"❓";
    const nome=document.createElement("strong");nome.textContent=achou?p.nome:"???";
    const info=document.createElement("div");info.className="indice-chips";
    const pct=somaPeso>0?((Number(p.peso)||0)/somaPeso*100).toFixed(2)+"%":"-";
@@ -2151,7 +2151,7 @@ function renderizarPets(){
   const sigla=document.createElement("span");sigla.className="pet-iniciais";sigla.textContent=p.sigla||p.nome.slice(0,2).toUpperCase();sigla.style.color=cor;sigla.style.borderColor=cor;sigla.style.background="#202d40";
   const nome=document.createElement("strong");nome.className="pet-nome-card";nome.textContent=p.nome;
   const rar=document.createElement("small");rar.className="pet-raridade-card";rar.textContent=p.raridade+(nivelEvolucaoPet(p)?" • "+nomeNivelPet(nivelEvolucaoPet(p)):"");
-  if(equipado){const estado=document.createElement("span");estado.className="pet-equipado-tag";estado.textContent="? EQUIPADO";card.appendChild(estado);}
+  if(equipado){const estado=document.createElement("span");estado.className="pet-equipado-tag";estado.textContent="✅ EQUIPADO";card.appendChild(estado);}
   if(mutacoes.length){const painelMutacoes=document.createElement("span");painelMutacoes.className="pet-mutacoes-canto";painelMutacoes.setAttribute("aria-label","Mutações: "+mutacoes.map(k=>nomesMutacaoEvento[k]||k).join(", "));mutacoes.forEach(k=>{const tag=document.createElement("span");tag.className="pet-mutacao-mini pet-mutacao-mini-"+k;tag.textContent=k==="anjo"?"A":k==="hacker"?"H":k==="galaxia"?"G":String(k).slice(0,1).toUpperCase();tag.title=nomesMutacaoEvento[k]||k;tag.setAttribute("aria-label",nomesMutacaoEvento[k]||k);painelMutacoes.appendChild(tag);});card.appendChild(painelMutacoes);}
   if(p.bloqueado){const lk=document.createElement("span");lk.className="pet-bloqueado-tag";lk.textContent="BLOQUEADO";card.appendChild(lk);}
    card.append(sigla,nome);if(petEhLimited(p.nome))card.appendChild(criarTagLimited());card.appendChild(rar);el.appendChild(card);
@@ -3786,7 +3786,7 @@ select.textContent="";
 for(const jogador of jogadoresAdmin){
 const op=document.createElement("option");
 op.value=jogador.uid;
-op.textContent=jogador.nome+rotuloAdmin(jogador.uid)+" • "+(jogador.online?"?? ON":"?? OFF");
+op.textContent=jogador.nome+rotuloAdmin(jogador.uid)+" • "+(jogador.online?"🟢 ON":"⚫ OFF");
 select.appendChild(op);
 }
 if(!jogadoresAdmin.length){const op=document.createElement("option");op.value="";op.textContent="Nenhum jogador encontrado";select.appendChild(op);}
@@ -5202,7 +5202,7 @@ gradUpgrade.addColorStop(0.52,"#7134bd");
 gradUpgrade.addColorStop(1,"#45206f");
 retangulo(16,170,128,35,"#30144e",8);
 retangulo(18,172,124,31,gradUpgrade,6);
-texto("? UPGRADES",80,193,15,"#fff","center");
+texto("⬆ UPGRADES",80,193,15,"#fff","center");
 
 // BOTÃO ADMIN
 
