@@ -3790,7 +3790,12 @@ op.textContent=jogador.nome+rotuloAdmin(jogador.uid)+" • "+(jogador.online?"??
 select.appendChild(op);
 }
 if(!jogadoresAdmin.length){const op=document.createElement("option");op.value="";op.textContent="Nenhum jogador encontrado";select.appendChild(op);}
-if(jogadoresAdmin.some(j=>j.uid===valorAnterior))select.value=valorAnterior;
+// Ao abrir o painel pela primeira vez na sessão, a conta de quem está logado fica selecionada.
+const euAdm=usuarioAtual&&usuarioAtual.uid;
+const primeiraCarga=window.admUidAbertoPeloUsuario!==euAdm;
+window.admUidAbertoPeloUsuario=euAdm;
+const valorInicial=primeiraCarga?euAdm:valorAnterior;
+if(jogadoresAdmin.some(j=>j.uid===valorInicial))select.value=valorInicial;
 else if(jogadoresAdmin.length)select.selectedIndex=0;
 atualizarSeletorVisualJogadores();
 if(admJogador.value)iniciarMonitoramentoJogadorSelecionadoAdmin(admJogador.value);
@@ -6230,5 +6235,35 @@ body.ui-cru .novo-box,body.ui-cru #loginBox,body.ui-cru #senhaBox,body.ui-cru .m
   if(agora-ultimoClique<450){e.stopPropagation();e.preventDefault();return;}
   ultimoClique=agora;
  },true);
+})();
+</script>
+<script id="ranking-troca-tipo-js">
+// No ranking: seta para a direita (ou deslizar para a direita) mostra RENASCIMENTOS;
+// seta para a esquerda (ou deslizar para a esquerda) mostra DINHEIRO.
+(function(){
+ function trocar(tipo){
+  const btn=document.getElementById(tipo==="renascimentos"?"rankRenascimentos":"rankDinheiro");
+  if(!btn||btn.classList.contains("ativa"))return;
+  btn.click();
+ }
+ function rankingAberto(){const m=document.getElementById("rankingModal");return !!m&&m.style.display==="flex";}
+ document.addEventListener("keydown",function(e){
+  if(!rankingAberto())return;
+  if(e.key==="ArrowRight")trocar("renascimentos");
+  else if(e.key==="ArrowLeft")trocar("dinheiro");
+ });
+ let x0=null,y0=null;
+ document.addEventListener("touchstart",function(e){
+  if(!rankingAberto()){x0=null;return;}
+  x0=e.touches[0].clientX;y0=e.touches[0].clientY;
+ },{passive:true});
+ document.addEventListener("touchend",function(e){
+  if(x0===null||!rankingAberto())return;
+  const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;
+  x0=null;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){
+   if(dx>0)trocar("renascimentos");else trocar("dinheiro");
+  }
+ },{passive:true});
 })();
 </script>
