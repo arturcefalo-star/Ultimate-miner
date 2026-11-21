@@ -575,6 +575,9 @@ html.girar body{position:fixed;top:0;left:0;width:100vh;height:100vw;min-height:
 html.girar canvas{width:min(100vh,166.667vw)!important;max-height:100vw;height:auto}
 html.girar #btnTelaCheia{right:auto;left:10px;bottom:auto;top:10px}
 </style>
+<style id="anti-clique-duplo-v1">
+button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-opcao,.adm-select-option{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+</style>
 </head>
 <body>
 
@@ -6215,5 +6218,17 @@ body.ui-cru .novo-box,body.ui-cru #loginBox,body.ui-cru #senhaBox,body.ui-cru .m
  window.addEventListener("orientationchange",atualizarOrientacao);
  document.addEventListener("fullscreenchange",function(){atualizarOrientacao();btn.textContent=document.fullscreenElement?"SAIR DA TELA CHEIA":"TELA CHEIA";});
  atualizarOrientacao();
+})();
+</script>
+<script id="anti-clique-duplo-js">
+// Evita cliques fantasmas no celular: um toque que abre uma janela não pode
+// disparar de novo uma ação na janela que apareceu embaixo do dedo.
+(function(){
+ let ultimoClique=0;
+ document.addEventListener("click",function(e){
+  const agora=Date.now();
+  if(agora-ultimoClique<450){e.stopPropagation();e.preventDefault();return;}
+  ultimoClique=agora;
+ },true);
 })();
 </script>
