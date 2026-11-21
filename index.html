@@ -567,6 +567,14 @@ button:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
   #listaPets *,#colecaoPetsLista *,#listaMundos *,#listaIndicePets *,#listaRanking *{animation:none!important;transition:none!important}
 }
 </style>
+<style id="tela-celular-v1">
+#btnTelaCheia{position:fixed;right:10px;bottom:10px;z-index:30001;padding:9px 13px;border:1px solid #657acb;border-radius:9px;background:#286bd2;color:#fff;font-weight:bold;font-size:13px;opacity:.9;touch-action:manipulation}
+/* Celular em retrato: gira o jogo para ficar deitado (paisagem) */
+html.girar{overflow:hidden;background:#111}
+html.girar body{position:fixed;top:0;left:0;width:100vh;height:100vw;min-height:0;transform-origin:0 0;transform:translateX(100vw) rotate(90deg);overflow:hidden}
+html.girar canvas{width:min(100vh,166.667vw)!important;max-height:100vw;height:auto}
+html.girar #btnTelaCheia{right:auto;left:10px;bottom:auto;top:10px}
+</style>
 </head>
 <body>
 
@@ -6180,3 +6188,32 @@ body.ui-cru .novo-box,body.ui-cru #loginBox,body.ui-cru #senhaBox,body.ui-cru .m
 .adm-adm-card{display:block;width:100%;padding:18px;border:0;border-radius:14px;color:#fff;font-weight:900;font-size:16px;letter-spacing:.5px;cursor:pointer;text-shadow:0 1px 2px #0008;box-shadow:0 6px 16px #0006}
 .adm-adm-card:active{transform:scale(.98)}
 </style>
+<button id="btnTelaCheia" type="button">TELA CHEIA</button>
+<script id="tela-celular-js">
+(function(){
+ const btn=document.getElementById("btnTelaCheia");
+ const celular=("ontouchstart" in window)||navigator.maxTouchPoints>0;
+ function atualizarOrientacao(){
+  const retrato=window.innerHeight>window.innerWidth;
+  const emTelaCheia=!!document.fullscreenElement;
+  document.documentElement.classList.toggle("girar",celular&&retrato&&!emTelaCheia);
+ }
+ async function alternarTelaCheia(){
+  try{
+   if(!document.fullscreenElement){
+    await document.documentElement.requestFullscreen();
+    try{await screen.orientation.lock("landscape");}catch(e){}
+   }else{
+    await document.exitFullscreen();
+   }
+  }catch(e){console.warn("Tela cheia não disponível:",e);}
+  atualizarOrientacao();
+  btn.textContent=document.fullscreenElement?"SAIR DA TELA CHEIA":"TELA CHEIA";
+ }
+ btn.addEventListener("click",alternarTelaCheia);
+ window.addEventListener("resize",atualizarOrientacao);
+ window.addEventListener("orientationchange",atualizarOrientacao);
+ document.addEventListener("fullscreenchange",function(){atualizarOrientacao();btn.textContent=document.fullscreenElement?"SAIR DA TELA CHEIA":"TELA CHEIA";});
+ atualizarOrientacao();
+})();
+</script>
