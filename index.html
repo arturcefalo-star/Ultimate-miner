@@ -7,7 +7,7 @@ e package.json contém dependências Node.js. Eles não podem ser executados com
 dentro do navegador nem incorporados a um HTML estático: mantenha essas rotas no servidor.
 --> 
 
-<html lang="pt-BR" lang="EN">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <style>
@@ -765,7 +765,7 @@ button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-
   <div class="adm-seletor-wrap">
     <select id="admJogador" class="adm-in" aria-label="Selecionar jogador" style="margin:0" tabindex="-1" aria-hidden="true"></select>
     <button id="admJogadorAbrir" class="adm-seletor-botao" type="button" aria-haspopup="listbox" aria-expanded="false">
-      <span id="admJogadorSelecionado">Carregando jogadores...</span><span class="adm-seta">?</span>
+      <span id="admJogadorSelecionado">Carregando jogadores...</span><span class="adm-seta">&#9662;</span>
     </button>
     <div id="admJogadorLista" class="adm-seletor-lista" role="listbox" aria-label="Jogadores cadastrados" hidden></div>
   </div>
@@ -846,6 +846,19 @@ button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-
 <h3 style="margin:14px 0 6px;font-size:14px;color:#d8aaff">HISTORICO DA SESSAO</h3>
 <div id="admLog" class="adm-log"></div>
 
+<script>
+// Diagnostico de login: mostra o motivo na tela quando o Firebase nao pode funcionar.
+(function(){
+var m=document.getElementById("mensagemLogin");
+function avisar(t){if(m){m.textContent=t;m.style.color="#ffb0b0";}}
+if(location.protocol==="file:")avisar("Voce abriu o arquivo direto do computador. O login so funciona pelo site: https://arturcefalo-star.github.io/Ultimate-miner/ (as contas salvas tambem ficam guardadas por site).");
+if(typeof firebase==="undefined"){
+avisar("Nao foi possivel carregar o Firebase. Verifique a internet, desative bloqueadores de anuncios para este site e recarregue a pagina.");
+var b=document.getElementById("botaoEntrar"),c=document.getElementById("botaoCriar");
+if(b)b.disabled=true;if(c)c.disabled=true;
+}
+})();
+</script>
 <script>
 const firebaseConfig={
 apiKey:"AIzaSyCxpkYQcmdoOPeiSUb6CeP8F5iNBcLFrX0",
@@ -1079,17 +1092,23 @@ if(c==="auth/wrong-password"||c==="auth/invalid-credential"||c==="auth/invalid-l
 if(c==="auth/user-not-found")return "Essa conta não foi encontrada. Confira o nome de usuário.";
 if(c==="auth/user-disabled")return "Esta conta foi banida ou desativada.";
 if(c==="auth/too-many-requests")return "Muitas tentativas seguidas. Aguarde um pouco e tente de novo.";
-if(c==="auth/network-request-failed")return "Sem conexão com a internet. Tente novamente.";
+if(c==="auth/network-request-failed")return "Sem conexão com a internet. Tente novamente e confira se o navegador permite acessar www.gstatic.com e firebase.googleapis.com.";
+if(c==="auth/internal-error"||c==="auth/unknown")return "O Firebase retornou um erro interno. Confira se E-mail/senha está ativado em Authentication e tente novamente.";
+if(c==="unavailable"||c==="deadline-exceeded")return "O Firestore está indisponível no momento. Confira a conexão e tente novamente.";
 if(c==="app/timeout")return "O Firebase demorou demais para responder. Verifique a internet e tente novamente.";
-return (error&&error.message)||"Não foi possível entrar.";
+if(c==="auth/operation-not-supported-in-this-environment"||c==="auth/web-storage-unsupported")return "Este navegador ou modo de abertura não permite o login. Abra o jogo pelo site publicado (https://arturcefalo-star.github.io/Ultimate-miner/), não pelo arquivo no computador, e libere cookies/armazenamento.";
+if(c==="permission-denied")return "O Firestore bloqueou o acesso. Confira as regras do banco (coleção jogadores).";
+return ((error&&error.message)||"Não foi possível entrar.")+(c?" ("+c+")":"");
 }
 
 function textoErroCriar(error){
 const c=error&&error.code;
+if(c==="auth/unauthorized-domain"||c==="auth/invalid-api-key"||c==="auth/invalid-email"||c==="auth/operation-not-supported-in-this-environment"||c==="auth/web-storage-unsupported")return textoErroLogin(error);
+if(c==="permission-denied")return "A conta foi criada no Firebase, mas o Firestore bloqueou a gravação dos dados (regras do banco). Tente ENTRAR; se persistir, confira as regras da coleção jogadores.";
 if(c==="auth/email-already-in-use")return "Esse nome já existe. Use ENTRAR com a senha dessa conta.";
 if(c==="auth/weak-password")return "Senha fraca demais. Use pelo menos 6 caracteres.";
 if(c==="auth/operation-not-allowed")return "O cadastro por e-mail e senha está desativado no Firebase (Authentication > Sign-in method).";
-if(c==="auth/network-request-failed")return "Sem conexão com a internet. Tente novamente.";
+if(c==="auth/network-request-failed")return "Sem conexão com a internet. Tente novamente e confira se o navegador permite acessar www.gstatic.com e firebase.googleapis.com.";
 if(c==="app/timeout")return "O Firebase demorou demais para responder. A conta pode ter sido criada; tente ENTRAR com esse nome.";
 return "Não foi possível criar a conta: "+((error&&error.message)||"erro desconhecido");
 }
@@ -3059,23 +3078,38 @@ if(!nomeValido(nome)){mensagemDeLogin("Use de 3 a 20 letras, números ou _.");re
 if(senha.length<6){mensagemDeLogin("A senha precisa ter pelo menos 6 caracteres.");return;}
 bloquearLogin(true);
 operacaoManualDeConta=true;
-mensagemDeLogin("Criando sua conta...",false);
+mensagemDeLogin("Verificando o cadastro e conectando ao Firebase...",false);
 let dadosIniciais={};
 let legado=null;
 try{legado=localStorage.getItem("mining_game_save");if(legado)dadosIniciais=JSON.parse(legado);}catch(e){dadosIniciais={};}
 try{
 await comTempoLimite(auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL),10000,"salvar a sessão neste aparelho");
-const cred=await comTempoLimite(auth.createUserWithEmailAndPassword(usuarioEmail(nome),senha),20000,"criar a conta no Firebase");
-await comTempoLimite(cred.user.updateProfile({displayName:nome}),15000,"salvar o nome da conta");
-await comTempoLimite(db.collection("jogadores").doc(cred.user.uid).set({
-nome,
-dados:dadosIniciais,
-criadoEm:firebase.firestore.FieldValue.serverTimestamp()
-}),15000,"salvar os dados iniciais no Firestore");
+const email=usuarioEmail(nome);
+// Se a conta já foi criada no Authentication, mas a gravação no Firestore
+// falhou na primeira tentativa, reutiliza a sessão existente em vez de tentar
+// cadastrar o mesmo e-mail novamente e receber EMAIL_ALREADY_IN_USE.
+let usuario=auth.currentUser;
+if(!usuario||!usuario.email||usuario.email.toLowerCase()!==email.toLowerCase()){
+ const cred=await comTempoLimite(auth.createUserWithEmailAndPassword(email,senha),25000,"criar a conta no Firebase");
+ usuario=cred.user;
+}
+if(!usuario.displayName||usuario.displayName!==nome){
+ await comTempoLimite(usuario.updateProfile({displayName:nome}),15000,"salvar o nome da conta");
+}
+const refJogador=db.collection("jogadores").doc(usuario.uid);
+const existente=await comTempoLimite(refJogador.get(),15000,"verificar o registro da conta");
+if(!existente.exists){
+ await comTempoLimite(refJogador.set({
+  nome,
+  dados:dadosIniciais,
+  ranking:{moedas:Number(dadosIniciais.moedas)||0,renascimentos:Number(dadosIniciais.renascimentos)||0},
+  criadoEm:firebase.firestore.FieldValue.serverTimestamp()
+ }),20000,"salvar os dados iniciais no Firestore");
+}
 if(legado){try{localStorage.removeItem("mining_game_save");}catch(e){}}
-const entrou=await entrarNoJogo(cred.user,nome);
+const entrou=await entrarNoJogo(usuario,nome);
 if(entrou)mensagemDeLogin("",false);
-else mensagemDeLogin("Sua conta foi criada, mas não foi possível carregar os dados. Entre novamente ou verifique as regras do Firestore.");
+else mensagemDeLogin("A conta existe no Firebase, mas o Firestore não liberou o acesso aos dados. Confira as regras da coleção jogadores.");
 }catch(error){
 console.error("Erro ao criar conta:",error);
 mensagemDeLogin(textoErroCriar(error));
@@ -4375,7 +4409,7 @@ select.dataset.customizado="1";
 const wrap=document.createElement("div");wrap.className="adm-select-wrap";
 select.parentNode.insertBefore(wrap,select);wrap.appendChild(select);select.classList.add("adm-select-original");
 const botao=document.createElement("button");botao.type="button";botao.className="adm-select-trigger";botao.setAttribute("aria-haspopup","listbox");botao.setAttribute("aria-expanded","false");
-botao.innerHTML='<span></span><span class="adm-seta">?</span>';
+botao.innerHTML='<span></span><span class="adm-seta">&#9662;</span>';
 const label=botao.querySelector("span");const lista=document.createElement("div");lista.className="adm-select-list";lista.setAttribute("role","listbox");lista.hidden=true;
 wrap.appendChild(botao);wrap.appendChild(lista);
 function fechar(){lista.hidden=true;botao.setAttribute("aria-expanded","false");}
@@ -4621,6 +4655,187 @@ ctx.roundRect(x,y,w,h,raio);
 ctx.fill();
 }
 
+// ===== REFLEXOS DA UI: cada botao e nome tem um efeito proprio =====
+// b = efeito do botao | t = efeito do texto | bc/tc = cor RGB | bp/tp = duracao do ciclo (ms) | f = atraso
+const REFLEXOS={
+RENASCIMENTO:{b:"brasas",bc:"255,214,110",bp:3600,t:"onda",tc:"255,236,170",tp:3200,f:0},
+MUNDO:{b:"ondas",bc:"150,220,255",bp:3200,t:"sweep",tc:"190,235,255",tp:4200,f:700,larg:.25,dir:1},
+OVOS:{b:"casca",bc:"255,246,215",bp:4200,t:"respira",tc:"255,240,190",tp:3400,f:300},
+PETS:{b:"neon",bc:"150,255,170",bp:6000,t:"brilhos",tc:"210,255,210",tp:4800,f:500,n:1},
+INDICE:{b:"scan",bc:"255,205,120",bp:5200,t:"desce",tc:"255,225,160",tp:5000,f:900,ti:.5},
+RANK:{b:"estrelas",bc:"225,205,255",bp:3200,t:"sweep",tc:"225,210,255",tp:3600,f:200,larg:.2,dir:-1},
+CONFIG:{b:"orbita",bc:"190,210,255",bp:5000,f:0},
+UPGRADES:{b:"subida",bc:"235,200,255",bp:2400,t:"sobe",tc:"240,215,255",tp:3000,f:400},
+ADMIN:{b:"holo",bc:"255,255,255",bp:5000,t:"arco",tc:"",tp:3200,f:0},
+SHOP:{b:"vidro",bc:"255,255,255",bp:3800,t:"sweep",tc:"255,255,255",tp:3800,f:1600,larg:.14,dir:1},
+nome:{t:"onda",tc:"255,255,255",tp:4200,f:0},
+dinheiro:{t:"brilhos",tc:"255,244,170",tp:3200,f:1100},
+minerio:{t:"respira",tc:"220,240,255",tp:3800,f:600}
+};
+const _semMovimento=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+function _estrela(cx,cy,L,cor){
+if(L<=0.2)return;
+ctx.save();ctx.globalCompositeOperation="lighter";ctx.strokeStyle="rgba("+cor+",.9)";ctx.lineWidth=1.1;
+ctx.shadowColor="rgb("+cor+")";ctx.shadowBlur=5;
+ctx.beginPath();ctx.moveTo(cx-L,cy);ctx.lineTo(cx+L,cy);ctx.moveTo(cx,cy-L);ctx.lineTo(cx,cy+L);ctx.stroke();
+ctx.restore();
+}
+function reflexoBotao(x,y,w,h,r,o){
+if(!o||!o.b)return;
+const c=o.bc,T=performance.now(),cx=x+w/2,cy=y+h/2,P=o.bp,F=o.f||0,u=((T+F)%P)/P,PI2=6.283;
+ctx.save();
+ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.clip();
+const gt=ctx.createLinearGradient(0,y,0,y+h*.5);
+gt.addColorStop(0,"rgba(255,255,255,.14)");gt.addColorStop(1,"rgba(255,255,255,0)");
+ctx.fillStyle=gt;ctx.fillRect(x,y,w,h*.5);
+if(_semMovimento&&o.b!=="casca"){ctx.restore();return;}
+ctx.globalCompositeOperation="lighter";
+switch(o.b){
+case"brasas":{ // renascimento: brasas douradas subindo
+const g=ctx.createLinearGradient(0,y+h,0,y+h*.3);
+g.addColorStop(0,"rgba("+c+","+(.16+.1*Math.sin(u*PI2))+")");g.addColorStop(1,"rgba("+c+",0)");
+ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+for(let i=0;i<7;i++){
+const q=(u+i/7)%1,px=x+w*(.1+.8*((i*.37+.11)%1))+Math.sin(q*9+i)*2,py=y+h*(1.05-q*1.1);
+ctx.fillStyle="rgba("+c+","+(Math.sin(q*Math.PI)*.95)+")";
+ctx.beginPath();ctx.arc(px,py,.9+(i%3)*.45,0,PI2);ctx.fill();
+}
+break;}
+case"ondas":{ // mundo: ondas se expandindo do centro
+for(let k=0;k<2;k++){
+const q=(u+k*.5)%1,R=q*Math.max(w,h)*.75;
+ctx.strokeStyle="rgba("+c+","+((1-q)*.55)+")";ctx.lineWidth=1.3;
+ctx.beginPath();ctx.ellipse(cx,cy,R*w/h*.55+1,R*.7+1,0,0,PI2);ctx.stroke();
+}
+const g=ctx.createRadialGradient(cx,cy,0,cx,cy,h*.7);
+g.addColorStop(0,"rgba("+c+",.16)");g.addColorStop(1,"rgba("+c+",0)");
+ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+break;}
+case"casca":{ // ovos: reflexo fixo de casca lisa que "respira"
+const k=.5+.5*Math.sin(u*PI2);
+ctx.save();ctx.translate(x+w*.27,y+h*.3);ctx.scale(1.7,1);ctx.rotate(-.35);
+const g=ctx.createRadialGradient(0,0,0,0,0,h*.42);
+g.addColorStop(0,"rgba("+c+","+(.38+.22*k)+")");g.addColorStop(1,"rgba("+c+",0)");
+ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,h*.42,0,PI2);ctx.fill();
+ctx.restore();
+ctx.fillStyle="rgba(255,255,255,"+(.5+.3*k)+")";
+ctx.beginPath();ctx.arc(x+w*.14,y+h*.2,1.1,0,PI2);ctx.fill();
+break;}
+case"neon":{ // pets: pequeno cometa de luz percorrendo a borda
+const m=1.5,W=w-2*m,H=h-2*m,Pm=2*(W+H);
+const pt=d=>{d=((d%Pm)+Pm)%Pm;if(d<W)return[x+m+d,y+m];d-=W;if(d<H)return[x+m+W,y+m+d];d-=H;if(d<W)return[x+m+W-d,y+m+H];d-=W;return[x+m,y+m+H-d];};
+ctx.strokeStyle="rgba("+c+",.14)";ctx.lineWidth=1;
+ctx.beginPath();ctx.roundRect(x+m,y+m,W,H,Math.max(1,r-1));ctx.stroke();
+for(let k=0;k<6;k++){
+const p=pt(u*Pm-k*Pm*.01);
+ctx.fillStyle="rgba("+c+","+((1-k/6)*.7)+")";
+ctx.beginPath();ctx.arc(p[0],p[1],1.7-k*.2,0,PI2);ctx.fill();
+}
+break;}
+case"scan":{ // indice: brilho suave descendo, sem linha dura
+const f=u<.6?u/.6:-1;
+if(f>=0){
+const yy=y-h*.3+f*h*1.6,bh=h*.35,fade=Math.sin(f*Math.PI);
+const g=ctx.createLinearGradient(0,yy-bh,0,yy+bh);
+g.addColorStop(0,"rgba("+c+",0)");g.addColorStop(.5,"rgba("+c+","+(.22*fade)+")");g.addColorStop(1,"rgba("+c+",0)");
+ctx.fillStyle=g;ctx.fillRect(x,yy-bh,w,bh*2);
+}
+break;}
+case"estrelas":{ // rank: estrelinhas piscando
+[[.15,.3],[.42,.72],[.68,.25],[.88,.68]].forEach((p,i)=>{
+const q=(u+i*.27)%1;
+if(q<.3)_estrela(x+w*p[0],y+h*p[1],1+4.5*Math.sin(q/.3*Math.PI),c);
+});
+break;}
+case"orbita":{ // engrenagem: ponto de luz girando
+const a=u*PI2,sx=cx+Math.cos(a)*w*.26,sy=cy+Math.sin(a)*h*.26;
+const g=ctx.createRadialGradient(sx,sy,0,sx,sy,w*.42);
+g.addColorStop(0,"rgba("+c+",.5)");g.addColorStop(1,"rgba("+c+",0)");
+ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+break;}
+case"subida":{ // upgrades: setas subindo
+ctx.lineCap="round";ctx.lineJoin="round";ctx.lineWidth=2;
+for(let k=0;k<2;k++){
+const q=(u+k*.5)%1,yy=y+h*(1.25-q*1.5);
+ctx.strokeStyle="rgba("+c+","+(Math.sin(q*Math.PI)*.55)+")";
+for(let j=0;j<5;j++){
+const px=x+w*(.1+j*.2);
+ctx.beginPath();ctx.moveTo(px-3.5,yy+3.5);ctx.lineTo(px,yy);ctx.lineTo(px+3.5,yy+3.5);ctx.stroke();
+}
+}
+break;}
+case"holo":{ // admin: folha holografica colorida deslizando
+const cols=["255,90,170","255,200,90","110,255,170","90,190,255","190,120,255","255,90,170"];
+for(let k=0;k<2;k++){
+const gx=x+(u+k-1)*w,g=ctx.createLinearGradient(gx,y,gx+w,y);
+cols.forEach((cc,i)=>g.addColorStop(i/5,"rgba("+cc+",.2)"));
+ctx.fillStyle=g;ctx.fillRect(gx,y,w,h);
+}
+break;}
+case"vidro":{ // shop: vidro polido com brilho no bau
+const f=u<.4?u/.4:-1;
+if(f>=0){
+const bw=w*.14,ang=.5,ext=h*ang+bw;
+ctx.translate(cx,cy);ctx.transform(1,0,-ang,1,0,0);
+const sx=-w/2-ext+f*(w+2*ext),g=ctx.createLinearGradient(sx-bw,0,sx+bw,0);
+g.addColorStop(0,"rgba(255,255,255,0)");g.addColorStop(.45,"rgba(255,255,255,.35)");g.addColorStop(.5,"rgba(255,255,255,.85)");g.addColorStop(.55,"rgba(255,255,255,.35)");g.addColorStop(1,"rgba(255,255,255,0)");
+ctx.fillStyle=g;ctx.fillRect(sx-bw,-h/2,bw*2,h);
+}
+break;}
+}
+ctx.restore();
+if(o.b==="vidro"){const q=((T+F+900)%2800)/2800;if(q<.3)_estrela(x+31,y+17,1+6*Math.sin(q/.3*Math.PI),"255,245,200");}
+}
+function reflexoTexto(txt,x,y,tam,alin,o){
+if(!o||!o.t||_semMovimento)return;
+const T=performance.now(),c=o.tc,u=((T+(o.f||0))%o.tp)/o.tp;
+ctx.save();
+ctx.font="bold "+tam+"px Arial";ctx.textAlign="left";ctx.globalCompositeOperation="lighter";
+const w=ctx.measureText(txt).width,x0=alin==="center"?x-w/2:(alin==="right"?x-w:x);
+const xl=i=>x0+ctx.measureText(txt.slice(0,i)).width;
+switch(o.t){
+case"sweep":{ // faixa de luz passando (direcao e largura variam)
+const f=u<.5?u/.5:-1;if(f<0)break;
+const bw=w*(o.larg||.28)+tam*.4,sx=(o.dir||1)>0?x0-bw+f*(w+2*bw):x0+w+bw-f*(w+2*bw);
+const g=ctx.createLinearGradient(sx-bw,y-tam,sx+bw,y);
+g.addColorStop(0,"rgba("+c+",0)");g.addColorStop(.5,"rgba("+c+",.8)");g.addColorStop(1,"rgba("+c+",0)");
+ctx.fillStyle=g;ctx.fillText(txt,x0,y);
+break;}
+case"onda":{ // onda de brilho letra por letra
+const L=[...txt];
+L.forEach((ch,i)=>{
+const b=Math.pow(Math.max(0,Math.sin(6.283*(u-i/L.length*.8))),3);
+if(b<.02)return;
+ctx.fillStyle="rgba("+c+","+(.8*b)+")";ctx.fillText(ch,xl(i),y);
+});
+break;}
+case"respira":{ // brilho que sobe e desce devagar
+const k=.5+.5*Math.sin(u*6.283);
+ctx.shadowColor="rgba("+c+",.9)";ctx.shadowBlur=2+6*k;
+ctx.fillStyle="rgba("+c+","+(.08+.3*k)+")";ctx.fillText(txt,x0,y);
+break;}
+case"brilhos":{ // estrelinhas piscando nas letras
+[[.5,.3],[.12,.78],[.86,.7]].slice(0,o.n||3).forEach((p,i)=>{
+const q=(u+i*.34)%1;
+if(q<.28)_estrela(x0+w*p[0],y-tam*p[1],.8+tam*.16*Math.sin(q/.28*Math.PI),c);
+});
+break;}
+case"desce":case"sobe":{ // faixa vertical passando pelas letras
+const f=u<.5?u/.5:-1;if(f<0)break;
+const k=o.t==="desce"?f:1-f,yy=y-tam*.95+k*tam*1.1,bh=tam*.4;
+const g=ctx.createLinearGradient(0,yy-bh,0,yy+bh);
+g.addColorStop(0,"rgba("+c+",0)");g.addColorStop(.5,"rgba("+c+","+(.85*(o.ti||1))+")");g.addColorStop(1,"rgba("+c+",0)");
+ctx.fillStyle=g;ctx.fillText(txt,x0,y);
+break;}
+case"arco":{ // arco-iris correndo pelas letras
+[...txt].forEach((ch,i)=>{
+ctx.fillStyle="hsla("+((u*360+i*38)%360)+",100%,62%,.55)";ctx.fillText(ch,xl(i),y);
+});
+break;}
+}
+ctx.restore();
+}
+
 function texto(txt,x,y,tamanho,cor="#fff",alinhamento="left"){
 ctx.fillStyle=cor;
 ctx.font="bold "+tamanho+"px Arial";
@@ -4803,7 +5018,7 @@ function desenharMinerio(){
 const cor=minerios[minerioAtual][3];
 const corCSS=`rgb(${cor.join(",")})`;
 
-texto(minerios[minerioAtual][0],417,143,20,corCSS,"center");
+texto(minerios[minerioAtual][0],417,143,20,corCSS,"center");reflexoTexto(minerios[minerioAtual][0],417,143,20,"center",REFLEXOS.minerio);
 
 retangulo(370,155,95,95,"#292929",7);
 retangulo(374,159,87,87,corCSS,5);
@@ -5160,6 +5375,7 @@ picaretas[picaretaAtual][0],
 "center"
 );
 
+reflexoTexto(picaretas[picaretaAtual][0],250,56,20,"center",REFLEXOS.nome);
 desenharPicareta();
 
 if(Date.now()-tempoGolpe>=100)diagonal=false;
@@ -5168,7 +5384,7 @@ desenharMinerio();
 
 // Atalhos compactos para os três sistemas novos, sem ocupar os botões existentes.
 const atalhos=[{x:263,nome:"MUNDO",cor:"#174d78",borda:"#78c8ff"},{x:300,nome:"OVOS",cor:"#66501b",borda:"#ffe08a"},{x:337,nome:"PETS",cor:"#28643a",borda:"#a8ef9b"},{x:374,nome:"INDICE",cor:"#7a4a1e",borda:"#ffc46b"},{x:411,nome:"RANK",cor:"#4b3b78",borda:"#c4a8ff"}];
-atalhos.forEach(a=>{retangulo(a.x,5,35,30,a.cor,6);ctx.strokeStyle=a.borda;ctx.lineWidth=1;ctx.strokeRect(a.x+0.5,5.5,34,29);texto(a.nome,a.x+17.5,23,6.4,"#fff","center");});
+atalhos.forEach(a=>{retangulo(a.x,5,35,30,a.cor,6);ctx.strokeStyle=a.borda;ctx.lineWidth=1;ctx.strokeRect(a.x+0.5,5.5,34,29);texto(a.nome,a.x+17.5,23,6.4,"#fff","center");reflexoBotao(a.x,5,35,30,6,REFLEXOS[a.nome]);reflexoTexto(a.nome,a.x+17.5,23,6.4,"center",REFLEXOS[a.nome]);});
 
 if(mostrarRecompensa){
 texto(recompensaTexto,350,85,25,"#ffdc00");
@@ -5181,6 +5397,7 @@ mostrarRecompensa=false;
 // O indicador amarelo antigo do evento de dinheiro foi removido.
 // O saldo permanece no local original; eventos ativos aparecem nos badges do canto.
 texto("$ "+formatarDinheiro(moedas),420,288,23,"#ffdc00","right");
+reflexoTexto("$ "+formatarDinheiro(moedas),420,288,23,"right",REFLEXOS.dinheiro);
 
 // BOTÃO DE RENASCIMENTO (canto superior esquerdo)
 const gradRen=ctx.createLinearGradient(7,5,132,35);
@@ -5190,9 +5407,10 @@ gradRen.addColorStop(1,"#754313");
 retangulo(7,5,126,31,"#3b260c",7);
 retangulo(9,7,122,27,gradRen,5);
 texto("RENASCIMENTO",70,25,12,"#fff","center");
+reflexoBotao(9,7,122,27,5,REFLEXOS.RENASCIMENTO);reflexoTexto("RENASCIMENTO",70,25,12,"center",REFLEXOS.RENASCIMENTO);
 
 retangulo(450,5,42,30,"#343b55",6);
-desenharEngrenagem(471,20);
+desenharEngrenagem(471,20);reflexoBotao(450,5,42,30,6,REFLEXOS.CONFIG);
 
 // BOTÃO UPGRADES
 
@@ -5203,6 +5421,7 @@ gradUpgrade.addColorStop(1,"#45206f");
 retangulo(16,170,128,35,"#30144e",8);
 retangulo(18,172,124,31,gradUpgrade,6);
 texto(" UPGRADES",80,193,15,"#fff","center");
+reflexoBotao(18,172,124,31,6,REFLEXOS.UPGRADES);reflexoTexto(" UPGRADES",80,193,15,"center",REFLEXOS.UPGRADES);
 
 // BOTÃO ADMIN
 
@@ -5214,6 +5433,7 @@ gradAdmin.addColorStop(1,"#54268d");
 retangulo(16,125,128,35,"#30144e",8);
 retangulo(18,127,124,31,gradAdmin,6);
 texto("ADMIN",80,148,15,"#fff","center");
+reflexoBotao(18,127,124,31,6,REFLEXOS.ADMIN);reflexoTexto("ADMIN",80,148,15,"center",REFLEXOS.ADMIN);
 }
 
 // BOTÃO SHOP
@@ -5237,6 +5457,7 @@ retangulo(29,233,25,7,"#ffe58a",3);
 linha(41,234,41,256,"#9b6415",2);
 
 texto("SHOP",91,254,21,"#fff","center");
+reflexoBotao(19,219,122,57,11,REFLEXOS.SHOP);reflexoTexto("SHOP",91,254,21,"center",REFLEXOS.SHOP);
 
 // AUTO CLICK E ABERTURA AUTOMÁTICA DE OVOS
 
