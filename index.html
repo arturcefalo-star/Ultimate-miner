@@ -525,7 +525,7 @@ button:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
 @media(max-width:600px){.evento-badge{width:46px;min-height:45px;padding:3px 2px;border-radius:9px}.evento-badge::before{font-size:13px}.evento-badge strong{font-size:11px}.evento-badge span{font-size:6px}#eventoGlobalBadge{top:6px}#eventoSorteBadge{top:60px}#eventoAnjoBadge{top:114px}#eventoHackerBadge{top:168px}#eventoGalaxiaBadge{top:222px}}
 </style>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Ultimate Miner - versão mundos</title>
+<title>Ultimate Miner</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -3117,8 +3117,11 @@ if(!uid||!db)return;
 const agora=Date.now();
 const marca={online:!!online,heartbeatAt:agora,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
 try{
- await db.collection("jogadores").doc(uid).set({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm,presenca:marca},{merge:true});
- await db.collection("rankingGlobal").doc(uid).set({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm},{merge:true});
+ // Inclui o nome da conta: sem ele, um registro criado pela presença aparecia como "Jogador".
+ const nomePresenca=(usuarioAtual&&usuarioAtual.uid===uid)?(usuarioAtual.displayName||usuarioAtual.email.split("@")[0]):null;
+ const nomeCampo=nomePresenca?{nome:nomePresenca}:{};
+ await db.collection("jogadores").doc(uid).set(Object.assign({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm,presenca:marca},nomeCampo),{merge:true});
+ await db.collection("rankingGlobal").doc(uid).set(Object.assign({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm},nomeCampo),{merge:true});
  await db.collection("presenca").doc(uid).set({online:!!online,heartbeatAt:agora},{merge:true});
 }catch(error){console.warn("Não foi possível atualizar a presença:",error);}
 }
@@ -3389,17 +3392,38 @@ if(saindoDaConta||!usuarioAtual)return;
 saindoDaConta=true;
 const usuarioId=usuarioAtual.uid;
 const nomeUsuario=usuarioAtual.displayName||usuarioAtual.email.split("@")[0];
-// Captura o progresso agora, de forma síncrona, para salvar em segundo plano.
 let dadosSeguros=null;
+try{
 try{
  if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
  if(cancelarMonitoramentoJogador){try{cancelarMonitoramentoJogador();}catch(e){}cancelarMonitoramentoJogador=null;}
  if(dadosCarregados)dadosSeguros=limparDadosParaFirestore(dadosDoJogo());
 }catch(e){console.warn("Captura ao sair:",e);}
-try{pararPresenca(usuarioId);}catch(e){console.warn("Presença ao sair:",e);}
 dadosCarregados=false;
 
-// Tela de login imediata: não espera a nuvem.
+// Etapas em sequência: a sessão só é encerrada depois de salvar, e a tela de login
+// só aparece depois que o Firebase terminou de desconectar. Assim um login novo
+// nunca é desfeito por uma saída atrasada. Cada etapa tem limite curto de tempo.
+const pendencias=[];
+if(timerPresenca){clearInterval(timerPresenca);timerPresenca=null;}
+atualizarPresenca(false,usuarioId).catch(()=>{}); // não espera: é só o aviso de "offline"
+if(dadosSeguros){
+ pendencias.push((async()=>{
+  try{
+   await comTempoLimite(db.collection("jogadores").doc(usuarioId).set({
+    nome:nomeUsuario,
+    dados:dadosSeguros,
+    ranking:{moedas:Number(dadosSeguros.moedas)||0,renascimentos:Number(dadosSeguros.renascimentos)||0},
+    atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
+   },{merge:true}),2500,"salvar progresso ao sair");
+   comTempoLimite(publicarResumoRanking(usuarioId,nomeUsuario,dadosSeguros,false),3000,"atualizar ranking").catch(()=>{});
+  }catch(e){console.warn("Salvamento ao sair falhou (progresso local preservado):",e);}
+ })());
+}
+await comTempoLimite(Promise.all(pendencias),2500,"salvar ao sair").catch(e=>console.warn("Etapas ao sair não terminaram a tempo:",e));
+try{await comTempoLimite(auth.signOut(),2000,"desconectar a conta atual");}
+catch(e){console.warn("Não foi possível desconectar do Firebase:",e);}
+
 usuarioAtual=null;
 codigoAdminSessao="";
 adminDesbloqueado=false;
@@ -3414,24 +3438,8 @@ loginModal.style.display="flex";
 nomeLogin.value="";
 senhaLogin.value="";
 mensagemDeLogin("Conta desconectada. As contas continuam salvas nesta lista. Para entrar novamente, selecione a conta e digite sua senha.",false);
-saindoDaConta=false;
-
-// Em segundo plano: salva o progresso na nuvem e encerra a sessão do Firebase.
-(async()=>{
- if(dadosSeguros){
-  try{
-   await comTempoLimite(db.collection("jogadores").doc(usuarioId).set({
-    nome:nomeUsuario,
-    dados:dadosSeguros,
-    ranking:{moedas:Number(dadosSeguros.moedas)||0,renascimentos:Number(dadosSeguros.renascimentos)||0},
-    atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
-   },{merge:true}),10000,"salvar progresso ao sair");
-   comTempoLimite(publicarResumoRanking(usuarioId,nomeUsuario,dadosSeguros,false),8000,"atualizar ranking").catch(()=>{});
-  }catch(e){console.warn("Não foi possível salvar na nuvem ao sair (progresso local preservado):",e);}
- }
- try{await comTempoLimite(auth.signOut(),10000,"desconectar a conta atual");}
- catch(e){console.warn("Não foi possível desconectar do Firebase:",e);}
-})();
+}catch(erroSair){console.error("Erro ao sair:",erroSair);}
+finally{saindoDaConta=false;}
 }
 
 async function iniciarSistemaLogin(){
