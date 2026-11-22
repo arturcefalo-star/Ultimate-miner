@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <!--
 ARQUIVO ÚNICO (FRONT-END): CSS e JavaScript do jogo estão incorporados neste HTML.
@@ -577,6 +578,67 @@ html.girar #btnTelaCheia{right:auto;left:10px;bottom:auto;top:10px}
 </style>
 <style id="anti-clique-duplo-v1">
 button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-opcao,.adm-select-option{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+</style>
+<style id="troca-css-v1">
+.troca-card{background:linear-gradient(160deg,#2b3a5c,#141c30);border:2px solid #3f5482;border-radius:14px;padding:12px 8px;text-align:center;color:#fff;cursor:pointer;box-shadow:0 4px 10px #0006;touch-action:manipulation}
+.troca-card.sel{border-color:#7dff9d;box-shadow:0 0 0 3px #7dff9d55}
+.troca-avatar{width:58px;height:58px;margin:0 auto 8px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#111;border:3px solid #fff8}
+.troca-nome{font-weight:900;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.troca-status{font-size:11px;margin-top:4px;color:#9fb0d6}
+.troca-status.on{color:#5dff8a}
+.troca-over{position:fixed;inset:0;background:#000b;z-index:30002;display:flex;align-items:center;justify-content:center;padding:12px}
+.troca-over[hidden]{display:none}
+.troca-box{background:#1b2236;color:#fff;border:1px solid #4a5a88;border-radius:14px;padding:16px;width:min(560px,96vw);max-height:90vh;overflow:auto;font-family:Arial,sans-serif}
+.troca-box h2{margin:0 0 10px;font-size:18px;text-align:center}
+.troca-box p{margin:8px 0 4px;font-size:13px;color:#cfd8ef}
+.troca-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.troca-btn-acao{flex:1;padding:12px;border:0;border-radius:10px;color:#fff;font-weight:900;font-size:15px;cursor:pointer;touch-action:manipulation}
+.troca-btn-acao:disabled{opacity:.5}
+.troca-verde{background:#1fa34a}.troca-vermelho{background:#c62828}.troca-amarelo{background:#f5c518;color:#2a1d00}
+.troca-grade{display:flex;flex-wrap:wrap;gap:4px;min-height:44px;padding:6px;background:#11172a;border-radius:8px}
+.troca-pet{width:44px;height:44px;border-radius:7px;border:2px solid #fff3;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#111;cursor:pointer;user-select:none;touch-action:manipulation}
+.troca-pet.sel{outline:3px solid #7dff9d}
+.troca-linha{display:flex;gap:8px;margin-top:10px}
+
+/* TRADE UI REFRESH - inspirado no estilo de trading do Skibidi Toilet TD */
+#troca-css-v1{}
+.troca-over{background:radial-gradient(ellipse at 50% 35%,#273b60bb 0%,#080d18ed 68%,#03060cf5 100%);backdrop-filter:blur(5px);padding:14px}
+.troca-box{position:relative;background:linear-gradient(155deg,#243b61 0%,#172945 42%,#101c31 100%);border:2px solid #6c91c9;border-radius:19px;padding:18px;width:min(760px,97vw);max-height:94vh;overflow:auto;box-shadow:0 18px 55px #000c,inset 0 1px #ffffff35;font-family:system-ui,Arial,sans-serif}
+.troca-box:before{content:"";position:absolute;left:12px;right:12px;top:8px;height:4px;border-radius:9px;background:linear-gradient(90deg,#52d9ff,#a7e7ff,#ffe17c,#ff9b4d);opacity:.95}
+.troca-box h2{margin:5px 0 16px;padding:9px 12px;text-align:center;font-size:clamp(17px,3vw,23px);font-weight:1000;letter-spacing:1px;color:#fff;text-shadow:0 2px 5px #000a;border-radius:11px;background:linear-gradient(90deg,#31588b,#427bb2,#31588b);border:1px solid #a9d5ff66;box-shadow:inset 0 1px #ffffff45,0 4px 10px #0005}
+.troca-box p{margin:0 0 8px;color:#d8eaff;font-size:12px;font-weight:900;letter-spacing:.35px;text-transform:uppercase}
+.troca-lista{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px}
+.troca-card{position:relative;min-width:0;background:linear-gradient(155deg,#34527a,#1b2d49 75%);border:2px solid #5278a8;border-radius:13px;padding:11px 8px 10px;box-shadow:inset 0 1px #ffffff25,0 5px 12px #0006;transition:transform .12s,border-color .12s}
+.troca-card:active{transform:scale(.97)}
+.troca-card.sel{border-color:#ffe17b;box-shadow:0 0 0 2px #ffe17b55,0 0 16px #ffe17b55}
+.troca-avatar{width:52px;height:52px;border:3px solid #d9efff;border-radius:13px;box-shadow:0 3px 8px #0008,inset 0 1px #ffffff77;color:#fff;text-shadow:0 2px 3px #000;font-size:22px}
+.troca-nome{font-size:13px;color:#fff;text-shadow:0 1px 3px #000;}
+.troca-status{display:inline-block;margin-top:7px;padding:3px 9px;border-radius:20px;background:#4a5365;color:#e2e8f0;font-size:10px;font-weight:1000;text-transform:uppercase}
+.troca-status.on{background:#145d3d;color:#aaffce;border:1px solid #4bdb91}
+.troca-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:7px;min-height:95px;padding:10px;background:linear-gradient(145deg,#0b1729,#12233c);border:1px solid #46658e;border-radius:12px;box-shadow:inset 0 3px 10px #0007}
+.troca-pet{position:relative;width:100%;height:auto;min-height:68px;aspect-ratio:1/1;border-radius:10px;border:2px solid #ffffff65;box-shadow:inset 0 2px 5px #ffffff35,0 3px 7px #0008;font-size:13px;font-weight:1000;text-shadow:0 1px 2px #fff8;transition:transform .12s,outline .12s}
+.troca-pet:active{transform:scale(.94)}
+.troca-pet.sel{outline:3px solid #ffe16b;outline-offset:1px;box-shadow:0 0 12px #ffe16b88,inset 0 2px 5px #ffffff35}
+.troca-linha{display:flex;gap:9px;margin-top:13px}
+.troca-btn-acao{min-height:45px;padding:11px 14px;border-radius:11px;border:1px solid #ffffff55;font-size:13px;font-weight:1000;letter-spacing:.5px;text-shadow:0 1px 2px #0005;box-shadow:inset 0 1px #ffffff55,0 4px 9px #0006;transition:filter .12s,transform .12s}
+.troca-btn-acao:active{transform:translateY(1px);filter:brightness(1.12)}
+.troca-btn-acao:disabled{opacity:.55;filter:grayscale(.5)}
+.troca-verde{background:linear-gradient(180deg,#39d77b,#16884c);color:white}
+.troca-vermelho{background:linear-gradient(180deg,#ff7777,#bd303d);color:white}
+.troca-amarelo{background:linear-gradient(180deg,#ffe982,#e6a928);color:#352300;text-shadow:none}
+.troca-painel-oferta{margin:10px 0 13px;padding:11px;border:1px solid #5c7da8;border-radius:13px;background:linear-gradient(145deg,#203958,#172942);box-shadow:0 4px 12px #0004}
+.troca-painel-oferta.propria{border-color:#4ca8d4}
+.troca-painel-oferta.outro{border-color:#b28b4b}
+.troca-cabecalho-oferta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;color:#fff;font-size:12px;font-weight:1000;text-transform:uppercase}
+.troca-cabecalho-oferta small{padding:3px 8px;border-radius:20px;background:#0d1b2e;color:#c7e4ff;font-size:10px;white-space:nowrap}
+.troca-centro-vs{display:flex;align-items:center;justify-content:center;gap:10px;margin:7px 0;color:#ffe17b;font-size:19px;font-weight:1000;text-shadow:0 2px 5px #000}
+.troca-centro-vs:before,.troca-centro-vs:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,#91b8e7)}
+.troca-centro-vs:after{background:linear-gradient(90deg,#91b8e7,transparent)}
+.troca-inventario-titulo{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 7px;color:#d8eaff;font-size:12px;font-weight:1000;text-transform:uppercase}
+.troca-inventario-titulo small{color:#a9c7e8;font-size:10px}
+.troca-vazio{display:grid;place-items:center;min-height:75px;color:#8fa9c8;font-size:11px;font-weight:800;text-align:center;border:1px dashed #496587;border-radius:9px;background:#0a162755;padding:12px}
+@media(max-width:520px){.troca-box{padding:14px 11px;border-radius:15px;max-height:95vh}.troca-grade{grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:6px;padding:8px}.troca-pet{min-height:56px;font-size:11px}.troca-linha{gap:7px}.troca-btn-acao{font-size:11px;padding:10px 8px;min-height:43px}.troca-lista{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}.troca-avatar{width:46px;height:46px}}
+
 </style>
 </head>
 <body>
@@ -1890,6 +1952,11 @@ function bonusResgatadoIndice(variante){
  if(recompensasIndiceResgatadas[chaveRecompensaCompletaIndice(variante)])total+=RECOMPENSA_COMPLETA_INDICE;
  return total;
 }
+function avisoSemPetEquipadoComMutacao(variante){
+ if(!MUTACOES_EVENTO_RECOMPENSA.includes(variante))return "";
+ const temEquipado=petsEquipados.some(id=>{const p=petsInventario.find(x=>x.id===id);return p&&Array.isArray(p.mutacoesEvento)&&p.mutacoesEvento.includes(variante);});
+ return temEquipado?"":" Mas nenhum pet EQUIPADO tem a mutação "+variante+": equipe um pet com essa mutação para o bônus valer.";
+}
 function resgatarRecompensaIndice(mundo,variante){
  if(!jogoPronto()||!Number.isInteger(mundo)||mundo<0||mundo>=OVOS_MUNDO.length)return;
  const chave=chaveRecompensaIndice(mundo,variante);
@@ -1898,7 +1965,7 @@ function resgatarRecompensaIndice(mundo,variante){
  recompensasIndiceResgatadas[chave]=true;
  salvar();
  const tipo=VARIANTES_RECOMPENSA_INDICE.includes(variante)?"poder da picareta":"multiplicador de cada pet com mutação "+variante;
- mostrarAviso("Recompensa resgatada: +0,5x no "+tipo+"!","sucesso");
+ mostrarAviso("Recompensa resgatada: +0,5x no "+tipo+"!"+avisoSemPetEquipadoComMutacao(variante),"sucesso");
  renderizarIndicePets();
 }
 function resgatarRecompensaCompletaIndice(variante){
@@ -1909,7 +1976,7 @@ function resgatarRecompensaCompletaIndice(variante){
  recompensasIndiceResgatadas[chave]=true;
  salvar();
  const tipo=VARIANTES_RECOMPENSA_INDICE.includes(variante)?"poder da picareta":"multiplicador de cada pet com mutação "+variante;
- mostrarAviso("Índice completo! Você resgatou +2,0x no "+tipo+"!","sucesso");
+ mostrarAviso("Índice completo! Você resgatou +2,0x no "+tipo+"!"+avisoSemPetEquipadoComMutacao(variante),"sucesso");
  renderizarIndicePets();
 }
 function renderizarIndicePets(){
@@ -1953,7 +2020,7 @@ function renderizarIndicePets(){
    acao.className="indice-resgatar"+(resgatado?" resgatado":"");
    acao.disabled=!completo||resgatado;
    const tipoRecompensa=VARIANTES_RECOMPENSA_INDICE.includes(filtro)?"PICARETA":"PETS";
-   acao.textContent=resgatado?"✓ RESGATADO":(completo?"RESGATAR +0,5x "+tipoRecompensa:"+0,5x "+tipoRecompensa+" (COMPLETE)");
+   acao.textContent=resgatado?"? RESGATADO":(completo?"RESGATAR +0,5x "+tipoRecompensa:"+0,5x "+tipoRecompensa+" (COMPLETE)");
    acao.addEventListener("click",()=>resgatarRecompensaIndice(i,filtro));
    cab.appendChild(acao);
   }
@@ -2016,7 +2083,7 @@ function renderizarIndicePets(){
    botaoFinal.type="button";
    botaoFinal.className="indice-resgatar"+(globalResgatado?" resgatado":"");
    botaoFinal.disabled=!globalCompleto||globalResgatado;
-   botaoFinal.textContent=globalResgatado?"✓ BÔNUS FINAL RESGATADO":(globalCompleto?"RESGATAR +2,0x "+tipoRecompensa:"BÔNUS FINAL +2,0x (COMPLETE TODOS OS MUNDOS)");
+   botaoFinal.textContent=globalResgatado?"? BÔNUS FINAL RESGATADO":(globalCompleto?"RESGATAR +2,0x "+tipoRecompensa:"BÔNUS FINAL +2,0x (COMPLETE TODOS OS MUNDOS)");
    botaoFinal.addEventListener("click",()=>resgatarRecompensaCompletaIndice(filtro));
    recompensas.appendChild(botaoFinal);
   }
@@ -2099,7 +2166,7 @@ function renderizarStatusPet(){
  const nivel=nivelEvolucaoPet(p),rotulo=nomeNivelPet(nivel);
  const nome=document.createElement("div");nome.className="pet-status-nome";nome.textContent=p.nome+(nivel?" "+rotulo:"");nome.style.color=nivel===4?"#c9a7ff":nivel===3?"#ff9ded":nivel===2?"#aaf2ff":nivel===1?"#ffe27a":petCor(p);
  const rar=document.createElement("p");rar.textContent="Raridade: "+p.raridade+(nivel?" | "+rotulo:"");rar.style.color=nome.style.color;
- const mult=document.createElement("p");mult.textContent="Multiplicador: "+Number(p.mult||1).toFixed(2)+"x"+(nivel?" ("+Math.pow(2,nivel)+"x do normal)":"");
+ const mult=document.createElement("p");mult.textContent="Multiplicador: "+Number(p.mult||1).toFixed(2)+"x"+(bonusMutacaoPet(p)>0?" (+"+bonusMutacaoPet(p).toFixed(1)+"x de índice, ativo só se equipado)":"")+(nivel?" ("+Math.pow(2,nivel)+"x do normal)":"");
  const equipado=document.createElement("p");equipado.textContent=petsEquipados.includes(p.id)?"Status: EQUIPADO":"Status: NO INVENTÁRIO";
  const base=catalogoCompleto().find(x=>x.nome===p.nome),total=catalogoPets.reduce((a,x)=>a+x.peso,0);
  const chance=document.createElement("p");chance.textContent="Chance no ovo: "+(base?(base.peso/total*100).toFixed(base.peso<1?2:1):"-")+"%";
@@ -2227,23 +2294,21 @@ function venderPetsSelecionados(){
 
 function jogadorEstaOnline(registro){
  const r=registro||{};
- const nested=r.presenca||{};
- // heartbeatAt é um horário numérico escrito junto com o status; evita depender
- // da conversão de serverTimestamp em snapshots recém-gravados.
- const pres=(typeof r.online==="boolean"&&(r.heartbeatAt||r.atualizadoEm))?r:nested;
+ const nested=r.presenca&&typeof r.presenca==="object"?r.presenca:{};
+
+ // Só considera o heartbeat específico de presença. "atualizadoEm" sozinho
+ // NÃO comprova que a pessoa está online: ele também muda quando o jogo salva
+ // moedas/ranking, deixando contas antigas falsamente marcadas como online.
+ const pres=Number(r.heartbeatAt)>0?r:nested;
  const onlineMarcado=pres.online===true;
- let atualizado=Number(pres.heartbeatAt)||0;
- if(!atualizado){
-  try{
-   const valor=pres.atualizadoEm;
-   if(valor&&typeof valor.toMillis==="function") atualizado=valor.toMillis();
-   else if(valor&&typeof valor.toDate==="function") atualizado=valor.toDate().getTime();
-   else if(valor&&typeof valor.seconds==="number") atualizado=valor.seconds*1000;
-   else if(typeof valor==="number") atualizado=valor>100000000000?valor:valor*1000;
-  }catch(e){atualizado=0;}
- }
- const idade=Date.now()-atualizado;
- return onlineMarcado&&atualizado>0&&idade>=-15000&&idade<70000;
+ const heartbeat=Number(pres.heartbeatAt)||0;
+ if(!onlineMarcado||!Number.isFinite(heartbeat)||heartbeat<=0)return false;
+
+ const idade=Date.now()-heartbeat;
+
+ // O cliente envia heartbeat a cada 15 segundos. Uma margem de 50 segundos
+ // tolera pequenas pausas/rede lenta, mas expira rapidamente sessões encerradas.
+ return idade>=-30000&&idade<50000;
 }
 
 function criarEtiquetaPresenca(online){
@@ -2531,15 +2596,13 @@ mineriosComprados=[0];
 picaretaAtual=(manterPicaretaAdmin&&picaretaEquipadaAntes===iAdmRenasc)?iAdmRenasc:0;
 minerioAtual=0;
 mundosDesbloqueados=[0];mundoAtual=0;
-// Todas as melhorias compradas são resetadas.
-multiplicadorCompras=0;
-precoMultiplicador=100;
+// Melhorias compradas são resetadas, mas os multiplicadores (Melhoria de dinheiro e Impulso de pets) e o índice são mantidos.
 autoClickerComprado=false;
 autoClickerProComprado=false;
 autoClickerAtivo=false;
 autoClickerProAtivo=false;
 autoOvoComprado=false;autoOvoAtivo=false;ultimoAutoOvo=Date.now();triploOvoComprado=false;
-sorteOvoNivel=0;precoSorteOvo=200;velocidadeOvoNivel=0;precoVelocidadeOvo=5000000;impulsoPetsNivel=0;precoImpulsoPets=500000;melhoriaInventarioPets=0;melhoriaPetsEquipados=0;
+sorteOvoNivel=0;precoSorteOvo=200;velocidadeOvoNivel=0;precoVelocidadeOvo=5000000;melhoriaInventarioPets=0;melhoriaPetsEquipados=0;
 ultimoAutoClick=Date.now();
 salvar();
 somRaro();
@@ -4681,6 +4744,7 @@ ctx.beginPath();ctx.moveTo(cx-L,cy);ctx.lineTo(cx+L,cy);ctx.moveTo(cx,cy-L);ctx.
 ctx.restore();
 }
 function reflexoBotao(x,y,w,h,r,o){
+if(!botoesDetalhados())return;
 if(!o||!o.b)return;
 const c=o.bc,T=performance.now(),cx=x+w/2,cy=y+h/2,P=o.bp,F=o.f||0,u=((T+F)%P)/P,PI2=6.283;
 ctx.save();
@@ -5383,8 +5447,8 @@ if(Date.now()-tempoGolpe>=100)diagonal=false;
 desenharMinerio();
 
 // Atalhos compactos para os três sistemas novos, sem ocupar os botões existentes.
-const atalhos=[{x:263,nome:"MUNDO",cor:"#174d78",borda:"#78c8ff"},{x:300,nome:"OVOS",cor:"#66501b",borda:"#ffe08a"},{x:337,nome:"PETS",cor:"#28643a",borda:"#a8ef9b"},{x:374,nome:"INDICE",cor:"#7a4a1e",borda:"#ffc46b"},{x:411,nome:"RANK",cor:"#4b3b78",borda:"#c4a8ff"}];
-atalhos.forEach(a=>{retangulo(a.x,5,35,30,a.cor,6);ctx.strokeStyle=a.borda;ctx.lineWidth=1;ctx.strokeRect(a.x+0.5,5.5,34,29);texto(a.nome,a.x+17.5,23,6.4,"#fff","center");reflexoBotao(a.x,5,35,30,6,REFLEXOS[a.nome]);reflexoTexto(a.nome,a.x+17.5,23,6.4,"center",REFLEXOS[a.nome]);});
+const atalhos=[{x:226,nome:"TROCA",cor:"#7a6410",borda:"#ffe36b"},{x:263,nome:"MUNDO",cor:"#174d78",borda:"#78c8ff"},{x:300,nome:"OVOS",cor:"#66501b",borda:"#ffe08a"},{x:337,nome:"PETS",cor:"#28643a",borda:"#a8ef9b"},{x:374,nome:"INDICE",cor:"#7a4a1e",borda:"#ffc46b"},{x:411,nome:"RANK",cor:"#4b3b78",borda:"#c4a8ff"}];
+atalhos.forEach(a=>{retangulo(a.x,5,35,30,a.cor,6);ctx.strokeStyle=a.borda;ctx.lineWidth=1;ctx.strokeRect(a.x+0.5,5.5,34,29);texto(a.nome,a.x+17.5,23,6.4,"#fff","center");if(botoesDetalhados()){reflexoBotao(a.x,5,35,30,6,REFLEXOS[a.nome]);reflexoTexto(a.nome,a.x+17.5,23,6.4,"center",REFLEXOS[a.nome]);}});
 
 if(mostrarRecompensa){
 texto(recompensaTexto,350,85,25,"#ffdc00");
@@ -5660,6 +5724,7 @@ if(!jogoPronto()||adminAberto)return;
 
 // Atalhos dos novos sistemas (área superior direita).
 if(!lojaAberta&&!melhoriasAbertas&&!configuracoesAbertas){
+ if(p.y>=5&&p.y<=35&&p.x>=226&&p.x<261){window.abrirTrocaJogo();return;}
  if(p.y>=5&&p.y<=35&&p.x>=263&&p.x<298){abrirNovoModal("mundos");return;}
  if(p.y>=5&&p.y<=35&&p.x>=300&&p.x<335){abrirNovoModal("ovos");return;}
  if(p.y>=5&&p.y<=35&&p.x>=337&&p.x<372){abrirNovoModal("inventario");return;}
@@ -6486,5 +6551,255 @@ body.ui-cru .novo-box,body.ui-cru #loginBox,body.ui-cru #senhaBox,body.ui-cru .m
    if(dx>0)trocar("renascimentos");else trocar("dinheiro");
   }
  },{passive:true});
+})();
+</script>
+
+<script id="troca-js-v1">
+(function(){
+const COL="trocas";
+const docs=new Map();
+const executadasLocal=new Set();
+let unsubs=[],uidAtual=null,meuNome="Jogador",abertaId=null,conviteId=null,selecionados=[],escolhido=null;
+const $=id=>document.getElementById(id);
+const euUid=()=>(usuarioAtual&&usuarioAtual.uid)||null;
+const ladoDe=d=>d.de===euUid()?"De":"Para";
+const outroLado=l=>l==="De"?"Para":"De";
+function corPet(p){return Array.isArray(p.cor)?"rgb("+p.cor.join(",")+")":(p.cor||"#555");}
+function resumo(p){return {id:p.id,nome:p.nome,sigla:p.sigla||String(p.nome||"?").slice(0,2).toUpperCase(),raridade:p.raridade||"",mult:Number(p.mult)||1,cor:p.cor||"#555",borda:p.borda||"",dourado:!!p.dourado,diamante:!!p.diamante,rainbow:!!p.rainbow,void:!!p.void,mutacoesEvento:Array.isArray(p.mutacoesEvento)?p.mutacoesEvento.slice():[]};}
+function tile(p,sel){const t=document.createElement("div");t.className="troca-pet"+(sel?" sel":"");t.style.background=corPet(p);t.title=p.nome+" - "+Number(p.mult||1).toFixed(2)+"x";t.textContent=p.sigla||"?";return t;}
+
+// Abre a lista de jogadores (chamado pelo botão TROCA do canvas)
+window.abrirTrocaJogo=function(){
+ if(!jogoPronto()){mostrarAviso("Entre na sua conta primeiro.","erro");return;}
+ abrirEscolha();
+};
+
+// Modal de escolha e tela de troca
+const over=document.createElement("div");over.className="troca-over";over.hidden=true;
+over.innerHTML='<div class="troca-box"><h2 id="trocaTit"></h2><div id="trocaCorpo"></div></div>';
+over.addEventListener("click",e=>{if(e.target===over&&!abertaId)over.hidden=true;});
+document.body.appendChild(over);
+
+// Convite no meio da tela
+const conv=document.createElement("div");conv.className="troca-over";conv.hidden=true;
+conv.innerHTML='<div class="troca-box"></div>';
+document.body.appendChild(conv);
+
+async function abrirEscolha(){
+ abertaId=null;escolhido=null;
+ $("trocaTit").textContent="ESCOLHA UM JOGADOR";
+ const corpo=$("trocaCorpo");corpo.textContent="Carregando jogadores...";over.hidden=false;
+ let lista=[];
+ try{
+  const snap=await comTempoLimite(db.collection("rankingGlobal").get(),10000,"listar jogadores");
+  lista=snap.docs.map(d=>{
+   const registro=d.data()||{};
+   return {
+    uid:d.id,
+    nome:String(registro.nome||"Jogador"),
+    // Não confia no booleano online isolado: ele pode ficar gravado no
+    // Firestore depois que a pessoa fecha a página. Exige heartbeat recente.
+    online:jogadorEstaOnline(registro)
+   };
+  }).filter(j=>j.uid!==euUid());
+ }catch(e){corpo.textContent="Não foi possível carregar os jogadores.";return;}
+ corpo.innerHTML="";
+ const grade=document.createElement("div");grade.className="troca-lista";
+ const enviar=document.createElement("button");enviar.className="troca-btn-acao troca-amarelo";enviar.textContent="ENVIAR";enviar.disabled=true;
+ enviar.onclick=enviarTroca;
+ lista.forEach(j=>{
+  const c=document.createElement("div");c.className="troca-card";
+  const av=document.createElement("div");av.className="troca-avatar";
+  let h=0;for(const ch of j.nome)h=(h*31+ch.charCodeAt(0))%360;
+  av.style.background="linear-gradient(145deg,hsl("+h+",90%,65%),hsl("+((h+40)%360)+",85%,45%))";
+  av.textContent=(j.nome||"?").charAt(0).toUpperCase();
+  const nm=document.createElement("div");nm.className="troca-nome";nm.textContent=j.nome;
+  const st=document.createElement("div");st.className="troca-status"+(j.online?" on":"");st.textContent=j.online?"online":"offline";
+  c.append(av,nm,st);
+  c.onclick=()=>{escolhido=j;grade.querySelectorAll(".troca-card").forEach(x=>x.classList.remove("sel"));c.classList.add("sel");enviar.disabled=false;enviar.textContent="ENVIAR PARA "+j.nome.toUpperCase();};
+  grade.appendChild(c);
+ });
+ if(!lista.length)grade.textContent="Nenhum outro jogador encontrado.";
+ const linha=document.createElement("div");linha.className="troca-linha";linha.appendChild(enviar);
+ corpo.append(grade,linha);
+}
+
+async function enviarTroca(){
+ if(!escolhido||!jogoPronto())return;
+ try{
+  await comTempoLimite(db.collection(COL).add({de:euUid(),deNome:meuNome,para:escolhido.uid,paraNome:escolhido.nome,status:"pendente",ofertaDe:[],ofertaPara:[],confirmouDe:false,confirmouPara:false,executouDe:false,executouPara:false,criadoEm:firebase.firestore.FieldValue.serverTimestamp()}),10000,"enviar troca");
+  mostrarAviso("Troca enviada para "+escolhido.nome+". Aguardando resposta.","ok");
+  over.hidden=true;escolhido=null;
+ }catch(e){mostrarAviso("Não foi possível enviar a troca: "+(e.message||e),"erro");}
+}
+
+function mostrarConvite(id,d){
+ if(conviteId===id)return;conviteId=id;
+ conv.hidden=false;
+ const box=conv.firstElementChild;box.innerHTML="";
+ const h=document.createElement("h2");h.textContent=d.deNome+" te enviou troca";
+ const linha=document.createElement("div");linha.className="troca-linha";
+ const ok=document.createElement("button");ok.className="troca-btn-acao troca-verde";ok.textContent="ACEITAR";
+ const no=document.createElement("button");no.className="troca-btn-acao troca-vermelho";no.textContent="RECUSAR";
+ ok.onclick=()=>responder(id,"aceita");no.onclick=()=>responder(id,"recusada");
+ linha.append(ok,no);box.append(h,linha);
+}
+function fecharConvite(){conviteId=null;conv.hidden=true;}
+function responder(id,status){
+ db.collection(COL).doc(id).update({status}).then(()=>fecharConvite())
+  .catch(e=>mostrarAviso("Erro ao responder: "+(e.message||e),"erro"));
+}
+
+function abrirTelaTroca(id,d){
+ if(abertaId!==id){
+  abertaId=id;
+  selecionados=(ladoDe(d)==="De"?(d.ofertaDe||[]):(d.ofertaPara||[])).map(p=>p.id);
+ }
+ over.hidden=false;
+ atualizarTelaTroca(id,d);
+}
+function fecharTelaTroca(){abertaId=null;over.hidden=true;}
+
+function atualizarTelaTroca(id,d){
+ const lado=ladoDe(d),outro=outroLado(lado),nomeOutro=lado==="De"?d.paraNome:d.deNome;
+ const corpo=$("trocaCorpo");corpo.innerHTML="";
+ const euConfirmei=d["confirmou"+lado]===true,outroConfirmou=d["confirmou"+outro]===true;
+ const minhaOferta=d["oferta"+lado]||[],ofertaOutro=d["oferta"+outro]||[];
+ $("trocaTit").textContent="TROCA COM "+String(nomeOutro||"JOGADOR").toUpperCase();
+
+ const inventarioTitulo=document.createElement("div");inventarioTitulo.className="troca-inventario-titulo";
+ const it=document.createElement("span");it.textContent="SEU INVENTÁRIO";
+ const qtd=document.createElement("small");qtd.textContent=petsInventario.length+" PET(S)";
+ inventarioTitulo.append(it,qtd);corpo.appendChild(inventarioTitulo);
+ const grade=document.createElement("div");grade.className="troca-grade";
+ petsInventario.forEach(p=>{const t=tile(p,selecionados.includes(p.id));t.onclick=()=>alternarOferta(id,d,p);grade.appendChild(t);});
+ if(!petsInventario.length){const vazio=document.createElement("div");vazio.className="troca-vazio";vazio.textContent="Seu inventário está vazio.";grade.appendChild(vazio);}
+ corpo.appendChild(grade);
+
+ const painel1=document.createElement("section");painel1.className="troca-painel-oferta propria";
+ const cab1=document.createElement("div");cab1.className="troca-cabecalho-oferta";
+ const nome1=document.createElement("span");nome1.textContent="SUA OFERTA";
+ const st1=document.createElement("small");st1.textContent=minhaOferta.length+" PET(S)";
+ cab1.append(nome1,st1);painel1.appendChild(cab1);
+ const grade1=document.createElement("div");grade1.className="troca-grade";
+ minhaOferta.forEach(p=>grade1.appendChild(tile(p,false)));
+ if(!minhaOferta.length){const v=document.createElement("div");v.className="troca-vazio";v.textContent="Toque nos pets acima para adicioná-los à troca";grade1.appendChild(v);}
+ painel1.appendChild(grade1);corpo.appendChild(painel1);
+
+ const vs=document.createElement("div");vs.className="troca-centro-vs";vs.textContent="VS";corpo.appendChild(vs);
+ const painel2=document.createElement("section");painel2.className="troca-painel-oferta outro";
+ const cab2=document.createElement("div");cab2.className="troca-cabecalho-oferta";
+ const nome2=document.createElement("span");nome2.textContent="OFERTA DE "+String(nomeOutro||"JOGADOR").toUpperCase();
+ const st2=document.createElement("small");st2.textContent=outroConfirmou?"✓ CONFIRMOU":"AGUARDANDO";
+ if(outroConfirmou){st2.style.background="#145d3d";st2.style.color="#b7ffd4";}
+ cab2.append(nome2,st2);painel2.appendChild(cab2);
+ const grade2=document.createElement("div");grade2.className="troca-grade";
+ ofertaOutro.forEach(p=>grade2.appendChild(tile(p,false)));
+ if(!ofertaOutro.length){const v=document.createElement("div");v.className="troca-vazio";v.textContent="O outro jogador ainda não ofereceu pets";grade2.appendChild(v);}
+ painel2.appendChild(grade2);corpo.appendChild(painel2);
+
+ const linha=document.createElement("div");linha.className="troca-linha";
+ const conf=document.createElement("button");conf.className="troca-btn-acao troca-verde";
+ conf.textContent=euConfirmei?"✓ CONFIRMADO":"CONFIRMAR TROCA";conf.disabled=euConfirmei;
+ conf.onclick=()=>confirmarTroca(id,lado);
+ const canc=document.createElement("button");canc.className="troca-btn-acao troca-vermelho";canc.textContent="CANCELAR";
+ canc.onclick=()=>cancelarTroca(id);
+ linha.append(conf,canc);corpo.appendChild(linha);
+ const rodape=document.createElement("div");rodape.style.cssText="margin-top:9px;text-align:center;color:#9db8d9;font-size:10px;font-weight:800";
+ rodape.textContent=euConfirmei?"Aguardando o outro jogador confirmar...":(outroConfirmou?"O outro jogador confirmou. Confira sua oferta e confirme também.":"Os dois jogadores precisam confirmar para concluir a troca.");
+ corpo.appendChild(rodape);
+}
+function alternarOferta(id,d,p){
+ const i=selecionados.indexOf(p.id);
+ if(i>=0)selecionados.splice(i,1);else selecionados.push(p.id);
+ const lado=ladoDe(d);
+ const oferta=petsInventario.filter(x=>selecionados.includes(x.id)).map(resumo);
+ atualizarTelaTroca(id,d);
+ db.collection(COL).doc(id).update({["oferta"+lado]:oferta,confirmouDe:false,confirmouPara:false})
+  .catch(e=>mostrarAviso("Erro na oferta: "+(e.message||e),"erro"));
+}
+
+function confirmarTroca(id,lado){
+ const ref=db.collection(COL).doc(id),outro=outroLado(lado);
+ db.runTransaction(async t=>{
+  const s=await t.get(ref);const x=s.data();
+  if(!x||x.status!=="aceita")return;
+  const up={};up["confirmou"+lado]=true;
+  if(x["confirmou"+outro]===true)up.status="concluida";
+  t.update(ref,up);
+ }).catch(e=>mostrarAviso("Erro ao confirmar: "+(e.message||e),"erro"));
+}
+
+function cancelarTroca(id){
+ db.collection(COL).doc(id).update({status:"cancelada"}).then(()=>fecharTelaTroca())
+  .catch(e=>mostrarAviso("Erro ao cancelar: "+(e.message||e),"erro"));
+}
+
+function executarMeuLado(id,d){
+ const uid=euUid();
+ if(!uid||!jogoPronto())return;
+ const lado=d.de===uid?"De":"Para",flag="executou"+lado;
+ if(d[flag]===true||executadasLocal.has(id))return;
+ executadasLocal.add(id);
+ const saem=new Set((d["oferta"+lado]||[]).map(p=>p.id));
+ const entram=d["oferta"+outroLado(lado)]||[];
+ petsInventario=petsInventario.filter(p=>!saem.has(p.id));
+ petsEquipados=petsEquipados.filter(pid=>!saem.has(pid));
+ entram.forEach(p=>{
+  if(petsInventario.some(x=>x.id===p.id))return;
+  const novo=Object.assign({},p);
+  petsInventario.push(novo);
+  if(typeof registrarVariantesColecao==="function")registrarVariantesColecao(colecaoVariantes,novo.nome,nivelEvolucaoPet(novo),novo.mutacoesEvento);
+ });
+ salvar();renderizarPets();
+ mostrarAviso("Troca concluída! Você recebeu "+entram.length+" pet(s).","sucesso");
+ db.collection(COL).doc(id).update({[flag]:true}).catch(()=>{});
+}
+
+function executarPendentes(){
+ const uid=euUid();if(!uid||!jogoPronto())return;
+ for(const [id,d] of docs){
+  if(d.status==="concluida"&&(d.de===uid||d.para===uid))executarMeuLado(id,d);
+ }
+}
+
+function atualizarTrocas(){
+ const uid=euUid();if(!uid)return;
+ let convite=null,ativa=null;
+ for(const [id,d] of docs){
+  if(d.status==="pendente"&&d.para===uid&&!convite)convite=[id,d];
+  if(d.status==="aceita"&&(d.de===uid||d.para===uid)&&!ativa)ativa=[id,d];
+ }
+ if(convite)mostrarConvite(convite[0],convite[1]);else fecharConvite();
+ if(ativa)abrirTelaTroca(ativa[0],ativa[1]);
+ else if(abertaId)fecharTelaTroca();
+ executarPendentes();
+}
+
+function iniciarTrocas(uid){
+ const onSnap=s=>{
+  s.docChanges().forEach(c=>{if(c.type==="removed")docs.delete(c.doc.id);else docs.set(c.doc.id,c.doc.data());});
+  atualizarTrocas();
+ };
+ const erro=e=>console.warn("Trocas:",e);
+ unsubs.push(db.collection(COL).where("para","==",uid).onSnapshot(onSnap,erro));
+ unsubs.push(db.collection(COL).where("de","==",uid).onSnapshot(onSnap,erro));
+}
+function pararTrocas(){
+ unsubs.forEach(f=>{try{f();}catch(e){}});unsubs=[];docs.clear();
+ fecharConvite();if(abertaId)fecharTelaTroca();else over.hidden=true;
+}
+
+setInterval(()=>{
+ const u=euUid();
+ if(u!==uidAtual){
+  pararTrocas();uidAtual=u;
+  if(u){
+   iniciarTrocas(u);
+   db.collection("rankingGlobal").doc(u).get().then(s=>{meuNome=String((s.data()||{}).nome||"Jogador");}).catch(()=>{});
+  }
+ }
+},1000);
+setInterval(executarPendentes,2000);
 })();
 </script>
