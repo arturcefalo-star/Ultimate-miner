@@ -525,7 +525,7 @@ button:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
 @media(max-width:600px){.evento-badge{width:46px;min-height:45px;padding:3px 2px;border-radius:9px}.evento-badge::before{font-size:13px}.evento-badge strong{font-size:11px}.evento-badge span{font-size:6px}#eventoGlobalBadge{top:6px}#eventoSorteBadge{top:60px}#eventoAnjoBadge{top:114px}#eventoHackerBadge{top:168px}#eventoGalaxiaBadge{top:222px}}
 </style>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Ultimate Miner</title>
+<title>Ultimate Miner - versão mundos</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -1624,7 +1624,7 @@ const mundosJogo=[
  {nome:"Galáxia",sigla:"GAL",custo:150000000,mult:5,descricao:"O mundo final, com bônus máximo."}
 ];
 // Preço para desbloquear cada mundo: 10x a última picareta do mundo anterior.
-mundosJogo[1].custo=picaretas[PICARETA_ULTIMA_SUPERFICIE][1]*10;
+mundosJogo[1].custo=1e18; // Cavernas Profundas: 1Qi
 for(let w=1;w<mundosJogo.length-1;w++){mundosJogo[w+1].custo=picaretas[INDICES_PICARETAS_MUNDO[w][99]][1]*10;}
 let mundoAtual=0;
 let mundosDesbloqueados=[0];
@@ -2392,7 +2392,7 @@ function jogadorEstaOnline(registro){
 
  const idade=Date.now()-heartbeat;
 
- // O cliente envia heartbeat a cada 15 segundos. Uma margem de 50 segundos
+ // O cliente envia heartbeat a cada 30 segundos. Uma margem de 50 segundos
  // tolera pequenas pausas/rede lenta, mas expira rapidamente sessões encerradas.
  return idade>=-30000&&idade<50000;
 }
@@ -2519,7 +2519,7 @@ function iniciarRelogioRanking(){
  if(rankingRelogioIniciado)return;
  rankingRelogioIniciado=true;
  rankingProximaAtualizacao=Date.now()+60000;
- setInterval(()=>{rankingProximaAtualizacao=Date.now()+60000;atualizarCacheRanking();},60000);
+ setInterval(()=>{rankingProximaAtualizacao=Date.now()+60000;const m=document.getElementById("rankingModal");if(m&&m.style.display==="flex")atualizarCacheRanking();},60000);
  setInterval(()=>{const m=document.getElementById("rankingModal");if(m&&m.style.display==="flex")atualizarContagemRanking();},1000);
  setInterval(()=>{garantirPresencaTempoReal();avaliarPresencaRanking();},1000);
 }
@@ -3008,7 +3008,7 @@ atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
 await publicarResumoRanking(id,nomeRanking,copia,true);
 }catch(error){console.error("Erro ao salvar no Firebase:",error);}
-},500);
+},30000); // no máximo 1 gravação a cada 30 s; saída e fechamento da aba salvam na hora
 }
 
 // Gravação local com limite de frequência: não serializa o jogo inteiro a cada clique.
@@ -3128,7 +3128,7 @@ ultimaPresencaUid=uid;
 atualizarPresenca(true,uid);
 timerPresenca=setInterval(()=>{
 if(usuarioAtual&&usuarioAtual.uid===uid)atualizarPresenca(true,uid);
-},15000);
+},30000);
 }
 function pararPresenca(uid){
 if(timerPresenca){clearInterval(timerPresenca);timerPresenca=null;}
@@ -3385,54 +3385,53 @@ senhaModal.addEventListener("pointerdown",e=>{if(e.target===senhaModal)fecharTro
 senhaConfirmarInput.addEventListener("keydown",e=>{if(e.key==="Enter")atualizarSenhaDaConta();});
 
 async function sairDaConta(){
-if(!usuarioAtual||saindoDaConta)return;
+if(saindoDaConta||!usuarioAtual)return;
 saindoDaConta=true;
+const usuarioId=usuarioAtual.uid;
+const nomeUsuario=usuarioAtual.displayName||usuarioAtual.email.split("@")[0];
+// Captura o progresso agora, de forma síncrona, para salvar em segundo plano.
 let dadosSeguros=null;
 try{
-const usuarioId=usuarioAtual.uid;
-if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
-if(cancelarMonitoramentoJogador){try{cancelarMonitoramentoJogador();}catch(e){}cancelarMonitoramentoJogador=null;}
-if(dadosCarregados){
-try{
-dadosSeguros=limparDadosParaFirestore(dadosDoJogo());
-await db.collection("jogadores").doc(usuarioId).set({
-nome:usuarioAtual.displayName||usuarioAtual.email.split("@")[0],
-dados:dadosSeguros,
-ranking:{moedas:Number(dadosSeguros.moedas)||0,renascimentos:Number(dadosSeguros.renascimentos)||0},
-atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
-},{merge:true});
-}catch(error){mostrarAviso("Não foi possível salvar seu progresso: "+error.message);return;}
-}
-// Encerra também a sessão do Firebase. Antes, apenas escondíamos o jogo,
-// deixando a conta anterior autenticada; isso podia fazer o Firebase
-// reabrir a conta antiga automaticamente ao tentar trocar de usuário.
+ if(timerSalvamentoNuvem){clearTimeout(timerSalvamentoNuvem);timerSalvamentoNuvem=null;}
+ if(cancelarMonitoramentoJogador){try{cancelarMonitoramentoJogador();}catch(e){}cancelarMonitoramentoJogador=null;}
+ if(dadosCarregados)dadosSeguros=limparDadosParaFirestore(dadosDoJogo());
+}catch(e){console.warn("Captura ao sair:",e);}
+try{pararPresenca(usuarioId);}catch(e){console.warn("Presença ao sair:",e);}
 dadosCarregados=false;
-try{if(dadosSeguros)await publicarResumoRanking(usuarioId,usuarioAtual.displayName||usuarioAtual.email.split("@")[0],dadosSeguros,false);}catch(e){}
-pararPresenca(usuarioId);
-try{
-  await comTempoLimite(auth.signOut(),10000,"desconectar a conta atual");
-}catch(erroSaida){
-  mostrarAviso("Não foi possível desconectar a conta do Firebase. Verifique a conexão e tente novamente.","erro");
-  dadosCarregados=true;
-  return;
-}
+
+// Tela de login imediata: não espera a nuvem.
 usuarioAtual=null;
 codigoAdminSessao="";
 adminDesbloqueado=false;
 configuracoesAbertas=false;
 lojaAberta=false;
 melhoriasAbertas=false;
-fecharAdmin();
+try{fecharAdmin();}catch(e){console.warn("fecharAdmin:",e);}
 carregandoDados=true;
-aplicarDados({});
+try{aplicarDados({});}catch(e){console.warn("aplicarDados:",e);}
 carregandoDados=false;
 loginModal.style.display="flex";
 nomeLogin.value="";
 senhaLogin.value="";
 mensagemDeLogin("Conta desconectada. As contas continuam salvas nesta lista. Para entrar novamente, selecione a conta e digite sua senha.",false);
-}finally{
 saindoDaConta=false;
-}
+
+// Em segundo plano: salva o progresso na nuvem e encerra a sessão do Firebase.
+(async()=>{
+ if(dadosSeguros){
+  try{
+   await comTempoLimite(db.collection("jogadores").doc(usuarioId).set({
+    nome:nomeUsuario,
+    dados:dadosSeguros,
+    ranking:{moedas:Number(dadosSeguros.moedas)||0,renascimentos:Number(dadosSeguros.renascimentos)||0},
+    atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()
+   },{merge:true}),10000,"salvar progresso ao sair");
+   comTempoLimite(publicarResumoRanking(usuarioId,nomeUsuario,dadosSeguros,false),8000,"atualizar ranking").catch(()=>{});
+  }catch(e){console.warn("Não foi possível salvar na nuvem ao sair (progresso local preservado):",e);}
+ }
+ try{await comTempoLimite(auth.signOut(),10000,"desconectar a conta atual");}
+ catch(e){console.warn("Não foi possível desconectar do Firebase:",e);}
+})();
 }
 
 async function iniciarSistemaLogin(){
@@ -3491,9 +3490,10 @@ if(valor>=limite)return(valor/limite).toFixed(1).replace(/\.0$/,"")+sufixo;
 return Number(valor.toFixed(2)).toString();
 }
 
-// Preço dos mundos: usa a mesma abreviação do resto do jogo (ex.: 1 quintilhão = 1Qi).
+// Preço dos mundos: escreve o nome por extenso (ex.: 1 quintilhão, 5 sextilhões).
+const NOMES_ESCALA_MUNDO=[[1e33,"decilhão","decilhões"],[1e30,"nonilhão","nonilhões"],[1e27,"octilhão","octilhões"],[1e24,"setilhão","setilhões"],[1e21,"sextilhão","sextilhões"],[1e18,"quintilhão","quintilhões"],[1e15,"quadrilhão","quadrilhões"],[1e12,"trilhão","trilhões"],[1e9,"bilhão","bilhões"],[1e6,"milhão","milhões"]];
 function formatarPrecoMundo(valor){
- return formatarDinheiro(valor);
+return formatarDinheiro(valor);
 }
 
 function minerar(){
