@@ -1115,7 +1115,7 @@ new Promise((_,rejeitar)=>{temporizador=setTimeout(()=>{const erro=new Error("Te
 
 // UTILITÁRIOS
 
-const MAX_MOEDAS=1e36;
+const MAX_MOEDAS=1e63;
 const SUFIXOS_NUMERO={K:1e3,M:1e6,B:1e9,T:1e12,QA:1e15,QI:1e18,SX:1e21,SP:1e24,OC:1e27,NO:1e30,DC:1e33};
 
 // Lê números como as pessoas digitam: 5000, 1.500.000, 2,5M, 10K, 1e6
@@ -1489,6 +1489,36 @@ const minerios=[
 ["Transcendent Crystal",100000000000000224,50.5,[25, 209, 71]]
 ];
 
+// ===== MUNDOS: cada mundo tem 100 picaretas e 100 minérios próprios =====
+// Superfície = lista atual. Cada mundo seguinte começa em 5x o último preço/multiplicador do anterior e sobe 1000x dentro do mundo.
+const PICARETA_ULTIMA_SUPERFICIE=picaretas.length-2; // a última da loja da Superfície (a picareta de ADM fica por último)
+const MINERIO_ULTIMO_SUPERFICIE=minerios.length-1;
+const INDICES_PICARETAS_MUNDO=[null];
+const INDICES_MINERIOS_MUNDO=[null];
+const TEMAS_MUNDOS=[
+ {adj:["Rochosa","Sombria","Cristalina","Úmida","Subterrânea","Ancestral","Gotejante","Mineral","Ecoante","Abissal"],pic:["Broca","Lâmina","Martelo","Garra","Cunha","Sonda","Punho","Talhadeira","Escavadora","Furadeira"],min:["Quartzo","Ametista","Jaspe","Ônix","Ágata","Calcita","Hematita","Pirita","Granada","Turmalina"],escuro:[60,45,30],claro:[205,175,135]},
+ {adj:["Ardente","Magmática","Flamejante","Vulcânica","Incandescente","Sulfúrica","Cinzenta","Brasa","Lávica","Torrencial"],pic:["Forja","Chama","Pistão","Bigorna","Cadinho","Escória","Maçarico","Ferrão","Tenaz","Brasão"],min:["Obsidiana","Basalto","Enxofre","Pedra-pomes","Rubi Bruto","Magnetita","Cinábrio","Lava Sólida","Ferro Quente","Cristal Ígneo"],escuro:[110,25,10],claro:[255,175,85]},
+ {adj:["Gelada","Polar","Cristalina","Nevada","Glacial","Azulada","Congelante","Ártica","Ventisca","Aurora"],pic:["Picaço","Estaca","Cinzel","Agulha","Lança","Pinça","Gancho","Pá","Machado","Foice"],min:["Gelo Puro","Safira","Neve Densa","Quartzo Azul","Permafrost","Aquamarina","Topázio Frio","Geada","Cristal Ártico","Lápis-lazúli"],escuro:[20,60,120],claro:[205,240,255]},
+ {adj:["Estelar","Nebulosa","Cósmica","Quasar","Pulsar","Órbita","Nova","Astral","Orbital","Sideral"],pic:["Sonda","Foguete","Órbita","Antena","Prisma","Cometa","Propulsor","Satélite","Asteroide","Lunar"],min:["Estrela Caída","Poeira Estelar","Meteorito","Nebulita","Matéria Escura","Fragmento Solar","Quasarito","Pedra Lunar","Plasma Sólido","Cristal Cósmico"],escuro:[50,10,90],claro:[215,170,255]}
+];
+{
+ let pPreco=picaretas[PICARETA_ULTIMA_SUPERFICIE][1], pMult=picaretas[PICARETA_ULTIMA_SUPERFICIE][2];
+ let oPreco=minerios[MINERIO_ULTIMO_SUPERFICIE][1], oMult=minerios[MINERIO_ULTIMO_SUPERFICIE][2];
+ TEMAS_MUNDOS.forEach(tema=>{
+  const iniP=picaretas.length, iniO=minerios.length;
+  const P0=pPreco*5, M0=pMult*5, Q0=oPreco*5, N0=oMult*5;
+  for(let j=0;j<100;j++){
+   const t=Math.pow(1000,j/99), r=Math.floor(j/10), c=j%10;
+   const cor=[0,1,2].map(i=>Math.max(0,Math.min(255,Math.round(tema.escuro[i]+(tema.claro[i]-tema.escuro[i])*(j/99)+((j%3)-1)*8))));
+   picaretas.push([tema.pic[c]+" "+tema.adj[r],P0*t,M0*t,cor]);
+   minerios.push([tema.min[c]+" "+tema.adj[r],Q0*t,N0*t,cor]);
+  }
+  INDICES_PICARETAS_MUNDO.push(Array.from({length:100},(_,q)=>iniP+q));
+  INDICES_MINERIOS_MUNDO.push(Array.from({length:100},(_,q)=>iniO+q));
+  pPreco=P0*1000; pMult=M0*1000; oPreco=Q0*1000; oMult=N0*1000;
+ });
+}
+
 let moedas=0;
 let renascimentos=0;
 let picaretasCompradas=[0],mineriosComprados=[0];
@@ -1593,6 +1623,9 @@ const mundosJogo=[
  {nome:"Glacial",sigla:"GLA",custo:10000000,mult:3,descricao:"Uma dimensão congelada e rara."},
  {nome:"Galáxia",sigla:"GAL",custo:150000000,mult:5,descricao:"O mundo final, com bônus máximo."}
 ];
+// Preço para desbloquear cada mundo: 10x a última picareta do mundo anterior.
+mundosJogo[1].custo=picaretas[PICARETA_ULTIMA_SUPERFICIE][1]*10;
+for(let w=1;w<mundosJogo.length-1;w++){mundosJogo[w+1].custo=picaretas[INDICES_PICARETAS_MUNDO[w][99]][1]*10;}
 let mundoAtual=0;
 let mundosDesbloqueados=[0];
 let petsInventario=[];
@@ -1710,20 +1743,20 @@ function renderizarMundos(){
   const info=document.createElement("div");info.className="mundo-info";
   const nome=document.createElement("strong");nome.textContent=m.nome;
   const desc=document.createElement("small");
-  desc.textContent=aberto?visual.tema:("PREÇO DE COMPRA: $ "+formatarDinheiro(m.custo));
+  desc.textContent=aberto?visual.tema:("PREÇO DE COMPRA: $ "+formatarPrecoMundo(m.custo));
   info.append(nome,desc);
   const rodape=document.createElement("div");rodape.className="mundo-rodape";
   const bonus=document.createElement("span");bonus.className="mundo-bonus";bonus.textContent="BÔNUS "+m.mult+"x";
   const b=document.createElement("button");
   const mundoAnteriorLiberado=i===0||mundosDesbloqueados.includes(i-1);
-  b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":(mundoAnteriorLiberado?("COMPRAR $"+formatarDinheiro(m.custo)):"BLOQUEADO"));
+  b.textContent=selecionado?"ATUAL":(aberto?"ENTRAR":(mundoAnteriorLiberado?("COMPRAR $"+formatarPrecoMundo(m.custo)):"BLOQUEADO"));
   b.disabled=selecionado||(!aberto&&!mundoAnteriorLiberado);
   if(!aberto&&!mundoAnteriorLiberado)b.title="Desbloqueie primeiro o mundo anterior.";
-  else if(!aberto&&moedas<m.custo)b.title="Você precisa de mais $ "+formatarDinheiro(m.custo-moedas)+" para comprar";
+  else if(!aberto&&moedas<m.custo)b.title="Você precisa de mais $ "+formatarPrecoMundo(m.custo-moedas)+" para comprar";
   b.addEventListener("click",()=>{
    if(!mundosDesbloqueados.includes(i)){
     if(!mundoAnteriorLiberado){mostrarAviso("Desbloqueie primeiro o mundo anterior.","erro");return;}
-    if(m.custo>0&&moedas<m.custo){mostrarAviso("Dinheiro insuficiente! Faltam $ "+formatarDinheiro(m.custo-moedas)+" para comprar este mundo.","erro");return;}
+    if(m.custo>0&&moedas<m.custo){mostrarAviso("Dinheiro insuficiente! Faltam $ "+formatarPrecoMundo(m.custo-moedas)+" para comprar este mundo.","erro");return;}
     if(m.custo>0){moedas-=m.custo;}
     mundosDesbloqueados.push(i);
     mostrarAviso("Mundo "+(i+1)+" desbloqueado: "+m.nome+"!","ok");
@@ -2937,6 +2970,7 @@ precoImpulsoPets,
 petsVendaAutomatica,
 mundoAtual,
 mundosDesbloqueados,
+mundoV2:true,
 petsInventario,
 petsEquipados,
 melhoriaInventarioPets,
@@ -3056,6 +3090,8 @@ if(autoClickerAtivo&&autoClickerProAtivo)autoClickerAtivo=false;
 mundoAtual=Math.max(0,Math.min(mundosJogo.length-1,Math.floor(Number(dados.mundoAtual)||0)));
 mundosDesbloqueados=Array.isArray(dados.mundosDesbloqueados)?dados.mundosDesbloqueados.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<mundosJogo.length):[0];
 if(!mundosDesbloqueados.includes(0))mundosDesbloqueados.push(0);
+// Migração única da reformulação dos mundos: todos voltam para a Superfície.
+if(dados.mundoV2!==true){mundosDesbloqueados=[0];mundoAtual=0;}
 melhoriaInventarioPets=Math.max(0,Math.min(6,Math.floor(Number(dados.melhoriaInventarioPets)||0)));
 melhoriaPetsEquipados=Math.max(0,Math.min(3,Math.floor(Number(dados.melhoriaPetsEquipados)||0)));
 petsInventario=Array.isArray(dados.petsInventario)?dados.petsInventario.filter(p=>p&&typeof p.id==="string"&&catalogoCompleto().some(c=>c.nome===p.nome)).slice(0,limiteInventarioPets()).map(p=>{const base=catalogoCompleto().find(c=>c.nome===p.nome);const voidPet=!!p.void,rainbow=!!p.rainbow&&!voidPet,diamante=!!p.diamante&&!rainbow&&!voidPet,dourado=!!p.dourado||diamante||rainbow||voidPet,nivel=voidPet?4:rainbow?3:diamante?2:dourado?1:0;return {...p,sigla:p.sigla||base.sigla,dourado,diamante,rainbow,void:voidPet,mutacoesEvento:Array.isArray(p.mutacoesEvento)?p.mutacoesEvento.filter(k=>["anjo","hacker","galaxia"].includes(k)):[],mult:multiplicadorNivelPet(base,nivel)*multiplicadorBonusMutacoes(Array.isArray(p.mutacoesEvento)?p.mutacoesEvento.filter(k=>["anjo","hacker","galaxia"].includes(k)):[]),emoji:undefined};}):[];
@@ -3443,6 +3479,7 @@ window.addEventListener("pagehide",salvarNuvemAgora);
 
 function formatarDinheiro(valor){
 const unidades=[
+[1e63,"Vg"],[1e60,"Nod"],[1e57,"Ocd"],[1e54,"Spd"],[1e51,"Sxd"],[1e48,"Qid"],[1e45,"Qad"],[1e42,"Trd"],[1e39,"Dd"],[1e36,"Ud"],
 [1e33,"Dc"],[1e30,"No"],[1e27,"OC"],
 [1e24,"Sp"],[1e21,"Sx"],[1e18,"Qi"],
 [1e15,"Qa"],[1e12,"T"],[1e9,"B"],[1e6,"M"],[1e3,"K"]
@@ -3452,6 +3489,11 @@ if(valor>=limite)return(valor/limite).toFixed(1).replace(/\.0$/,"")+sufixo;
 }
 // Exibe até duas casas decimais para o valor ganho bater com o saldo recebido.
 return Number(valor.toFixed(2)).toString();
+}
+
+// Preço dos mundos: usa a mesma abreviação do resto do jogo (ex.: 1 quintilhão = 1Qi).
+function formatarPrecoMundo(valor){
+ return formatarDinheiro(valor);
 }
 
 function minerar(){
@@ -4759,7 +4801,7 @@ if(e.key==="Enter")resgatarCodigo();
 // LOJA
 
 function limitarScroll(){
-const total=categoria==="picaretas"?lojaPicaretasIdx().length:minerios.length-1;
+const total=categoria==="picaretas"?lojaPicaretasIdx().length:lojaMineriosIdx().length;
 scroll=Math.max(0,Math.min(scroll,total-3));
 }
 
@@ -4794,8 +4836,8 @@ if(real>=6)somRaro();
 mostrarAviso("SALDO INSUFICIENTE");
 }
 }else{
-const real=indice+1;
-if(real>=minerios.length)return;
+const real=lojaMineriosIdx()[indice];
+if(real===undefined)return;
 
 const item=minerios[real];
 
@@ -5086,7 +5128,14 @@ ctx.restore();
 function ehPicaretaAdmin(i){return !!picaretas[i]&&picaretas[i][0]===PICARETA_ADMIN;}
 function indicePicaretaAdmin(){return picaretas.findIndex(x=>x[0]===PICARETA_ADMIN);}
 // loja de picaretas: a picareta admin é sempre a primeira; depois as demais (sem a inicial)
-function lojaPicaretasIdx(){const a=indicePicaretaAdmin();const base=Array.from({length:a-1},(_,k)=>k+1);return picaretasCompradas.includes(a)?[a].concat(base):base;}
+function lojaPicaretasIdx(){
+ if(mundoAtual>0)return INDICES_PICARETAS_MUNDO[mundoAtual]||[];
+ const a=indicePicaretaAdmin();const base=Array.from({length:a-1},(_,k)=>k+1);return picaretasCompradas.includes(a)?[a].concat(base):base;
+}
+function lojaMineriosIdx(){
+ if(mundoAtual>0)return INDICES_MINERIOS_MUNDO[mundoAtual]||[];
+ return Array.from({length:MINERIO_ULTIMO_SUPERFICIE},(_,k)=>k+1);
+}
 function desenharPicareta(){
 desenhandoPicareta=true;try{desenharPicaretaBase();}finally{desenhandoPicareta=false;}
 }
@@ -5257,7 +5306,7 @@ retangulo(230,72,175,28,categoria==="minerios"?"#2864c8":"#414150",6);
 texto("Pickaxes",132,92,17,"#fff","center");
 texto("Ores",317,92,17,"#fff","center");
 
-const lista=categoria==="picaretas"?lojaPicaretasIdx().map(k=>picaretas[k]):minerios.slice(1);
+const lista=categoria==="picaretas"?lojaPicaretasIdx().map(k=>picaretas[k]):lojaMineriosIdx().map(k=>minerios[k]);
 scrollVisual=scroll;
 
 ctx.save();
@@ -5285,7 +5334,7 @@ ctx.beginPath();
 ctx.roundRect(40,y,425,45,7);
 ctx.stroke();
 
-const indiceReal=categoria==="picaretas"?lojaPicaretasIdx()[i]:i+1;
+const indiceReal=categoria==="picaretas"?lojaPicaretasIdx()[i]:lojaMineriosIdx()[i];
 
 const comprados=categoria==="picaretas"?picaretasCompradas:mineriosComprados;
 const atual=categoria==="picaretas"?picaretaAtual:minerioAtual;
@@ -5303,7 +5352,7 @@ retangulo(49,y+10,25,25,`rgb(${item[3].join(",")})`,5);
 retangulo(53,y+13,9,7,"rgba(255,255,255,0.4)",2);
 
 texto(item[0],85,y+18,14,"#fff");
-texto("MULTIPLIER: "+item[2]+"x",85,y+36,12,"#70dcff");
+texto("MULTIPLIER: "+formatarDinheiro(item[2])+"x",85,y+36,12,"#70dcff");
 }
 
 let corBotao,nomeBotao;
@@ -5965,7 +6014,7 @@ return;
 }
 
 if(p.x>=466&&p.x<=500&&p.y>=100&&p.y<=270){
-const totalB=categoria==="picaretas"?lojaPicaretasIdx().length:minerios.length-1;
+const totalB=categoria==="picaretas"?lojaPicaretasIdx().length:lojaMineriosIdx().length;
 const maxB=Math.max(0,totalB-3);
 const altB=Math.max(20,155*3/Math.max(1,totalB));
 const cursoB=Math.max(1,155-altB);
@@ -6040,7 +6089,7 @@ const movimento=inicioY-p.y;
 
 if(Math.abs(movimento)>5)moveuLista=true;
 
-const total=categoria==="picaretas"?lojaPicaretasIdx().length:minerios.length-1;
+const total=categoria==="picaretas"?lojaPicaretasIdx().length:lojaMineriosIdx().length;
 
 scroll=Math.max(
 0,
