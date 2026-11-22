@@ -2389,7 +2389,7 @@ async function renderizarListaRanking(snap){
   mapa.set(uid,{uid,nome:(nome&&nome!=="Jogador "+String(uid).slice(0,6))?nome:(anterior.nome||nome),moedas:Number.isFinite(moedas)?moedas:(anterior.moedas||0),renascimentos:Number.isFinite(renascimentos)?renascimentos:(anterior.renascimentos||0),registroJogador:(d.presenca||typeof d.online==="boolean")?d:anterior.registroJogador||null,online:false});
  });
  const lista=[...mapa.values()];
- lista.forEach(j=>{j.online=!!(j.registroJogador&&jogadorEstaOnline(j.registroJogador));});
+ lista.forEach(j=>{const pr=presencaTempoReal.get(j.uid);j.online=pr?jogadorEstaOnline(pr):!!(j.registroJogador&&jogadorEstaOnline(j.registroJogador));});
  lista.sort((a,b)=>{
   const diferenca=rankingTipo==="dinheiro"?b.moedas-a.moedas:b.renascimentos-a.renascimentos;
   return diferenca||a.nome.localeCompare(b.nome,"pt-BR");
@@ -2462,6 +2462,25 @@ async function atualizarCacheRanking(){
  }catch(e){console.warn("Falha ao atualizar ranking em segundo plano:",e);}
  finally{rankingBuscaEmAndamento=false;}
 }
+// Presença em tempo real (ON/OFF no ranking). Usa a coleção leve "presenca", que muda só a cada heartbeat.
+const presencaTempoReal=new Map();
+let presencaAssinatura="",presencaOuvindo=false;
+function avaliarPresencaRanking(){
+ const assinatura=[...presencaTempoReal.keys()].filter(uid=>jogadorEstaOnline(presencaTempoReal.get(uid))).sort().join(",");
+ if(assinatura===presencaAssinatura)return;
+ presencaAssinatura=assinatura;
+ const modal=document.getElementById("rankingModal");
+ if(modal&&modal.style.display==="flex"&&rankingUltimoSnapshot)renderizarListaRanking(rankingUltimoSnapshot);
+}
+function garantirPresencaTempoReal(){
+ if(presencaOuvindo||!usuarioAtual||!db)return;
+ presencaOuvindo=true;
+ db.collection("presenca").onSnapshot(snap=>{
+  snap.docChanges().forEach(c=>{if(c.type==="removed")presencaTempoReal.delete(c.doc.id);else presencaTempoReal.set(c.doc.id,c.doc.data());});
+  avaliarPresencaRanking();
+ },err=>console.warn("Presença em tempo real:",err));
+}
+
 let rankingRelogioIniciado=false;
 function iniciarRelogioRanking(){
  if(rankingRelogioIniciado)return;
@@ -2469,6 +2488,7 @@ function iniciarRelogioRanking(){
  rankingProximaAtualizacao=Date.now()+60000;
  setInterval(()=>{rankingProximaAtualizacao=Date.now()+60000;atualizarCacheRanking();},60000);
  setInterval(()=>{const m=document.getElementById("rankingModal");if(m&&m.style.display==="flex")atualizarContagemRanking();},1000);
+ setInterval(()=>{garantirPresencaTempoReal();avaliarPresencaRanking();},1000);
 }
 iniciarRelogioRanking();
 
@@ -2555,11 +2575,10 @@ function multiplicadorPoderPicareta(){
 }
 // TODOS os boosts de dinheiro continuam somados; o bônus de picareta fica separado.
 function multiplicadorTotal(){
-  const melhoria=Math.max(0,Number(multiplicadorCompras)||0);
  const eventoGlobal_=Math.max(0,multiplicadorEventoAtual()-1);
  const mundo_=Math.max(0,multiplicadorMundo()-1);
  const pets=multiplicadorPets();
- return 1+melhoria+eventoGlobal_+mundo_+pets;
+ return 1+eventoGlobal_+mundo_+pets;
 }
 function multiplicadorDinheiro(){
  return multiplicadorRenascimento()*multiplicadorMelhoria();
@@ -3064,6 +3083,7 @@ const marca={online:!!online,heartbeatAt:agora,atualizadoEm:firebase.firestore.F
 try{
  await db.collection("jogadores").doc(uid).set({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm,presenca:marca},{merge:true});
  await db.collection("rankingGlobal").doc(uid).set({online:!!online,heartbeatAt:agora,atualizadoEm:marca.atualizadoEm},{merge:true});
+ await db.collection("presenca").doc(uid).set({online:!!online,heartbeatAt:agora},{merge:true});
 }catch(error){console.warn("Não foi possível atualizar a presença:",error);}
 }
 function iniciarPresenca(uid){
@@ -3437,7 +3457,7 @@ return Number(valor.toFixed(2)).toString();
 function minerar(){
 if(!jogoPronto())return;
 const recompensaBase=picaretas[picaretaAtual][2]*minerios[minerioAtual][2];
-const recompensa=recompensaBase*multiplicadorPoderPicareta()*multiplicadorTotal()*multiplicadorRenascimento();
+const recompensa=recompensaBase*multiplicadorPoderPicareta()*multiplicadorTotal()*multiplicadorRenascimento()*multiplicadorMelhoria();
 
 moedas+=recompensa;
 
