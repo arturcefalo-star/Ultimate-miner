@@ -1679,13 +1679,14 @@ function abrirNovoModal(tipo){
  if(tipo==="ovos"){renderizarChancesOvo();renderizarResumoPets();document.getElementById("ovosPetsModal").style.display="flex";}
  if(tipo==="inventario"){renderizarPets();document.getElementById("inventarioPetsModal").style.display="flex";}
  if(tipo==="indice"){renderizarIndicePets();document.getElementById("indicePetsModal").style.display="flex";}
- if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";atualizarContagemRanking();carregarRanking();}
+ if(tipo==="ranking"){document.getElementById("rankingModal").style.display="flex";atualizarContagemRanking();if(rankingUltimoSnapshot){renderizarListaRanking(rankingUltimoSnapshot);}else{carregarRanking();}}
  somAbrirLoja();
 }
 function fecharNovosModais(){
  const ovos=document.getElementById("ovosPetsModal");
  const estavaNosOvos=ovos&&ovos.style.display==="flex";
  ["mundosModal","ovosPetsModal","inventarioPetsModal","venderPetsModal","rankingModal","indicePetsModal"].forEach(id=>document.getElementById(id).style.display="none");
+
  pararRankingAoVivo();
  if(estavaNosOvos&&autoOvoAtivo){autoOvoAtivo=false;salvar();}
  painelAFKAberto=false;atualizarControlesOvo();
@@ -2382,8 +2383,8 @@ async function renderizarListaRanking(snap){
   const uid=doc.id||d.uid;if(!uid)return;
   const dados=d.dados||{};const ranking=d.ranking||{};
   const nome=uid===ADMIN_UID?"Artur":String(d.nome||d.displayName||d.emailNome||("Jogador "+String(uid).slice(0,6)));
-  const moedas=Number(d.moedas??ranking.moedas??dados.moedas)||0;
-  const renascimentos=Number(d.renascimentos??ranking.renascimentos??dados.renascimentos)||0;
+  const moedas=Number(d.moedas??dados.moedas??ranking.moedas)||0;
+  const renascimentos=Number(d.renascimentos??dados.renascimentos??ranking.renascimentos)||0;
   const anterior=mapa.get(uid)||{};
   mapa.set(uid,{uid,nome:(nome&&nome!=="Jogador "+String(uid).slice(0,6))?nome:(anterior.nome||nome),moedas:Number.isFinite(moedas)?moedas:(anterior.moedas||0),renascimentos:Number.isFinite(renascimentos)?renascimentos:(anterior.renascimentos||0),registroJogador:(d.presenca||typeof d.online==="boolean")?d:anterior.registroJogador||null,online:false});
  });
@@ -2422,8 +2423,8 @@ async function sincronizarRankingHistoricoAdmin(){
     const d=doc.data()||{},dados=d.dados||{},ranking=d.ranking||{};
     lote.set(db.collection("rankingGlobal").doc(doc.id),{
      nome:String(d.nome||("Jogador "+doc.id.slice(0,6))),
-     moedas:Math.max(0,Number(ranking.moedas??dados.moedas)||0),
-     renascimentos:Math.max(0,Number(ranking.renascimentos??dados.renascimentos)||0),
+     moedas:Math.max(0,Number(dados.moedas??ranking.moedas)||0),
+     renascimentos:Math.max(0,Number(dados.renascimentos??ranking.renascimentos)||0),
      presenca:d.presenca||{online:false}
     },{merge:true});
    });
@@ -2438,6 +2439,38 @@ function pararRankingAoVivo(){
  // consultas pontuais, nunca um listener em tempo real.
  cancelarRankingAoVivo=null;
 }
+
+// Ranking global: atualiza em segundo plano exatamente a cada 1 minuto, com a janela fechada ou aberta.
+async function atualizarCacheRanking(){
+ if(!usuarioAtual||rankingBuscaEmAndamento)return;
+ rankingBuscaEmAndamento=true;
+ try{
+  try{
+   const snapAdm=await comTempoLimite(db.collection("admins").get(),10000,"ler admins");
+   window.admUidsAdmins=new Set([ADMIN_UID,...snapAdm.docs.filter(d=>d.data()&&d.data().ativo!==false).map(d=>d.id)]);
+  }catch(e){console.warn("Não foi possível ler admins para o ranking:",e);}
+  const rankingSnap=await comTempoLimite(db.collection("rankingGlobal").get(),18000,"ler rankingGlobal");
+  let docs=rankingSnap.docs||[];
+  if(ehAdminUsuario(usuarioAtual.uid)){
+   const jogadoresSnap=await comTempoLimite(db.collection("jogadores").get(),18000,"ler contas dos jogadores");
+   docs=[...docs,...(jogadoresSnap.docs||[])];
+  }
+  rankingUltimoSnapshot=docs;
+  rankingUltimaBusca=Date.now();
+  const modal=document.getElementById("rankingModal");
+  if(modal&&modal.style.display==="flex")await renderizarListaRanking(docs);
+ }catch(e){console.warn("Falha ao atualizar ranking em segundo plano:",e);}
+ finally{rankingBuscaEmAndamento=false;}
+}
+let rankingRelogioIniciado=false;
+function iniciarRelogioRanking(){
+ if(rankingRelogioIniciado)return;
+ rankingRelogioIniciado=true;
+ rankingProximaAtualizacao=Date.now()+60000;
+ setInterval(()=>{rankingProximaAtualizacao=Date.now()+60000;atualizarCacheRanking();},60000);
+ setInterval(()=>{const m=document.getElementById("rankingModal");if(m&&m.style.display==="flex")atualizarContagemRanking();},1000);
+}
+iniciarRelogioRanking();
 
 async function carregarRanking(forcar=false){
  const modal=document.getElementById("rankingModal");
@@ -2481,12 +2514,6 @@ async function carregarRanking(forcar=false){
 
 function atualizarContagemRanking(){
  const texto=document.getElementById("rankingContagem");
- const modal=document.getElementById("rankingModal");
- const agora=Date.now();
- if(agora>=rankingProximaAtualizacao){
-  rankingProximaAtualizacao=agora+60000;
-  if(modal&&modal.style.display==="flex")carregarRanking(true);
- }
  const restante=Math.max(0,Math.ceil((rankingProximaAtualizacao-Date.now())/1000));
  if(texto)texto.textContent=String(Math.floor(restante/60)).padStart(2,"0")+":"+String(restante%60).padStart(2,"0");
 }
@@ -4329,7 +4356,9 @@ if(acao==="giveWorld"||acao==="removeWorld"){
    atualizacao["dados."+chave]=dados[chave]===undefined?firebase.firestore.FieldValue.delete():dados[chave];
   }
  }
- await comTempoLimite(ref.update(atualizacao),20000,"salvar alteração do jogador");
+ atualizacao["ranking.moedas"]=Math.max(0,Number(dados.moedas)||0);
+atualizacao["ranking.renascimentos"]=Math.max(0,Number(dados.renascimentos)||0);
+await comTempoLimite(ref.update(atualizacao),20000,"salvar alteração do jogador");
 }
 publicarResumoRanking(uid,nome,dados,jogadorEstaOnline(registro)).catch(error=>console.warn("Falha secundária ao atualizar ranking após ação administrativa:",error));
 admResultado(def.rotulo+" para "+nome+(itemNome?" ("+itemNome+")":"")+" salvo com sucesso!","ok");
