@@ -682,6 +682,14 @@ button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-
 .troca-dica-oferta{margin-top:6px;font-size:10px;font-weight:700;color:#8fb8e0;text-align:center}
 /* botões de aceitar e recusar em destaque */
 .troca-btn-grande{min-height:58px;font-size:17px;font-weight:1000;letter-spacing:.6px}
+/* Barras de rolagem: finas, azuis e arrastáveis com o mouse, como na loja */
+*{scrollbar-width:auto;scrollbar-color:auto}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-corner{background:transparent}
+::-webkit-scrollbar-thumb{background:#64b4ff;border-radius:6px;min-height:40px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:#8fcbff;background-clip:content-box}
+::-webkit-scrollbar-thumb:active{background:#bfe4ff;background-clip:content-box}
 </style>
 </head>
 <body>
@@ -1497,7 +1505,7 @@ let categoria="picaretas",scroll=0;
 let diagonal=false,tempoGolpe=0;
 let recompensaTexto="",mostrarRecompensa=false,tempoRecompensa=0;
 
-let arrastando=false,inicioY=0,scrollInicial=0,moveuLista=false;
+let arrastando=false,inicioY=0,scrollInicial=0,moveuLista=false,lojaBarra=false;
 let volumeArrastando=false;
 let graficoArrastando=false;
 
@@ -1593,6 +1601,7 @@ let melhoriaInventarioPets=0; // 0=50 slots; até 6=200
 let melhoriaPetsEquipados=0; // 0=3 slots; até 3=6
 let paginaMelhorias=0;
 let scrollMelhorias=0, scrollMelhoriasVisual=0, arrastandoMelhorias=false, inicioYMelhorias=0, scrollInicialMelhorias=0;
+let melhoriaTocada=-1, melhoriaMoveu=false, barraMelhorias=false;
 const ALTURA_LINHA_MELHORIA=42, TOPO_LISTA_MELHORIAS=52, ALTURA_LISTA_MELHORIAS=211;
 let modoVendaPets="raridade";
 let petsMarcadosVenda=new Set();
@@ -5863,7 +5872,10 @@ return;
 
 // Lista única: todas as melhorias ficam no mesmo painel e podem ser roladas.
 if(p.y>=TOPO_LISTA_MELHORIAS&&p.y<=TOPO_LISTA_MELHORIAS+ALTURA_LISTA_MELHORIAS){
- if(p.x>=350&&p.x<=465){const indice=Math.floor((p.y-TOPO_LISTA_MELHORIAS+scrollMelhorias)/ALTURA_LINHA_MELHORIA);comprarMelhoriaPorIndice(indice);return;}
+ melhoriaTocada=-1;melhoriaMoveu=false;
+ if(p.x>=350&&p.x<=465){melhoriaTocada=Math.floor((p.y-TOPO_LISTA_MELHORIAS+scrollMelhorias)/ALTURA_LINHA_MELHORIA);}
+ barraMelhorias=p.x>=466;
+ if(barraMelhorias){const linB=obterLinhasMelhorias();const maxB=Math.max(0,linB.length*ALTURA_LINHA_MELHORIA-ALTURA_LISTA_MELHORIAS);const altB=Math.max(28,ALTURA_LISTA_MELHORIAS*ALTURA_LISTA_MELHORIAS/(linB.length*ALTURA_LINHA_MELHORIA));const cursoB=Math.max(1,ALTURA_LISTA_MELHORIAS-altB);scrollMelhorias=Math.max(0,Math.min(maxB,((p.y-TOPO_LISTA_MELHORIAS)-altB/2)/cursoB*maxB));}
  arrastandoMelhorias=true;inicioYMelhorias=p.y;scrollInicialMelhorias=scrollMelhorias;canvas.setPointerCapture(evento.pointerId);return;
 }
 return;
@@ -5895,7 +5907,18 @@ return;
 }
 }
 
+if(p.x>=466&&p.x<=500&&p.y>=100&&p.y<=270){
+const totalB=categoria==="picaretas"?lojaPicaretasIdx().length:minerios.length-1;
+const maxB=Math.max(0,totalB-3);
+const altB=Math.max(20,155*3/Math.max(1,totalB));
+const cursoB=Math.max(1,155-altB);
+scroll=Math.max(0,Math.min(maxB,((p.y-105)-altB/2)/cursoB*maxB));
+lojaBarra=true;arrastando=true;moveuLista=true;inicioY=p.y;scrollInicial=scroll;
+canvas.setPointerCapture(evento.pointerId);
+return;
+}
 if(p.x>=40&&p.x<=465&&p.y>=102&&p.y<=270){
+lojaBarra=false;
 arrastando=true;
 moveuLista=false;
 inicioY=p.y;
@@ -5951,7 +5974,7 @@ salvar();
 return;
 }
 
-if(arrastandoMelhorias){const p=posicao(evento);scrollMelhorias=Math.max(0,Math.min(Math.max(0,obterLinhasMelhorias().length*ALTURA_LINHA_MELHORIA-ALTURA_LISTA_MELHORIAS),scrollInicialMelhorias+(inicioYMelhorias-p.y)*1.25));return;}
+if(arrastandoMelhorias){const p=posicao(evento);const linhasM=obterLinhasMelhorias(),maxM=Math.max(0,linhasM.length*ALTURA_LINHA_MELHORIA-ALTURA_LISTA_MELHORIAS);if(Math.abs(p.y-inicioYMelhorias)>5)melhoriaMoveu=true;let novo;if(barraMelhorias){const alt=Math.max(28,ALTURA_LISTA_MELHORIAS*ALTURA_LISTA_MELHORIAS/(linhasM.length*ALTURA_LINHA_MELHORIA));const curso=Math.max(1,ALTURA_LISTA_MELHORIAS-alt);novo=scrollInicialMelhorias+(p.y-inicioYMelhorias)*(maxM/curso);}else{novo=scrollInicialMelhorias+(inicioYMelhorias-p.y)*1.25;}scrollMelhorias=Math.max(0,Math.min(maxM,novo));return;}
 
 if(!arrastando)return;
 
@@ -5964,7 +5987,7 @@ const total=categoria==="picaretas"?lojaPicaretasIdx().length:minerios.length-1;
 
 scroll=Math.max(
 0,
-Math.min(scrollInicial+movimento/55,total-3)
+Math.min(lojaBarra?scrollInicial+(p.y-inicioY)*(Math.max(0,total-3)/Math.max(1,155-Math.max(20,155*3/Math.max(1,total)))):scrollInicial+movimento/55,total-3)
 );
 
 });
@@ -5980,7 +6003,7 @@ window.addEventListener("keydown",evento=>{if(!melhoriasAbertas)return;const max
 
 canvas.addEventListener("pointerup",evento=>{
 
-if(arrastandoMelhorias){arrastandoMelhorias=false;return;}
+if(arrastandoMelhorias){arrastandoMelhorias=false;const tocou=melhoriaTocada;melhoriaTocada=-1;barraMelhorias=false;if(tocou>=0&&!melhoriaMoveu)comprarMelhoriaPorIndice(tocou);return;}
 
 if(graficoArrastando){graficoArrastando=false;salvar();return;}
 
@@ -6905,5 +6928,63 @@ setInterval(()=>{
  }
 },1000);
 setInterval(executarPendentes,2000);
+})();
+</script>
+<script id="arrastar-rolagem-v2">
+(function(){
+ // 1) Arrastar a barrinha de rolagem com o mouse (vertical e horizontal).
+ // 2) Arrastar o conteúdo com o mouse. Clique simples continua funcionando.
+ let s=null,modo=null,startX=0,startY=0,topoI=0,esqI=0,ratioV=1,ratioH=1,moveu=false,ignorarClique=false;
+ function areaRolavel(t){
+  let n=t&&t.nodeType===1?t:(t&&t.parentElement);
+  while(n&&n!==document.body&&n!==document.documentElement){
+   const cs=getComputedStyle(n);
+   if(/(auto|scroll)/.test(cs.overflowY)&&n.scrollHeight>n.clientHeight+1)return n;
+   if(/(auto|scroll)/.test(cs.overflowX)&&n.scrollWidth>n.clientWidth+1)return n;
+   n=n.parentElement;
+  }
+  return null;
+ }
+ document.addEventListener("pointerdown",e=>{
+  if(e.pointerType!=="mouse"||e.button!==0)return;
+  if(e.target.closest&&e.target.closest("input,textarea,select"))return;
+  const el=areaRolavel(e.target);if(!el)return;
+  const r=el.getBoundingClientRect();
+  const fimX=r.left+el.offsetWidth-el.clientLeft, fimY=r.top+el.offsetHeight-el.clientTop;
+  const naBarraV=el.scrollHeight>el.clientHeight+1 && e.clientX>=r.left+el.clientLeft+el.clientWidth && e.clientX<=fimX;
+  const naBarraH=el.scrollWidth>el.clientWidth+1 && e.clientY>=r.top+el.clientTop+el.clientHeight && e.clientY<=fimY;
+  s=el;startX=e.clientX;startY=e.clientY;topoI=el.scrollTop;esqI=el.scrollLeft;moveu=false;
+  if(naBarraV||naBarraH){
+   // arrasta a barrinha: converte o movimento do polegar em rolagem
+   e.preventDefault();
+   modo=naBarraV?"barraV":"barraH";
+   const trilhoV=el.clientHeight, polegarV=Math.max(40,trilhoV*trilhoV/el.scrollHeight);
+   ratioV=(el.scrollHeight-el.clientHeight)/Math.max(1,trilhoV-polegarV);
+   const trilhoH=el.clientWidth, polegarH=Math.max(40,trilhoH*trilhoH/el.scrollWidth);
+   ratioH=(el.scrollWidth-el.clientWidth)/Math.max(1,trilhoH-polegarH);
+  } else {
+   modo="conteudo";
+  }
+ },true);
+ document.addEventListener("pointermove",e=>{
+  if(!s||!modo)return;
+  const dx=e.clientX-startX,dy=e.clientY-startY;
+  if(modo==="barraV"){s.scrollTop=topoI+dy*ratioV;e.preventDefault();return;}
+  if(modo==="barraH"){s.scrollLeft=esqI+dx*ratioH;e.preventDefault();return;}
+  if(!moveu){if(Math.hypot(dx,dy)<6)return;moveu=true;s.style.cursor="grabbing";}
+  s.scrollTop=topoI-dy;s.scrollLeft=esqI-dx;
+  e.preventDefault();
+ },{passive:false});
+ function terminar(){
+  if(!modo)return;
+  if(s)s.style.cursor="";
+  if(moveu){ignorarClique=true;setTimeout(()=>{ignorarClique=false;},0);}
+  s=null;modo=null;
+ }
+ document.addEventListener("pointerup",terminar,true);
+ document.addEventListener("pointercancel",terminar,true);
+ document.addEventListener("click",e=>{
+  if(ignorarClique){e.stopPropagation();e.preventDefault();ignorarClique=false;}
+ },true);
 })();
 </script>
