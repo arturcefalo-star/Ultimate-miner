@@ -1652,7 +1652,7 @@ function multiplicadorPets(){
  // Exemplo: 600 + 600 + 600 = 1.800.
  const base=petsEquipados.reduce((total,id)=>{
   const pet=petsInventario.find(p=>p.id===id);
-  return total+(pet?Math.max(0,Number(pet.mult)||0)+bonusMutacaoPet(pet):0);
+  return total+(pet?Math.max(0,Number(pet.mult)||0)*(1+bonusMutacaoPet(pet)):0);
  },0);
  if(!petsEquipados.length)return 0;
  // Mantém o upgrade Impulso de Pets aplicado ao total somado.
@@ -2110,7 +2110,7 @@ function renderizarIndicePets(){
  if(resumo){
   const bonusResgatado=(VARIANTES_RECOMPENSA_INDICE.includes(filtro)||MUTACOES_EVENTO_RECOMPENSA.includes(filtro))?bonusResgatadoIndice(filtro):0;
   const descricaoBonus=VARIANTES_RECOMPENSA_INDICE.includes(filtro)?"Poder da picareta":"Bônus por pet com mutação "+nomeFiltro;
-  resumo.textContent="Índice "+nomeFiltro+": "+totalAchados+"/"+totalPets+" pets | "+descricaoBonus+": +"+bonusResgatado.toFixed(1)+"x | Multiplicador de poder da picareta: "+multiplicadorPoderPicareta().toFixed(1)+"x";
+  resumo.textContent="Índice "+nomeFiltro+": "+totalAchados+"/"+totalPets+" pets | "+descricaoBonus+": +"+bonusResgatado.toFixed(1)+"x | Multiplicador de dinheiro: "+multiplicadorPoderPicareta().toFixed(1)+"x";
  }
  if(recompensas){
   recompensas.innerHTML="";
@@ -2218,7 +2218,7 @@ function renderizarStatusPet(){
  const nivel=nivelEvolucaoPet(p),rotulo=nomeNivelPet(nivel);
  const nome=document.createElement("div");nome.className="pet-status-nome";nome.textContent=p.nome+(nivel?" "+rotulo:"");nome.style.color=nivel===4?"#c9a7ff":nivel===3?"#ff9ded":nivel===2?"#aaf2ff":nivel===1?"#ffe27a":petCor(p);
  const rar=document.createElement("p");rar.textContent="Raridade: "+p.raridade+(nivel?" | "+rotulo:"");rar.style.color=nome.style.color;
- const mult=document.createElement("p");mult.textContent="Multiplicador: "+Number(p.mult||1).toFixed(2)+"x"+(bonusMutacaoPet(p)>0?" (+"+bonusMutacaoPet(p).toFixed(1)+"x de índice, ativo só se equipado)":"")+(nivel?" ("+Math.pow(2,nivel)+"x do normal)":"");
+ const mult=document.createElement("p");mult.textContent="Multiplicador: "+Number(p.mult||1).toFixed(2)+"x"+(bonusMutacaoPet(p)>0?" (x"+(1+bonusMutacaoPet(p)).toFixed(1)+" do índice de evento, ativo só se equipado)":"")+(nivel?" ("+Math.pow(2,nivel)+"x do normal)":"");
  const equipado=document.createElement("p");equipado.textContent=petsEquipados.includes(p.id)?"Status: EQUIPADO":"Status: NO INVENTÁRIO";
  const base=catalogoCompleto().find(x=>x.nome===p.nome),total=catalogoPets.reduce((a,x)=>a+x.peso,0);
  const chance=document.createElement("p");chance.textContent="Chance no ovo: "+(base?(base.peso/total*100).toFixed(base.peso<1?2:1):"-")+"%";
@@ -2495,8 +2495,9 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)atualizarC
 
 
 function multiplicadorRenascimento(){
-// Bônus linear: 0 renascimentos = 1x; cada renascimento acrescenta +1x.
-return 1+renascimentos;
+// Bônus que dobra: 0 renascimentos = 1x; 1 = 2x; 2 = 4x; 3 = 8x...
+// Multiplica o dinheiro final, igual ao índice.
+return Math.pow(2,Math.max(0,Number(renascimentos)||0));
 }
 
 function multiplicadorMelhoria(){
@@ -2516,7 +2517,7 @@ function indiceCompletoGlobal(variante){return OVOS_MUNDO.every((o,w)=>mundoComp
 function bonusIndicePicareta(){
  return VARIANTES_RECOMPENSA_INDICE.reduce((total,v)=>total+bonusResgatadoIndice(v),0);
 }
-// O bônus do índice de evento é somado individualmente ao multiplicador de cada pet que possui a mutação correspondente.
+// O bônus do índice de evento MULTIPLICA o multiplicador de cada pet que possui a mutação correspondente (ex.: pet 600 com +1x de índice Anjo = 600 x 2 = 1.200).
 // Exemplo: pet Anjo recebe todos os bônus resgatados no índice Anjo; pets sem Anjo não recebem esse bônus.
 function bonusMutacaoPet(pet){
  const muts=Array.isArray(pet?.mutacoesEvento)?pet.mutacoesEvento:[];
@@ -2527,12 +2528,11 @@ function multiplicadorPoderPicareta(){
 }
 // TODOS os boosts de dinheiro continuam somados; o bônus de picareta fica separado.
 function multiplicadorTotal(){
- const renascimento=Math.max(0,Number(renascimentos)||0);
- const melhoria=Math.max(0,Number(multiplicadorCompras)||0);
+  const melhoria=Math.max(0,Number(multiplicadorCompras)||0);
  const eventoGlobal_=Math.max(0,multiplicadorEventoAtual()-1);
  const mundo_=Math.max(0,multiplicadorMundo()-1);
  const pets=multiplicadorPets();
- return 1+renascimento+melhoria+eventoGlobal_+mundo_+pets;
+ return 1+melhoria+eventoGlobal_+mundo_+pets;
 }
 function multiplicadorDinheiro(){
  return multiplicadorRenascimento()*multiplicadorMelhoria();
@@ -2606,8 +2606,8 @@ let ultimoEventoGlobalAvisado="";
 setInterval(()=>{atualizarBadgeEvento();atualizarBadgeEventoSorte();atualizarBadgesMutacao();reposicionarBadgesEvento();},1000);
 
 function precoRenascimento(){
-// Começa em 10 milhões e triplica a cada renascimento realizado.
-return 10000000*Math.pow(3,renascimentos);
+// Começa em 10 milhões e multiplica por 1000 a cada renascimento realizado (10M, 10B, 10T...).
+return 10000000*Math.pow(1000,renascimentos);
 }
 
 const renascimentoModal=document.getElementById("renascimentoModal");
@@ -2618,7 +2618,7 @@ const cancelarRenascimento=document.getElementById("cancelarRenascimento");
 function abrirRenascimento(){
 if(!jogoPronto())return;
 const custo=precoRenascimento();
-const proximo=1+(renascimentos+1);
+const proximo=Math.pow(2,renascimentos+1);
 renascimentoInfo.innerHTML="Custo: <strong>$ "+formatarDinheiro(custo)+"</strong><br>Seu dinheiro: <strong>$ "+formatarDinheiro(moedas)+"</strong><br>Bônus de renascimento atual: <strong>"+multiplicadorRenascimento().toFixed(1)+"x</strong><br>Melhoria de dinheiro atual: <strong>"+multiplicadorMelhoria().toFixed(1)+"x</strong><br>Bônus de renascimento após comprar: <strong>"+proximo.toFixed(1)+"x</strong><br>Renascimentos: <strong>"+renascimentos+" ? "+(renascimentos+1)+"</strong>";
 confirmarRenascimento.disabled=moedas<custo;
 confirmarRenascimento.textContent=moedas>=custo?"FAZER RENASCIMENTO":"DINHEIRO INSUFICIENTE";
@@ -3410,7 +3410,7 @@ return Number(valor.toFixed(2)).toString();
 function minerar(){
 if(!jogoPronto())return;
 const recompensaBase=picaretas[picaretaAtual][2]*minerios[minerioAtual][2];
-const recompensa=recompensaBase*multiplicadorPoderPicareta()*multiplicadorTotal();
+const recompensa=recompensaBase*multiplicadorPoderPicareta()*multiplicadorTotal()*multiplicadorRenascimento();
 
 moedas+=recompensa;
 
@@ -3472,6 +3472,8 @@ const ACOES_REMOTAS={
 addMoney:{rotulo:"Adicionar moedas",campo:"valor"},
 removeMoney:{rotulo:"Remover quantidade de moedas",campo:"valor",perigo:true},
 clearMoney:{rotulo:"Zerar todo o dinheiro",campo:"nenhum",perigo:true},
+addRebirth:{rotulo:"Adicionar renascimentos",campo:"valor"},
+removeRebirth:{rotulo:"Remover renascimentos",campo:"valor",perigo:true},
 resetRebirths:{rotulo:"Zerar renascimentos",campo:"nenhum",perigo:true},
 resetPickaxes:{rotulo:"Remover todas as picaretas (manter inicial)",campo:"nenhum",perigo:true},
 resetOres:{rotulo:"Remover todos os minérios (manter inicial)",campo:"nenhum",perigo:true},
@@ -3508,7 +3510,7 @@ moedas:{rotulo:"Moedas",acoes:["addMoney","removeMoney","clearMoney"]},
 picaretas:{rotulo:"Picaretas",acoes:["givePickaxe","removePickaxe","resetPickaxes"]},
 minerios:{rotulo:"Minérios",acoes:["giveOre","removeOre","resetOres"]},
 melhorias:{rotulo:"Melhorias",acoes:["giveAuto","removeAuto","givePro","removePro","setMultiplier","setUpgradeLevel"]},
-renascimentos:{rotulo:"Renascimentos",acoes:["resetRebirths"]},
+renascimentos:{rotulo:"Renascimentos",acoes:["addRebirth","removeRebirth","resetRebirths"]},
 mundos:{rotulo:"Mundos",acoes:["giveWorld","removeWorld"]},
 pets:{rotulo:"Pets",acoes:["givePet","viewInventory"]},
 adm:{rotulo:"ADM",acoes:["grupoPicaretaAdm","grupoPainelAdm","grupoPetAdm"]},
@@ -4054,6 +4056,7 @@ function atualizarCamposRemotos(){
 const def=ACOES_REMOTAS[acaoAdmReal()];
 if(!def)return;
 admCampoValor.hidden=def.campo!=="valor";
+admRemotoValor.placeholder=(acaoAdmReal()==="addRebirth"||acaoAdmReal()==="removeRebirth")?"Quantidade de renascimentos (ex.: 1, 5)":"Quantidade de moedas (ex.: 5000, 2,5M)";
 admCampoItem.hidden=!(def.campo==="picareta"||def.campo==="minerio"||def.campo==="mundo"||def.campo==="melhoria");
 admCampoNivel.hidden=!(def.campo==="nivel"||def.campo==="melhoria");
 if(def.campo==="melhoria"){const opcoes=[ ["multiplicadorCompras","Multiplicador de dinheiro (0–500)"],["autoClickerComprado","Auto Clicker (0–1)"],["autoClickerProComprado","Auto Clicker Pro (0–1)"],["autoOvoComprado","Auto Ovo (0–1)"],["triploOvoComprado","Triplo Ovo (0–1)"],["sorteOvoNivel","Sorte dos ovos (0–20)"],["impulsoPetsNivel","Impulso dos pets (0–20)"],["melhoriaInventarioPets","Espaço do inventário de pets (0–6)"],["melhoriaPetsEquipados","Espaços para equipar pets (0–3)"]];admRemotoItem.textContent="";for(const [v,t] of opcoes){const o=document.createElement("option");o.value=v;o.textContent=t;admRemotoItem.appendChild(o);}document.getElementById("admRemotoNivel").placeholder="Nível conforme o limite da melhoria";}
@@ -4091,6 +4094,7 @@ if(def.campo==="valor"){
 valor=lerNumero(admRemotoValor.value);
 if(!Number.isFinite(valor)||valor<=0){admResultado("Digite uma quantidade válida, como 5000, 2,5M ou 10K.","erro");return;}
 valor=Math.min(valor,MAX_MOEDAS);
+if(acao==="addRebirth"||acao==="removeRebirth"){valor=Math.min(Math.floor(valor),1000);if(valor<=0){admResultado("Digite um número inteiro de renascimentos, como 1 ou 5.","erro");return;}}
 }else if(def.campo==="picareta"||def.campo==="minerio"||def.campo==="mundo"){
 valor=Number(admRemotoItem.value);
 const total=def.campo==="picareta"?picaretas.length:(def.campo==="minerio"?minerios.length:mundosJogo.length);
@@ -4149,6 +4153,8 @@ if(acao==="removePicaretaAdm"){const iAdm=indicePicaretaAdmin();dados.picaretasC
 if(acao==="addMoney")dados.moedas=Math.min(MAX_MOEDAS,Math.max(0,Number(dados.moedas)||0)+valor);
 if(acao==="removeMoney")dados.moedas=Math.max(0,(Number(dados.moedas)||0)-valor);
 if(acao==="clearMoney")dados.moedas=0;
+if(acao==="addRebirth")dados.renascimentos=Math.min(1000,(Number(dados.renascimentos)||0)+valor);
+if(acao==="removeRebirth")dados.renascimentos=Math.max(0,(Number(dados.renascimentos)||0)-valor);
 if(acao==="resetRebirths")dados.renascimentos=0;
 if(acao==="resetPickaxes"){dados.picaretasCompradas=[0];dados.picaretaAtual=0;}
 if(acao==="resetOres"){dados.mineriosComprados=[0];dados.minerioAtual=0;}
@@ -4257,6 +4263,8 @@ let textoAviso="O admin "+nomeDoAdminAtual()+" alterou sua conta: "+def.rotulo.t
 if(acao==="addMoney")textoAviso="O admin "+nomeDoAdminAtual()+" te deu $"+formatarDinheiro(valor)+".";
 else if(acao==="removeMoney")textoAviso="O admin "+nomeDoAdminAtual()+" removeu $"+formatarDinheiro(valor)+" da sua conta.";
 else if(acao==="clearMoney")textoAviso="O admin "+nomeDoAdminAtual()+" zerou todo o seu dinheiro.";
+else if(acao==="addRebirth")textoAviso="O admin "+nomeDoAdminAtual()+" te deu "+valor+" renascimento(s).";
+else if(acao==="removeRebirth")textoAviso="O admin "+nomeDoAdminAtual()+" removeu "+valor+" renascimento(s) da sua conta.";
 else if(acao==="resetRebirths")textoAviso="O admin "+nomeDoAdminAtual()+" zerou seus renascimentos.";
 else if(acao==="resetPickaxes")textoAviso="O admin "+nomeDoAdminAtual()+" removeu todas as suas picaretas, exceto a inicial.";
 else if(acao==="resetOres")textoAviso="O admin "+nomeDoAdminAtual()+" removeu todos os seus minérios, exceto o inicial.";
