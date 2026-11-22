@@ -579,66 +579,109 @@ html.girar #btnTelaCheia{right:auto;left:10px;bottom:auto;top:10px}
 <style id="anti-clique-duplo-v1">
 button,a,[role="button"],[role="option"],.novo-card,.novo-rank-num,.adm-seletor-opcao,.adm-select-option{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 </style>
-<style id="troca-css-v1">
-.troca-card{background:linear-gradient(160deg,#2b3a5c,#141c30);border:2px solid #3f5482;border-radius:14px;padding:12px 8px;text-align:center;color:#fff;cursor:pointer;box-shadow:0 4px 10px #0006;touch-action:manipulation}
-.troca-card.sel{border-color:#7dff9d;box-shadow:0 0 0 3px #7dff9d55}
-.troca-avatar{width:58px;height:58px;margin:0 auto 8px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#111;border:3px solid #fff8}
-.troca-nome{font-weight:900;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.troca-status{font-size:11px;margin-top:4px;color:#9fb0d6}
-.troca-status.on{color:#5dff8a}
-.troca-over{position:fixed;inset:0;background:#000b;z-index:30002;display:flex;align-items:center;justify-content:center;padding:12px}
+<style id="troca-css-v2">
+/* ===== TELA DE TROCA ===== */
+.troca-over{position:fixed;inset:0;z-index:30002;display:flex;align-items:center;justify-content:center;padding:12px;background:radial-gradient(ellipse at 50% 35%,#273b60cc 0%,#080d18f2 68%,#03060cf5 100%);backdrop-filter:blur(5px)}
 .troca-over[hidden]{display:none}
-.troca-box{background:#1b2236;color:#fff;border:1px solid #4a5a88;border-radius:14px;padding:16px;width:min(560px,96vw);max-height:90vh;overflow:auto;font-family:Arial,sans-serif}
-.troca-box h2{margin:0 0 10px;font-size:18px;text-align:center}
-.troca-box p{margin:8px 0 4px;font-size:13px;color:#cfd8ef}
-.troca-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
-.troca-btn-acao{flex:1;padding:12px;border:0;border-radius:10px;color:#fff;font-weight:900;font-size:15px;cursor:pointer;touch-action:manipulation}
-.troca-btn-acao:disabled{opacity:.5}
-.troca-verde{background:#1fa34a}.troca-vermelho{background:#c62828}.troca-amarelo{background:#f5c518;color:#2a1d00}
-.troca-grade{display:flex;flex-wrap:wrap;gap:4px;min-height:44px;padding:6px;background:#11172a;border-radius:8px}
-.troca-pet{width:44px;height:44px;border-radius:7px;border:2px solid #fff3;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#111;cursor:pointer;user-select:none;touch-action:manipulation}
-.troca-pet.sel{outline:3px solid #7dff9d}
-.troca-linha{display:flex;gap:8px;margin-top:10px}
+.troca-box{position:relative;box-sizing:border-box;width:min(760px,97vw);max-height:94vh;overflow:auto;padding:18px;border-radius:18px;background:linear-gradient(155deg,#243b61 0%,#172945 45%,#101c31 100%);border:2px solid #6c91c9;box-shadow:0 18px 55px #000c,inset 0 1px #ffffff35;color:#fff;font-family:system-ui,Arial,sans-serif}
+.troca-box h2{margin:0 0 12px;padding:9px 12px;text-align:center;font-size:clamp(16px,3vw,22px);font-weight:900;letter-spacing:1px;color:#fff;text-shadow:0 2px 5px #000a;border-radius:11px;background:linear-gradient(90deg,#31588b,#427bb2,#31588b);border:1px solid #a9d5ff66}
 
-/* TRADE UI REFRESH - inspirado no estilo de trading do Skibidi Toilet TD */
-#troca-css-v1{}
-.troca-over{background:radial-gradient(ellipse at 50% 35%,#273b60bb 0%,#080d18ed 68%,#03060cf5 100%);backdrop-filter:blur(5px);padding:14px}
-.troca-box{position:relative;background:linear-gradient(155deg,#243b61 0%,#172945 42%,#101c31 100%);border:2px solid #6c91c9;border-radius:19px;padding:18px;width:min(760px,97vw);max-height:94vh;overflow:auto;box-shadow:0 18px 55px #000c,inset 0 1px #ffffff35;font-family:system-ui,Arial,sans-serif}
-.troca-box:before{content:"";position:absolute;left:12px;right:12px;top:8px;height:4px;border-radius:9px;background:linear-gradient(90deg,#52d9ff,#a7e7ff,#ffe17c,#ff9b4d);opacity:.95}
-.troca-box h2{margin:5px 0 16px;padding:9px 12px;text-align:center;font-size:clamp(17px,3vw,23px);font-weight:1000;letter-spacing:1px;color:#fff;text-shadow:0 2px 5px #000a;border-radius:11px;background:linear-gradient(90deg,#31588b,#427bb2,#31588b);border:1px solid #a9d5ff66;box-shadow:inset 0 1px #ffffff45,0 4px 10px #0005}
-.troca-box p{margin:0 0 8px;color:#d8eaff;font-size:12px;font-weight:900;letter-spacing:.35px;text-transform:uppercase}
-.troca-lista{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px}
-.troca-card{position:relative;min-width:0;background:linear-gradient(155deg,#34527a,#1b2d49 75%);border:2px solid #5278a8;border-radius:13px;padding:11px 8px 10px;box-shadow:inset 0 1px #ffffff25,0 5px 12px #0006;transition:transform .12s,border-color .12s}
-.troca-card:active{transform:scale(.97)}
-.troca-card.sel{border-color:#ffe17b;box-shadow:0 0 0 2px #ffe17b55,0 0 16px #ffe17b55}
-.troca-avatar{width:52px;height:52px;border:3px solid #d9efff;border-radius:13px;box-shadow:0 3px 8px #0008,inset 0 1px #ffffff77;color:#fff;text-shadow:0 2px 3px #000;font-size:22px}
-.troca-nome{font-size:13px;color:#fff;text-shadow:0 1px 3px #000;}
-.troca-status{display:inline-block;margin-top:7px;padding:3px 9px;border-radius:20px;background:#4a5365;color:#e2e8f0;font-size:10px;font-weight:1000;text-transform:uppercase}
-.troca-status.on{background:#145d3d;color:#aaffce;border:1px solid #4bdb91}
-.troca-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:7px;min-height:95px;padding:10px;background:linear-gradient(145deg,#0b1729,#12233c);border:1px solid #46658e;border-radius:12px;box-shadow:inset 0 3px 10px #0007}
-.troca-pet{position:relative;width:100%;height:auto;min-height:68px;aspect-ratio:1/1;border-radius:10px;border:2px solid #ffffff65;box-shadow:inset 0 2px 5px #ffffff35,0 3px 7px #0008;font-size:13px;font-weight:1000;text-shadow:0 1px 2px #fff8;transition:transform .12s,outline .12s}
-.troca-pet:active{transform:scale(.94)}
-.troca-pet.sel{outline:3px solid #ffe16b;outline-offset:1px;box-shadow:0 0 12px #ffe16b88,inset 0 2px 5px #ffffff35}
-.troca-linha{display:flex;gap:9px;margin-top:13px}
-.troca-btn-acao{min-height:45px;padding:11px 14px;border-radius:11px;border:1px solid #ffffff55;font-size:13px;font-weight:1000;letter-spacing:.5px;text-shadow:0 1px 2px #0005;box-shadow:inset 0 1px #ffffff55,0 4px 9px #0006;transition:filter .12s,transform .12s}
-.troca-btn-acao:active{transform:translateY(1px);filter:brightness(1.12)}
-.troca-btn-acao:disabled{opacity:.55;filter:grayscale(.5)}
-.troca-verde{background:linear-gradient(180deg,#39d77b,#16884c);color:white}
-.troca-vermelho{background:linear-gradient(180deg,#ff7777,#bd303d);color:white}
-.troca-amarelo{background:linear-gradient(180deg,#ffe982,#e6a928);color:#352300;text-shadow:none}
-.troca-painel-oferta{margin:10px 0 13px;padding:11px;border:1px solid #5c7da8;border-radius:13px;background:linear-gradient(145deg,#203958,#172942);box-shadow:0 4px 12px #0004}
+/* faixa de status: explica o que acontece agora */
+.troca-faixa{margin:0 0 14px;padding:10px 12px;border-radius:10px;border:1px solid #4a6fb8;background:#1a2848;color:#bcd6ff;font-size:13px;font-weight:800;text-align:center;line-height:1.35}
+.troca-faixa.ok{background:#12381f;border-color:#2c8a4a;color:#a4ffbb}
+.troca-faixa.espera{background:#24283a;border-color:#6b6f88;color:#cfd3e6}
+.troca-faixa.alerta{background:#3d2e10;border-color:#d9a33b;color:#ffe08a}
+
+/* ofertas lado a lado */
+.troca-duplo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.troca-painel-oferta{min-width:0;padding:11px;border:1px solid #5c7da8;border-radius:13px;background:linear-gradient(145deg,#203958,#172942);box-shadow:0 4px 12px #0004}
 .troca-painel-oferta.propria{border-color:#4ca8d4}
 .troca-painel-oferta.outro{border-color:#b28b4b}
-.troca-cabecalho-oferta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;color:#fff;font-size:12px;font-weight:1000;text-transform:uppercase}
+.troca-cabecalho-oferta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;min-width:0}
+.troca-cabecalho-oferta span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .troca-cabecalho-oferta small{padding:3px 8px;border-radius:20px;background:#0d1b2e;color:#c7e4ff;font-size:10px;white-space:nowrap}
-.troca-centro-vs{display:flex;align-items:center;justify-content:center;gap:10px;margin:7px 0;color:#ffe17b;font-size:19px;font-weight:1000;text-shadow:0 2px 5px #000}
-.troca-centro-vs:before,.troca-centro-vs:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,#91b8e7)}
-.troca-centro-vs:after{background:linear-gradient(90deg,#91b8e7,transparent)}
-.troca-inventario-titulo{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 7px;color:#d8eaff;font-size:12px;font-weight:1000;text-transform:uppercase}
-.troca-inventario-titulo small{color:#a9c7e8;font-size:10px}
-.troca-vazio{display:grid;place-items:center;min-height:75px;color:#8fa9c8;font-size:11px;font-weight:800;text-align:center;border:1px dashed #496587;border-radius:9px;background:#0a162755;padding:12px}
-@media(max-width:520px){.troca-box{padding:14px 11px;border-radius:15px;max-height:95vh}.troca-grade{grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:6px;padding:8px}.troca-pet{min-height:56px;font-size:11px}.troca-linha{gap:7px}.troca-btn-acao{font-size:11px;padding:10px 8px;min-height:43px}.troca-lista{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}.troca-avatar{width:46px;height:46px}}
+.troca-cabecalho-oferta small.confirmou{background:#145d3d;color:#b7ffd4}
+.troca-cabecalho-oferta small.aguardando{background:#4a3a18;color:#ffd98a}
+.troca-nomes{margin-top:7px;font-size:11px;line-height:1.35;color:#a9c7e8;overflow-wrap:anywhere}
 
+/* grades de pets */
+.troca-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:7px;min-height:84px;padding:9px;background:#0b1729;border:1px solid #46658e;border-radius:12px;box-shadow:inset 0 3px 10px #0007}
+.troca-grade-inv{min-height:0;max-height:230px;overflow:auto;grid-template-columns:repeat(auto-fill,minmax(64px,1fr))}
+.troca-pet{position:relative;width:100%;aspect-ratio:1/1;min-height:0;display:flex;align-items:center;justify-content:center;border-radius:10px;border:2px solid #ffffff65;box-shadow:inset 0 2px 5px #ffffff35,0 3px 7px #0008;color:#111;font-size:13px;font-weight:900;text-shadow:0 1px 2px #fff8;cursor:pointer;user-select:none;touch-action:manipulation;transition:transform .12s,box-shadow .12s}
+.troca-pet:active{transform:scale(.94)}
+.troca-pet.sel{outline:3px solid #ffe16b;outline-offset:1px;box-shadow:0 0 12px #ffe16b88,inset 0 2px 5px #ffffff35}
+.troca-pet.sel:after{content:"✓";position:absolute;top:-7px;right:-7px;width:19px;height:19px;border-radius:50%;background:#ffe16b;color:#352300;font-size:12px;font-weight:900;line-height:19px;text-align:center;box-shadow:0 2px 4px #0008}
+.troca-vazio{grid-column:1/-1;display:grid;place-items:center;min-height:70px;padding:10px;border:1px dashed #496587;border-radius:9px;color:#8fa9c8;font-size:11px;font-weight:800;text-align:center}
+
+/* inventário */
+.troca-inventario-titulo{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:16px 0 7px;font-size:12px;font-weight:900;text-transform:uppercase;color:#d8eaff}
+.troca-inventario-titulo small{font-size:11px;font-weight:700;text-transform:none;color:#a9c7e8}
+
+/* botões */
+.troca-acoes{display:flex;gap:9px;margin-top:16px}
+.troca-linha{display:flex;gap:9px;margin-top:13px}
+.troca-btn-acao{flex:1;min-height:46px;padding:11px 14px;border:1px solid #ffffff55;border-radius:11px;color:#fff;font-size:13px;font-weight:900;letter-spacing:.4px;cursor:pointer;touch-action:manipulation;box-shadow:inset 0 1px #ffffff55,0 4px 9px #0006;transition:filter .12s,transform .12s}
+.troca-btn-acao:active{transform:translateY(1px);filter:brightness(1.12)}
+.troca-btn-acao:disabled{opacity:.55;filter:grayscale(.5);cursor:default}
+.troca-verde{background:linear-gradient(180deg,#39d77b,#16884c)}
+.troca-vermelho{background:linear-gradient(180deg,#ff7777,#bd303d)}
+.troca-amarelo{background:linear-gradient(180deg,#ffe982,#e6a928);color:#352300}
+.troca-dica{margin-top:9px;text-align:center;font-size:11px;font-weight:700;color:#9db8d9;line-height:1.4}
+
+/* escolha de jogador */
+.troca-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px}
+.troca-card{position:relative;min-width:0;padding:11px 8px 10px;text-align:center;color:#fff;cursor:pointer;background:linear-gradient(155deg,#34527a,#1b2d49 75%);border:2px solid #5278a8;border-radius:13px;box-shadow:inset 0 1px #ffffff25,0 5px 12px #0006;transition:transform .12s,border-color .12s;touch-action:manipulation}
+.troca-card:active{transform:scale(.97)}
+.troca-card.sel{border-color:#ffe17b;box-shadow:0 0 0 2px #ffe17b55,0 0 16px #ffe17b55}
+.troca-avatar{width:52px;height:52px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;border:3px solid #d9efff;border-radius:13px;box-shadow:0 3px 8px #0008,inset 0 1px #ffffff77;color:#fff;text-shadow:0 2px 3px #000;font-size:22px;font-weight:900}
+.troca-nome{font-size:13px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 3px #000}
+.troca-status{display:inline-block;margin-top:7px;padding:3px 9px;border-radius:20px;background:#4a5365;color:#e2e8f0;font-size:10px;font-weight:900;text-transform:uppercase}
+.troca-status.on{background:#145d3d;color:#aaffce;border:1px solid #4bdb91}
+
+@media(max-width:560px){
+ .troca-box{padding:14px 11px;border-radius:15px}
+ .troca-duplo{grid-template-columns:1fr}
+ .troca-grade{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}
+ .troca-grade-inv{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))}
+ .troca-avatar{width:46px;height:46px}
+ .troca-lista{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+ .troca-btn-acao{font-size:12px;padding:10px 8px;min-height:44px}
+}
+/* cards de pet: nome, multiplicador, variante e mutação legíveis */
+.troca-grade{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
+.troca-grade-inv{grid-template-columns:repeat(auto-fill,minmax(112px,1fr))}
+.troca-pet{aspect-ratio:auto;min-height:104px;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;padding:6px;gap:3px;color:#fff;text-shadow:0 1px 2px #000;overflow:visible}
+.troca-pet-sigla{align-self:center;font-size:20px;font-weight:900;line-height:1;margin-top:2px}
+.troca-pet-nome{display:block;padding:3px 4px;border-radius:6px;background:#050a14cc;font-size:10px;font-weight:800;line-height:1.2;text-align:center;text-shadow:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.troca-pet-mult{display:block;padding:2px 4px;border-radius:6px;background:#050a14cc;font-size:10px;font-weight:900;text-align:center;color:#ffe16b;text-shadow:none}
+.troca-pet-variante{display:block;padding:2px 3px;border-radius:5px;background:linear-gradient(90deg,#ff9b4d,#ffe17c);color:#352300;font-size:8px;font-weight:900;text-align:center;text-shadow:none;letter-spacing:.3px}
+.troca-pet-mutacao{display:block;padding:2px 3px;border-radius:5px;background:#2a1747;color:#d2a2ff;font-size:8px;font-weight:900;text-align:center;text-shadow:none;line-height:1.2;overflow-wrap:anywhere}
+.troca-pet-mutacao.mut-anjo{background:#4a3c08;color:#fff1a8}
+.troca-pet-mutacao.mut-hacker{background:#06250f;color:#54ff91}
+.troca-pet-mutacao.mut-galaxia{background:#2a1747;color:#d2a2ff}
+@media(max-width:560px){
+ .troca-grade{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+ .troca-grade-inv{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+ .troca-pet{min-height:94px}
+ .troca-pet-sigla{font-size:17px}
+}
+/* indicadores de mutação no canto, mesmo visual do inventário */
+.troca-pet .troca-mutacoes-canto{position:absolute;right:4px;top:4px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:3px}
+.troca-pet .troca-mutacao-mini{width:20px;height:20px;display:grid;place-items:center;border:1px solid #fff;border-radius:5px;color:#fff;font-size:10px;font-weight:1000;text-shadow:0 1px 2px #000;box-shadow:0 1px 5px #0009}
+.troca-pet .troca-mutacao-mini-anjo{background:linear-gradient(145deg,#fff0a8,#a87912);color:#241900;text-shadow:none}
+.troca-pet .troca-mutacao-mini-hacker{background:linear-gradient(145deg,#22ff80,#07552b);color:#001b0a;text-shadow:none}
+.troca-pet .troca-mutacao-mini-galaxia{background:linear-gradient(145deg,#e6a2ff,#6421a6);color:#fff}
+.troca-pet .pet-limited-tag{margin:0;font-size:8px;letter-spacing:1px;padding:1px 4px;text-shadow:none;align-self:stretch}
+.troca-pet.sel .troca-mutacoes-canto{right:10px}
+.troca-pet .troca-pet-mutacao{display:none}
+/* pets selecionados: borda e check verdes */
+.troca-pet.sel{outline:none;border:3px solid #35e879;box-shadow:0 0 0 2px #35e87966,0 0 14px #35e879aa,inset 0 2px 5px #ffffff35}
+.troca-pet.sel:after{content:"✓";top:-8px;right:-8px;width:21px;height:21px;background:#35e879;color:#042510;font-size:13px;line-height:21px;box-shadow:0 2px 5px #000a}
+.troca-pet.tiravel{cursor:pointer}
+.troca-pet.tiravel:hover{border-color:#ff7777}
+.troca-dica-oferta{margin-top:6px;font-size:10px;font-weight:700;color:#8fb8e0;text-align:center}
+/* botões de aceitar e recusar em destaque */
+.troca-btn-grande{min-height:58px;font-size:17px;font-weight:1000;letter-spacing:.6px}
 </style>
 </head>
 <body>
@@ -6566,7 +6609,34 @@ const ladoDe=d=>d.de===euUid()?"De":"Para";
 const outroLado=l=>l==="De"?"Para":"De";
 function corPet(p){return Array.isArray(p.cor)?"rgb("+p.cor.join(",")+")":(p.cor||"#555");}
 function resumo(p){return {id:p.id,nome:p.nome,sigla:p.sigla||String(p.nome||"?").slice(0,2).toUpperCase(),raridade:p.raridade||"",mult:Number(p.mult)||1,cor:p.cor||"#555",borda:p.borda||"",dourado:!!p.dourado,diamante:!!p.diamante,rainbow:!!p.rainbow,void:!!p.void,mutacoesEvento:Array.isArray(p.mutacoesEvento)?p.mutacoesEvento.slice():[]};}
-function tile(p,sel){const t=document.createElement("div");t.className="troca-pet"+(sel?" sel":"");t.style.background=corPet(p);t.title=p.nome+" - "+Number(p.mult||1).toFixed(2)+"x";t.textContent=p.sigla||"?";return t;}
+function tile(p,sel){
+ const t=document.createElement("div");
+ t.className="troca-pet"+(sel?" sel":"");
+ t.style.background=corPet(p);
+ const mult="x"+Number(p.mult||1).toFixed(2);
+ const muts=Array.isArray(p.mutacoesEvento)?[...new Set(p.mutacoesEvento)]:[];
+ t.title=p.nome+" · "+mult+(muts.length?" · "+muts.map(k=>nomesMutacaoEvento[k]||k).join(" + "):"");
+ const sig=document.createElement("span");sig.className="troca-pet-sigla";sig.textContent=p.sigla||"?";
+ const nm=document.createElement("span");nm.className="troca-pet-nome";nm.textContent=p.nome||"";
+ const mt=document.createElement("span");mt.className="troca-pet-mult";mt.textContent=mult;
+ t.append(sig,nm,mt);
+ const variantes=[p.void&&"VOID",p.rainbow&&"RAINBOW",p.diamante&&"DIAMANTE",p.dourado&&"DOURADO"].filter(Boolean);
+ if(variantes.length){const v=document.createElement("span");v.className="troca-pet-variante";v.textContent=variantes[0];t.appendChild(v);}
+ if(petEhLimited(p.nome))t.appendChild(criarTagLimited());
+ // Indicadores de mutação no canto, iguais aos do inventário (A / H / G)
+ if(muts.length){
+  const canto=document.createElement("span");canto.className="troca-mutacoes-canto";
+  canto.setAttribute("aria-label","Mutações: "+muts.map(k=>nomesMutacaoEvento[k]||k).join(", "));
+  muts.forEach(k=>{
+   const m=document.createElement("span");m.className="troca-mutacao-mini troca-mutacao-mini-"+k;
+   m.textContent=k==="anjo"?"A":k==="hacker"?"H":k==="galaxia"?"G":String(k).slice(0,1).toUpperCase();
+   m.title=nomesMutacaoEvento[k]||k;
+   canto.appendChild(m);
+  });
+  t.appendChild(canto);
+ }
+ return t;
+}
 
 // Abre a lista de jogadores (chamado pelo botão TROCA do canvas)
 window.abrirTrocaJogo=function(){
@@ -6639,8 +6709,8 @@ function mostrarConvite(id,d){
  const box=conv.firstElementChild;box.innerHTML="";
  const h=document.createElement("h2");h.textContent=d.deNome+" te enviou troca";
  const linha=document.createElement("div");linha.className="troca-linha";
- const ok=document.createElement("button");ok.className="troca-btn-acao troca-verde";ok.textContent="ACEITAR";
- const no=document.createElement("button");no.className="troca-btn-acao troca-vermelho";no.textContent="RECUSAR";
+ const ok=document.createElement("button");ok.className="troca-btn-acao troca-verde troca-btn-grande";ok.textContent="✓ ACEITAR";
+ const no=document.createElement("button");no.className="troca-btn-acao troca-vermelho troca-btn-grande";no.textContent="✕ RECUSAR";
  ok.onclick=()=>responder(id,"aceita");no.onclick=()=>responder(id,"recusada");
  linha.append(ok,no);box.append(h,linha);
 }
@@ -6660,60 +6730,94 @@ function abrirTelaTroca(id,d){
 }
 function fecharTelaTroca(){abertaId=null;over.hidden=true;}
 
+function ordenarInventarioTroca(){
+ return petsInventario.filter(p=>!p.bloqueado).sort((a,b)=>{
+  const sa=selecionados.includes(a.id)?0:1,sb=selecionados.includes(b.id)?0:1;
+  if(sa!==sb)return sa-sb;
+  const dm=(Number(b.mult)||1)-(Number(a.mult)||1);
+  if(dm!==0)return dm;
+  return String(a.nome).localeCompare(String(b.nome));
+ });
+}
+
+function painelOferta(titulo,classe,pets,vazioTxt,badge,aoClicar){
+ const sec=document.createElement("section");sec.className="troca-painel-oferta "+classe;
+ const cab=document.createElement("div");cab.className="troca-cabecalho-oferta";
+ const nome=document.createElement("span");nome.textContent=titulo;
+ const qtd=document.createElement("small");qtd.textContent=pets.length+" pet(s)";
+ cab.append(nome,qtd);
+ if(badge){const b=document.createElement("small");b.textContent=badge.texto;b.className=badge.classe;cab.appendChild(b);}
+ sec.appendChild(cab);
+ const grade=document.createElement("div");grade.className="troca-grade";
+ pets.forEach(p=>{
+  const t=tile(p,false);
+  if(aoClicar){t.onclick=()=>aoClicar(p);t.title=t.title+" · toque para tirar da oferta";t.classList.add("tiravel");}
+  grade.appendChild(t);
+ });
+ if(!pets.length){const v=document.createElement("div");v.className="troca-vazio";v.textContent=vazioTxt;grade.appendChild(v);}
+ sec.appendChild(grade);
+ if(pets.length){
+  const nomes=document.createElement("div");nomes.className="troca-nomes";nomes.textContent=pets.map(p=>p.nome).join(", ");sec.appendChild(nomes);
+  if(aoClicar){const dica=document.createElement("div");dica.className="troca-dica-oferta";dica.textContent="Toque em um pet para tirá-lo da oferta";sec.appendChild(dica);}
+ }
+ return sec;
+}
+
 function atualizarTelaTroca(id,d){
- const lado=ladoDe(d),outro=outroLado(lado),nomeOutro=lado==="De"?d.paraNome:d.deNome;
+ const lado=ladoDe(d),outro=outroLado(lado);
+ const nomeOutro=String((lado==="De"?d.paraNome:d.deNome)||"Jogador");
  const corpo=$("trocaCorpo");corpo.innerHTML="";
  const euConfirmei=d["confirmou"+lado]===true,outroConfirmou=d["confirmou"+outro]===true;
  const minhaOferta=d["oferta"+lado]||[],ofertaOutro=d["oferta"+outro]||[];
- $("trocaTit").textContent="TROCA COM "+String(nomeOutro||"JOGADOR").toUpperCase();
+ $("trocaTit").textContent="TROCA COM "+nomeOutro.toUpperCase();
 
- const inventarioTitulo=document.createElement("div");inventarioTitulo.className="troca-inventario-titulo";
- const it=document.createElement("span");it.textContent="SEU INVENTÁRIO";
- const qtd=document.createElement("small");qtd.textContent=petsInventario.length+" PET(S)";
- inventarioTitulo.append(it,qtd);corpo.appendChild(inventarioTitulo);
- const grade=document.createElement("div");grade.className="troca-grade";
- petsInventario.forEach(p=>{const t=tile(p,selecionados.includes(p.id));t.onclick=()=>alternarOferta(id,d,p);grade.appendChild(t);});
- if(!petsInventario.length){const vazio=document.createElement("div");vazio.className="troca-vazio";vazio.textContent="Seu inventário está vazio.";grade.appendChild(vazio);}
+ // Faixa de status: diz claramente o que acontece agora
+ let texto,tipo;
+ if(euConfirmei&&outroConfirmou){texto="Os dois confirmaram. Finalizando a troca...";tipo="ok";}
+ else if(euConfirmei){texto="Você confirmou. Aguardando "+nomeOutro+" confirmar.";tipo="espera";}
+ else if(outroConfirmou){texto=nomeOutro+" confirmou. Revise as duas ofertas e confirme também.";tipo="alerta";}
+ else if(!minhaOferta.length&&!ofertaOutro.length){texto="Escolha os pets que você quer oferecer, no inventário abaixo.";tipo="";}
+ else {texto="Revise as duas ofertas. Quando estiver pronto, confirme a troca.";tipo="";}
+ const faixa=document.createElement("div");faixa.className="troca-faixa"+(tipo?" "+tipo:"");faixa.textContent=texto;
+ corpo.appendChild(faixa);
+
+ // Ofertas lado a lado: primeiro a sua, depois a do outro jogador
+ const duplo=document.createElement("div");duplo.className="troca-duplo";
+ duplo.appendChild(painelOferta("Sua oferta","propria",minhaOferta,"Nenhum pet oferecido ainda. Toque em um pet do inventário.",null,p=>alternarOferta(id,d,p)));
+ duplo.appendChild(painelOferta("De "+nomeOutro,"outro",ofertaOutro,nomeOutro+" ainda não ofereceu pets.",
+  outroConfirmou?{texto:"✓ Confirmou",classe:"confirmou"}:{texto:"Aguardando",classe:"aguardando"}));
+ corpo.appendChild(duplo);
+
+ // Inventário: toque para adicionar ou remover da sua oferta
+ const invTitulo=document.createElement("div");invTitulo.className="troca-inventario-titulo";
+ const it=document.createElement("span");it.textContent="Seu inventário";
+ const dicaInv=document.createElement("small");dicaInv.textContent=petsInventario.filter(p=>!p.bloqueado).length+" pet(s) · toque para oferecer ou retirar";
+ invTitulo.append(it,dicaInv);corpo.appendChild(invTitulo);
+ const grade=document.createElement("div");grade.className="troca-grade troca-grade-inv";
+ ordenarInventarioTroca().forEach(p=>{const t=tile(p,selecionados.includes(p.id));t.onclick=()=>alternarOferta(id,d,p);grade.appendChild(t);});
+ if(!petsInventario.some(p=>!p.bloqueado)){const vazio=document.createElement("div");vazio.className="troca-vazio";vazio.textContent="Seu inventário está vazio.";grade.appendChild(vazio);}
  corpo.appendChild(grade);
 
- const painel1=document.createElement("section");painel1.className="troca-painel-oferta propria";
- const cab1=document.createElement("div");cab1.className="troca-cabecalho-oferta";
- const nome1=document.createElement("span");nome1.textContent="SUA OFERTA";
- const st1=document.createElement("small");st1.textContent=minhaOferta.length+" PET(S)";
- cab1.append(nome1,st1);painel1.appendChild(cab1);
- const grade1=document.createElement("div");grade1.className="troca-grade";
- minhaOferta.forEach(p=>grade1.appendChild(tile(p,false)));
- if(!minhaOferta.length){const v=document.createElement("div");v.className="troca-vazio";v.textContent="Toque nos pets acima para adicioná-los à troca";grade1.appendChild(v);}
- painel1.appendChild(grade1);corpo.appendChild(painel1);
-
- const vs=document.createElement("div");vs.className="troca-centro-vs";vs.textContent="VS";corpo.appendChild(vs);
- const painel2=document.createElement("section");painel2.className="troca-painel-oferta outro";
- const cab2=document.createElement("div");cab2.className="troca-cabecalho-oferta";
- const nome2=document.createElement("span");nome2.textContent="OFERTA DE "+String(nomeOutro||"JOGADOR").toUpperCase();
- const st2=document.createElement("small");st2.textContent=outroConfirmou?"✓ CONFIRMOU":"AGUARDANDO";
- if(outroConfirmou){st2.style.background="#145d3d";st2.style.color="#b7ffd4";}
- cab2.append(nome2,st2);painel2.appendChild(cab2);
- const grade2=document.createElement("div");grade2.className="troca-grade";
- ofertaOutro.forEach(p=>grade2.appendChild(tile(p,false)));
- if(!ofertaOutro.length){const v=document.createElement("div");v.className="troca-vazio";v.textContent="O outro jogador ainda não ofereceu pets";grade2.appendChild(v);}
- painel2.appendChild(grade2);corpo.appendChild(painel2);
-
- const linha=document.createElement("div");linha.className="troca-linha";
+ // Ações: cancelar (com confirmação) e confirmar
+ const acoes=document.createElement("div");acoes.className="troca-acoes";
+ const canc=document.createElement("button");canc.className="troca-btn-acao troca-vermelho";canc.textContent="CANCELAR TROCA";
+ canc.onclick=()=>{if(confirm("Cancelar esta troca? Ela será encerrada para os dois jogadores."))cancelarTroca(id);};
  const conf=document.createElement("button");conf.className="troca-btn-acao troca-verde";
  conf.textContent=euConfirmei?"✓ CONFIRMADO":"CONFIRMAR TROCA";conf.disabled=euConfirmei;
  conf.onclick=()=>confirmarTroca(id,lado);
- const canc=document.createElement("button");canc.className="troca-btn-acao troca-vermelho";canc.textContent="CANCELAR";
- canc.onclick=()=>cancelarTroca(id);
- linha.append(conf,canc);corpo.appendChild(linha);
- const rodape=document.createElement("div");rodape.style.cssText="margin-top:9px;text-align:center;color:#9db8d9;font-size:10px;font-weight:800";
- rodape.textContent=euConfirmei?"Aguardando o outro jogador confirmar...":(outroConfirmou?"O outro jogador confirmou. Confira sua oferta e confirme também.":"Os dois jogadores precisam confirmar para concluir a troca.");
- corpo.appendChild(rodape);
+ acoes.append(canc,conf);corpo.appendChild(acoes);
+
+ const dica=document.createElement("div");dica.className="troca-dica";
+ dica.textContent=euConfirmei
+  ?"Aguardando o outro jogador confirmar. Se mudar sua oferta, as confirmações são reiniciadas."
+  :"Os dois jogadores precisam confirmar. Se mudar sua oferta depois de confirmar, a confirmação é reiniciada.";
+ corpo.appendChild(dica);
 }
 function alternarOferta(id,d,p){
  const i=selecionados.indexOf(p.id);
  if(i>=0)selecionados.splice(i,1);else selecionados.push(p.id);
  const lado=ladoDe(d);
- const oferta=petsInventario.filter(x=>selecionados.includes(x.id)).map(resumo);
+ const oferta=petsInventario.filter(x=>!x.bloqueado&&selecionados.includes(x.id)).map(resumo);
  atualizarTelaTroca(id,d);
  db.collection(COL).doc(id).update({["oferta"+lado]:oferta,confirmouDe:false,confirmouPara:false})
   .catch(e=>mostrarAviso("Erro na oferta: "+(e.message||e),"erro"));
